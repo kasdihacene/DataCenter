@@ -2,13 +2,9 @@ package fr.upmc.datacenter.software.requestDispatcher;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.Map;
-import java.util.Queue;
 
 import fr.upmc.components.AbstractComponent;
-import fr.upmc.datacenter.software.applicationvm.interfaces.TaskI;
-import fr.upmc.datacenter.software.connectors.RequestNotificationConnector;
 import fr.upmc.datacenter.software.connectors.RequestSubmissionConnector;
 import fr.upmc.datacenter.software.interfaces.RequestI;
 import fr.upmc.datacenter.software.interfaces.RequestNotificationHandlerI;
@@ -22,7 +18,10 @@ import fr.upmc.datacenter.software.ports.RequestSubmissionOutboundPort;
 import fr.upmc.datacenter.software.requestDispatcher.interfaces.RequestDispatcherManagementI;
 
 public class RequestDispatcher extends AbstractComponent
-		implements RequestSubmissionHandlerI, RequestNotificationHandlerI, RequestDispatcherManagementI {
+		implements 
+		RequestSubmissionHandlerI,
+		RequestNotificationHandlerI, 
+		RequestDispatcherManagementI {
 	
 	public static enum RequestDispatcherPortTypes{
 		REQUEST_SUBMISSION, MANAGEMENT
@@ -71,7 +70,7 @@ public class RequestDispatcher extends AbstractComponent
 		this.requestSubmissionInboundPort.publishPort();
 		
 		/**
-		 * A PORT TO NETIFY THE RequestGenerator 
+		 * A PORT TO NETIFY THE RequestGenerator 				  --C
 		 */
 		this.addRequiredInterface(RequestNotificationI.class);
 		this.requestNotificationOutboundPort =
@@ -84,26 +83,33 @@ public class RequestDispatcher extends AbstractComponent
 
 	@Override
 	public void acceptRequestTerminationNotification(RequestI r) throws Exception {
-		// TODO Auto-generated method stub
+		
 
 	}
 
 	@Override
 	public void acceptRequestSubmission(RequestI r) throws Exception {
-		System.out.println("acceptRequestSub");
+		
 	}
 
 	@Override
 	public void acceptRequestSubmissionAndNotify(RequestI r) throws Exception {
-		System.out.println("accept RequestSubAndNotify");
-		System.out.println(r.getRequestURI());
+		
 		System.out.println("-----------------------------");
 		
 		// submissionPorts : associate avm uri with request dispatcher request submission outbound port
 		ArrayList<RequestSubmissionOutboundPort> vmRequestSubmissionPorts = 
 				new ArrayList<RequestSubmissionOutboundPort>(this.submissionPorts.values());
-		vmRequestSubmissionPorts.get(coin).submitRequest(r);
+
+		// GET ONE OF THE AVM PORTS (RequestSumissionOutboundPort)
+		RequestSubmissionOutboundPort rsopAVM = vmRequestSubmissionPorts.get(coin);
+		rsopAVM.submitRequest(r);
+		
+		// SWITCH THE PORT
 		coin = (coin + 1) % vmRequestSubmissionPorts.size();
+		System.out.println("------------ coin = "+coin);
+		
+		System.out.println("-----------------------------");
 	}
 
 
@@ -120,26 +126,34 @@ public class RequestDispatcher extends AbstractComponent
 		return null;
 	}
 
-
+	
 	@Override
 	public void connectAVM(String avmURI, String vmRequestSubmissionInboundPortURI,
 			String vmRequestNotificationOutboundPortUri) throws Exception {
-		// Create Request Dispatcher request submission outboud port
+		
+		// SEND REQUESTS TO THE AVM USING THE PORT OF RequestDispatcher (RequestSubmissionOutboundPort)
 		RequestSubmissionOutboundPort rsop = new RequestSubmissionOutboundPort(this);
 		this.addPort(rsop);
 		rsop.publishPort();
-		// To connect with the avm request submission inbound port
+		
+		// CONNECT THE RequestDispatcher Port (RequestSubmissionOutboundPort) to the AVM Port (RequestSubmissionInboundPort)
 		rsop.doConnection(
 				vmRequestSubmissionInboundPortURI, 
 				RequestSubmissionConnector.class.getCanonicalName());
+		
+		// ADD THE <KEY VALUE> TO THE COLLECTION OF PORTS <avmURI, RequestSubmissionOutboundPort>
 		this.submissionPorts.put(avmURI, rsop);
 		
+		
+		/**
+		 * TODO
+		 */
 		// Create Request Dispatcher request notification inbound port
 		RequestNotificationInboundPort rnip = new RequestNotificationInboundPort(this);
 		this.addPort(rnip);
 		rnip.publishPort();
 		// To connect with the avm request notification outbound port
-		// rnip.doConnection(vmRequestNotificationOutboundPortUri, RequestNotificationConnector.class.getCanonicalName());
+//		 rnip.doConnection(vmRequestNotificationOutboundPortUri, RequestNotificationConnector.class.getCanonicalName());
 	}
 
 }

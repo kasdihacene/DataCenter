@@ -36,10 +36,14 @@ package fr.upmc.datacenterclient.requestgenerator;
 
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+
 import org.apache.commons.math3.random.RandomDataGenerator;
+
 import fr.upmc.components.AbstractComponent;
 import fr.upmc.components.exceptions.ComponentShutdownException;
 import fr.upmc.datacenter.TimeManagement;
+import fr.upmc.datacenter.software.admissionController.interfaces.AdmissionRequestI;
+import fr.upmc.datacenter.software.admissionController.ports.AdmissionRequestOutboundPort;
 import fr.upmc.datacenter.software.interfaces.RequestI;
 import fr.upmc.datacenter.software.interfaces.RequestNotificationHandlerI;
 import fr.upmc.datacenter.software.interfaces.RequestNotificationI;
@@ -117,7 +121,16 @@ implements	RequestNotificationHandlerI
 	protected RequestNotificationInboundPort	rnip ;
 	/** a future pointing to the next request generation task.				*/
 	protected Future<?>							nextRequestTaskFuture ;
-
+	
+	//#1
+	/**
+	 * the port to send request admission for the <code>AdmissionController</code>
+	 * THE <code>RequestAdmissionOutboundPort</code>
+	 * to ask if we can start generation or no
+	 */
+	protected AdmissionRequestOutboundPort admissionRequestOutboundPort;
+	
+	
 	// -------------------------------------------------------------------------
 	// Constructors
 	// -------------------------------------------------------------------------
@@ -145,7 +158,9 @@ implements	RequestNotificationHandlerI
 		long meanNumberOfInstructions,
 		String managementInboundPortURI,
 		String requestSubmissionOutboundPortURI,
-		String requestNotificationInboundPortURI
+		String requestNotificationInboundPortURI,
+		//#3
+		String admissionRequestOutboundPortURI
 		) throws Exception
 	{
 		super(1, 1) ;
@@ -182,12 +197,24 @@ implements	RequestNotificationHandlerI
 			new RequestNotificationInboundPort(requestNotificationInboundPortURI, this) ;
 		this.addPort(this.rnip) ;
 		this.rnip.publishPort() ;
+		
+		/**
+		 * Add the required port requestAdmissionOutBoundPort
+		 */
+		//#4
+		this.addRequiredInterface(AdmissionRequestI.class) ;
+		this.admissionRequestOutboundPort = 
+					new AdmissionRequestOutboundPort(admissionRequestOutboundPortURI, this) ;
+		this.addPort(this.admissionRequestOutboundPort) ;
+		this.admissionRequestOutboundPort.publishPort() ;
 
 		// post-conditions check
 		assert	this.rng != null && this.counter >= 0 ;
 		assert	this.meanInterArrivalTime > 0.0 ;
 		assert	this.meanNumberOfInstructions > 0 ;
 		assert	this.rsop != null && this.rsop instanceof RequestSubmissionI ;
+		assert 	this.admissionRequestOutboundPort instanceof AdmissionRequestI;
+
 	}
 
 	// -------------------------------------------------------------------------
@@ -245,10 +272,18 @@ implements	RequestNotificationHandlerI
 	 */
 	public void			startGeneration() throws Exception
 	{
-		if (RequestGenerator.DEBUG_LEVEL == 1) {
-			this.logMessage("Request generator " + this.rgURI + " starting.") ;
-		}
-		this.generateNextRequest() ;
+		//#2
+		/**
+		 * ASK IF WE CAN START GENERATION
+		 * SEND A REQUEST TO THE ADMISSION CONTROLLER
+		 * 
+		 */
+		this.admissionRequestOutboundPort.askForHost("HELLO");
+//		
+//		if (RequestGenerator.DEBUG_LEVEL == 1) {
+//			this.logMessage("Request generator " + this.rgURI + " starting.") ;
+//		}
+//		this.generateNextRequest() ;
 	}
 
 	/**

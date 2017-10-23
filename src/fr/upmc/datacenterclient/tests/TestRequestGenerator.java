@@ -49,6 +49,9 @@ import fr.upmc.datacenter.hardware.computers.connectors.ComputerServicesConnecto
 import fr.upmc.datacenter.hardware.computers.ports.ComputerServicesOutboundPort;
 import fr.upmc.datacenter.hardware.processors.Processor;
 import fr.upmc.datacenter.hardware.tests.ComputerMonitor;
+import fr.upmc.datacenter.software.admissionController.AdmissionController;
+import fr.upmc.datacenter.software.admissionController.connectors.AdmissionRequestConnector;
+import fr.upmc.datacenter.software.admissionController.ports.AdmissionRequestOutboundPort;
 import fr.upmc.datacenter.software.applicationvm.ApplicationVM;
 import fr.upmc.datacenter.software.applicationvm.connectors.ApplicationVMManagementConnector;
 import fr.upmc.datacenter.software.applicationvm.ports.ApplicationVMManagementOutboundPort;
@@ -118,6 +121,9 @@ extends		AbstractCVM
 	public static final String	RequestNotificationOutboundPortURI = "rnobp" ;
 	public static final String	RequestGeneratorManagementInboundPortURI = "rgmip" ;
 	public static final String	RequestGeneratorManagementOutboundPortURI = "rgmop" ;
+	
+	public static final String	AdmissionRequestOutboundPortURI = "Arobp" ;
+	public static final String	AdmissionRequestInboundPortURI = "Aribp" ;
 
 	/** Port connected to the computer component to access its services.	*/
 	protected ComputerServicesOutboundPort			csPort ;
@@ -133,6 +139,7 @@ extends		AbstractCVM
 	 *  execution (starting and stopping the request generation).			*/
 	protected RequestGeneratorManagementOutboundPort	rgmop ;
 
+	protected AdmissionController admissionController;
 	// ------------------------------------------------------------------------
 	// Component virtual machine constructors
 	// ------------------------------------------------------------------------
@@ -245,9 +252,16 @@ extends		AbstractCVM
 					6000000000L,	// mean number of instructions in requests
 					RequestGeneratorManagementInboundPortURI,
 					RequestSubmissionOutboundPortURI,
-					RequestNotificationInboundPortURI) ;
+					RequestNotificationInboundPortURI,
+					AdmissionRequestOutboundPortURI
+				) ;
 		this.addDeployedComponent(rg) ;
-
+		
+		this.admissionController = 
+				new AdmissionController(
+						"admissionController",
+						AdmissionRequestInboundPortURI);
+		this.addDeployedComponent(admissionController);
 		// Toggle on tracing and logging in the request generator to
 		// follow the submission and end of execution notification of
 		// individual requests.
@@ -261,15 +275,19 @@ extends		AbstractCVM
 		//   virtual machines, and
 		// - one for request generation management i.e., starting and stopping
 		//   the generation process.
-		this.rg.doPortConnection(
-					RequestSubmissionOutboundPortURI,
-					RequestSubmissionInboundPortURI,
-					RequestSubmissionConnector.class.getCanonicalName()) ;
+//		this.rg.doPortConnection(
+//					RequestSubmissionOutboundPortURI,
+//					RequestSubmissionInboundPortURI,
+//					RequestSubmissionConnector.class.getCanonicalName()) ;
 
-		this.vm.doPortConnection(
-					RequestNotificationOutboundPortURI,
-					RequestNotificationInboundPortURI,
-					RequestNotificationConnector.class.getCanonicalName()) ;
+		this.rg.doPortConnection(
+				AdmissionRequestOutboundPortURI, 
+				AdmissionRequestInboundPortURI,
+				AdmissionRequestConnector.class.getCanonicalName());
+//		this.vm.doPortConnection(
+//					RequestNotificationOutboundPortURI,
+//					RequestNotificationInboundPortURI,
+//					RequestNotificationConnector.class.getCanonicalName()) ;
 
 		// Create a mock up port to manage to request generator component
 		// (starting and stopping the generation).
@@ -296,8 +314,8 @@ extends		AbstractCVM
 
 		// Allocate the 4 cores of the computer to the application virtual
 		// machine.
-		AllocatedCore[] ac = this.csPort.allocateCores(4) ;
-		this.avmPort.allocateCores(ac) ;
+//		AllocatedCore[] ac = this.csPort.allocateCores(4) ;
+//		this.avmPort.allocateCores(ac) ;
 	}
 
 	/**
@@ -330,9 +348,9 @@ extends		AbstractCVM
 		// start the request generation in the request generator.
 		this.rgmop.startGeneration() ;
 		// wait 20 seconds
-		Thread.sleep(20000L) ;
+//		Thread.sleep(20000L) ;
 		// then stop the generation.
-		this.rgmop.stopGeneration() ;
+//		this.rgmop.stopGeneration() ;
 	}
 
 	/**
@@ -367,7 +385,7 @@ extends		AbstractCVM
 			Thread.sleep(10000) ; //10000 to try 90000L
 			// Shut down the application.
 			System.out.println("shutting down...") ;
-			trg.shutdown() ;
+//			trg.shutdown() ;
 			System.out.println("ending...") ;
 			// Exit from Java.
 			System.exit(0) ;

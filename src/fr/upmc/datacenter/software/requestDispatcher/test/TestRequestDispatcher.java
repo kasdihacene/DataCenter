@@ -97,12 +97,10 @@ protected ApplicationVMManagementOutboundPort avmPort1 ;
 	/** Port connected to the request generator component to manage its
 	 *  execution (starting and stopping the request generation).			*/
 	protected RequestGeneratorManagementOutboundPort	rgmop ;
-	
+
 	protected Computer c0, c1;
 	protected ComputerMonitor cm0, cm1;
 	protected ApplicationVM avm0, avm1;
-	
-	
 	
 	@Override
 	public void deploy() throws Exception{
@@ -283,17 +281,22 @@ protected ApplicationVMManagementOutboundPort avmPort1 ;
 				this.rg.toggleTracing() ;
 				this.rg.toggleLogging() ;
 		
-				
-				this.rg.doPortConnection(
+			/**
+			 * COMPONENT CONNECTIONS -----------------------------------------
+			 */
+			this.rg.doPortConnection(
 						RequestSubmissionOutboundPortURI,
 						RequestSubmissionInboundPortURI,
 						RequestSubmissionConnector.class.getCanonicalName()) ;
 
-			this.rd.doPortConnection(
-						RequestNotificationOutboundPortURI,
-						RequestNotificationInboundPortURI,
-						RequestNotificationConnector.class.getCanonicalName()) ;
-
+//			this.rd.doPortConnection(
+//						RequestNotificationOutboundPortURI,
+//						RequestNotificationInboundPortURI,
+//						RequestNotificationConnector.class.getCanonicalName()) ;
+			/**
+			 *----------------------------------------------------------------- 
+			 */
+			
 			// Create a mock up port to manage to request generator component
 			// (starting and stopping the generation).
 			this.rgmop = new RequestGeneratorManagementOutboundPort(
