@@ -50,8 +50,6 @@ import fr.upmc.datacenter.hardware.computers.ports.ComputerServicesOutboundPort;
 import fr.upmc.datacenter.hardware.processors.Processor;
 import fr.upmc.datacenter.hardware.tests.ComputerMonitor;
 import fr.upmc.datacenter.software.admissionController.AdmissionController;
-import fr.upmc.datacenter.software.admissionController.connectors.AdmissionRequestConnector;
-import fr.upmc.datacenter.software.admissionController.ports.AdmissionRequestOutboundPort;
 import fr.upmc.datacenter.software.applicationvm.ApplicationVM;
 import fr.upmc.datacenter.software.applicationvm.connectors.ApplicationVMManagementConnector;
 import fr.upmc.datacenter.software.applicationvm.ports.ApplicationVMManagementOutboundPort;
@@ -252,16 +250,11 @@ extends		AbstractCVM
 					6000000000L,	// mean number of instructions in requests
 					RequestGeneratorManagementInboundPortURI,
 					RequestSubmissionOutboundPortURI,
-					RequestNotificationInboundPortURI,
-					AdmissionRequestOutboundPortURI
+					RequestNotificationInboundPortURI
 				) ;
 		this.addDeployedComponent(rg) ;
 		
-		this.admissionController = 
-				new AdmissionController(
-						"admissionController",
-						AdmissionRequestInboundPortURI);
-		this.addDeployedComponent(admissionController);
+
 		// Toggle on tracing and logging in the request generator to
 		// follow the submission and end of execution notification of
 		// individual requests.
@@ -275,19 +268,16 @@ extends		AbstractCVM
 		//   virtual machines, and
 		// - one for request generation management i.e., starting and stopping
 		//   the generation process.
-//		this.rg.doPortConnection(
-//					RequestSubmissionOutboundPortURI,
-//					RequestSubmissionInboundPortURI,
-//					RequestSubmissionConnector.class.getCanonicalName()) ;
-
 		this.rg.doPortConnection(
-				AdmissionRequestOutboundPortURI, 
-				AdmissionRequestInboundPortURI,
-				AdmissionRequestConnector.class.getCanonicalName());
-//		this.vm.doPortConnection(
-//					RequestNotificationOutboundPortURI,
-//					RequestNotificationInboundPortURI,
-//					RequestNotificationConnector.class.getCanonicalName()) ;
+					RequestSubmissionOutboundPortURI,
+					RequestSubmissionInboundPortURI,
+					RequestSubmissionConnector.class.getCanonicalName()) ;
+
+
+		this.vm.doPortConnection(
+					RequestNotificationOutboundPortURI,
+					RequestNotificationInboundPortURI,
+					RequestNotificationConnector.class.getCanonicalName()) ;
 
 		// Create a mock up port to manage to request generator component
 		// (starting and stopping the generation).
@@ -312,10 +302,10 @@ extends		AbstractCVM
 	{
 		super.start() ;
 
-		// Allocate the 4 cores of the computer to the application virtual
-		// machine.
-//		AllocatedCore[] ac = this.csPort.allocateCores(4) ;
-//		this.avmPort.allocateCores(ac) ;
+//		 Allocate the 4 cores of the computer to the application virtual
+	//	 machine.
+		AllocatedCore[] ac = this.csPort.allocateCores(4) ;
+		this.avmPort.allocateCores(ac) ;
 	}
 
 	/**
@@ -348,9 +338,9 @@ extends		AbstractCVM
 		// start the request generation in the request generator.
 		this.rgmop.startGeneration() ;
 		// wait 20 seconds
-//		Thread.sleep(20000L) ;
+		Thread.sleep(20000L) ;
 		// then stop the generation.
-//		this.rgmop.stopGeneration() ;
+		this.rgmop.stopGeneration() ;
 	}
 
 	/**

@@ -207,10 +207,10 @@ public class TestAdmissionController extends fr.upmc.components.cvm.AbstractCVM{
 		 * CREATE THE ADMISSION CONTROLLER
 		 */
 	
-		this.admissionController = new AdmissionController(
-				"Controller1",
-				AdmissionControllerInboundPortURI);
-		this.addDeployedComponent(admissionController);
+//		this.admissionController = new AdmissionController(
+//				"Controller1",
+//				AdmissionControllerInboundPortURI);
+//		this.addDeployedComponent(admissionController);
 		
 		
 		/**
@@ -222,8 +222,7 @@ public class TestAdmissionController extends fr.upmc.components.cvm.AbstractCVM{
 									6000000000L,	// mean number of instructions in requests
 									RequestGeneratorManagementInboundPortURI,
 									RequestSubmissionOutboundPortURI,
-									RequestNotificationInboundPortURI,
-									AdmissionControllerOutboundPortURI) ;
+									RequestNotificationInboundPortURI) ;
 						this.addDeployedComponent(rg1) ;
 
 						// Toggle on tracing and logging in the request generator to

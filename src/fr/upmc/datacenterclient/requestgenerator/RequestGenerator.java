@@ -158,9 +158,9 @@ implements	RequestNotificationHandlerI
 		long meanNumberOfInstructions,
 		String managementInboundPortURI,
 		String requestSubmissionOutboundPortURI,
-		String requestNotificationInboundPortURI,
+		String requestNotificationInboundPortURI
 		//#3
-		String admissionRequestOutboundPortURI
+//		String admissionRequestOutboundPortURI
 		) throws Exception
 	{
 		super(1, 1) ;
@@ -202,11 +202,11 @@ implements	RequestNotificationHandlerI
 		 * Add the required port requestAdmissionOutBoundPort
 		 */
 		//#4
-		this.addRequiredInterface(AdmissionRequestI.class) ;
-		this.admissionRequestOutboundPort = 
-					new AdmissionRequestOutboundPort(admissionRequestOutboundPortURI, this) ;
-		this.addPort(this.admissionRequestOutboundPort) ;
-		this.admissionRequestOutboundPort.publishPort() ;
+//		this.addRequiredInterface(AdmissionRequestI.class) ;
+//		this.admissionRequestOutboundPort = 
+//					new AdmissionRequestOutboundPort(admissionRequestOutboundPortURI, this) ;
+//		this.addPort(this.admissionRequestOutboundPort) ;
+//		this.admissionRequestOutboundPort.publishPort() ;
 
 		// post-conditions check
 		assert	this.rng != null && this.counter >= 0 ;
@@ -278,12 +278,12 @@ implements	RequestNotificationHandlerI
 		 * SEND A REQUEST TO THE ADMISSION CONTROLLER
 		 * 
 		 */
-		this.admissionRequestOutboundPort.askForHost("HELLO");
-//		
-//		if (RequestGenerator.DEBUG_LEVEL == 1) {
-//			this.logMessage("Request generator " + this.rgURI + " starting.") ;
-//		}
-//		this.generateNextRequest() ;
+//		this.admissionRequestOutboundPort.askForHost("HELLO");
+		
+		if (RequestGenerator.DEBUG_LEVEL == 1) {
+			this.logMessage("Request generator " + this.rgURI + " starting.") ;
+		}
+		this.generateNextRequest() ;
 	}
 
 	/**
