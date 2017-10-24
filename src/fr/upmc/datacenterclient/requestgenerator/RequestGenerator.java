@@ -362,7 +362,6 @@ implements	RequestNotificationHandlerI
 	 */
 	public void			generateNextRequest() throws Exception
 	{
-		System.out.println("+++++++++++");
 		// generate a random number of instructions for the request.
 		long noi =
 			(long) this.rng.nextExponential(this.meanNumberOfInstructions) ;

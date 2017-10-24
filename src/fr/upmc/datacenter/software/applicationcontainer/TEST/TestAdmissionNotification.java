@@ -1,5 +1,6 @@
 package fr.upmc.datacenter.software.applicationcontainer.TEST;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -7,22 +8,18 @@ import java.util.Set;
 
 import fr.upmc.components.AbstractComponent;
 import fr.upmc.components.connectors.DataConnector;
-import fr.upmc.components.ports.PortI;
 import fr.upmc.datacenter.connectors.ControlledDataConnector;
 import fr.upmc.datacenter.hardware.computers.Computer;
 import fr.upmc.datacenter.hardware.computers.connectors.ComputerServicesConnector;
 import fr.upmc.datacenter.hardware.computers.ports.ComputerServicesOutboundPort;
 import fr.upmc.datacenter.hardware.processors.Processor;
 import fr.upmc.datacenter.hardware.tests.ComputerMonitor;
+import fr.upmc.datacenter.software.admissionController.Admission;
 import fr.upmc.datacenter.software.admissionController.AdmissionController;
 import fr.upmc.datacenter.software.admissionController.connectors.AdmissionRequestConnector;
-import fr.upmc.datacenter.software.admissionController.interfaces.AdmissionRequestI;
-import fr.upmc.datacenter.software.admissionController.ports.AdmissionRequestInboundPort;
 import fr.upmc.datacenter.software.applicationcontainer.ApplicationContainer;
 import fr.upmc.datacenter.software.applicationcontainer.connectors.AdmissionNotificationConnector;
-import fr.upmc.datacenter.software.connectors.RequestSubmissionConnector;
 import fr.upmc.datacenterclient.requestgenerator.RequestGenerator;
-import fr.upmc.datacenterclient.requestgenerator.connectors.RequestGeneratorManagementConnector;
 import fr.upmc.datacenterclient.requestgenerator.ports.RequestGeneratorManagementOutboundPort;
 
 public class TestAdmissionNotification extends fr.upmc.components.cvm.AbstractCVM{
@@ -107,7 +104,10 @@ public class TestAdmissionNotification extends fr.upmc.components.cvm.AbstractCV
 	
 	protected Computer c0, c1;
 	protected ComputerMonitor cm0, cm1;
-
+	
+	protected ArrayList<Computer> listComputers;
+	
+	protected Admission admission;
 	//--------------------------------------------------------------------------
 
 	@Override
@@ -115,6 +115,7 @@ public class TestAdmissionNotification extends fr.upmc.components.cvm.AbstractCV
 		AbstractComponent.configureLogging("", "", 0, '|') ;
 		Processor.DEBUG = true ;
 		
+		listComputers = new ArrayList<Computer>();
 		/**
 		 * characteristics of Computers 
 		 */
@@ -146,6 +147,9 @@ public class TestAdmissionNotification extends fr.upmc.components.cvm.AbstractCV
 				ComputerDynamicStateDataInboundPortURI0);
 		this.addDeployedComponent(c0);
 
+		
+		listComputers.add(c0);
+		
 		// Create a mock-up computer services port to later allocate its cores
 		// to the application virtual machine.
 		this.csPort0 = new ComputerServicesOutboundPort(ComputerServicesOutboundPortURI0, new AbstractComponent(0, 0) {});
@@ -216,13 +220,19 @@ public class TestAdmissionNotification extends fr.upmc.components.cvm.AbstractCV
 		// Creating the request generators component.
 		// --------------------------------------------------------------------
 		
+		Admission admission = new Admission(
+				this, 
+				"applicationURI", 
+				AdmissionNotificationInboundPortURI, 
+				AdmissionControllerInboundPortURI);
+	
 		/**
 		 * CREATE THE APPLICATION
 		 */
 		this.applicationContainer =
 				new ApplicationContainer(
 						"APP-", 
-						this,
+						admission,
 						AdmissionNotificationInboundPortURI,
 						AdmissionControllerOutboundPortURI);
 		this.addDeployedComponent(applicationContainer);
@@ -234,7 +244,8 @@ public class TestAdmissionNotification extends fr.upmc.components.cvm.AbstractCV
 		this.admissionController = new AdmissionController(
 				"Controller1",
 				AdmissionControllerInboundPortURI,
-				AdmissionNotificationOutboundPortURI);
+				AdmissionNotificationOutboundPortURI,
+				listComputers);
 		this.addDeployedComponent(admissionController);
 		
 		/**
@@ -331,13 +342,14 @@ public class TestAdmissionNotification extends fr.upmc.components.cvm.AbstractCV
 	public void			start() throws Exception
 	{
 		super.start() ;
+		
 	}
 	
 	
 	public void			testScenario() throws Exception
 	{
-
-		this.applicationContainer.askForHostingApllication("HHHHH");
+	
+		this.applicationContainer.askForHostingApllication();
 
 	}
 	

@@ -2,6 +2,7 @@ package fr.upmc.datacenter.software.admissionController.ports;
 
 import fr.upmc.components.ComponentI;
 import fr.upmc.components.ports.AbstractOutboundPort;
+import fr.upmc.datacenter.software.admissionController.interfaces.AdmissionI;
 import fr.upmc.datacenter.software.admissionController.interfaces.AdmissionRequestI;
 
 public class AdmissionRequestOutboundPort
@@ -27,15 +28,15 @@ public class AdmissionRequestOutboundPort
 		
 
 	@Override
-	public void askForHost(String uri) throws Exception {
+	public void askForHost(AdmissionI admission) throws Exception {
 	
-		((AdmissionRequestI)this.connector).askForHost(uri);
+		((AdmissionRequestI)this.connector).askForHost(admission);
 		
 	}
 
 	@Override
-	public void askForHostAndWaitResponse(String uri) throws Exception {
-		((AdmissionRequestI)this.connector).askForHostAndWaitResponse(uri);
+	public void askForHostAndWaitResponse(AdmissionI admission) throws Exception {
+		((AdmissionRequestI)this.connector).askForHostAndWaitResponse(admission);
 
 	}
 

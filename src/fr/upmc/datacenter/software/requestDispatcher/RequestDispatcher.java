@@ -101,13 +101,14 @@ public class RequestDispatcher extends AbstractComponent
 		ArrayList<RequestSubmissionOutboundPort> vmRequestSubmissionPorts = 
 				new ArrayList<RequestSubmissionOutboundPort>(this.submissionPorts.values());
 
+		
 		// GET ONE OF THE AVM PORTS (RequestSumissionOutboundPort)
 		RequestSubmissionOutboundPort rsopAVM = vmRequestSubmissionPorts.get(coin);
 		rsopAVM.submitRequest(r);
 		
 		// SWITCH THE PORT
 		coin = (coin + 1) % vmRequestSubmissionPorts.size();
-		System.out.println("------------ coin = "+coin);
+		System.out.println("------------ Request <"+r.getRequestURI()+"> sent to AVM = "+coin);
 		
 		System.out.println("-----------------------------");
 	}

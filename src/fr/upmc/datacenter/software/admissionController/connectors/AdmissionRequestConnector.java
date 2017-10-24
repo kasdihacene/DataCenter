@@ -1,6 +1,7 @@
 package fr.upmc.datacenter.software.admissionController.connectors;
 
 import fr.upmc.components.connectors.AbstractConnector;
+import fr.upmc.datacenter.software.admissionController.interfaces.AdmissionI;
 import fr.upmc.datacenter.software.admissionController.interfaces.AdmissionRequestI;
 
 public class AdmissionRequestConnector 
@@ -8,14 +9,14 @@ public class AdmissionRequestConnector
 		implements AdmissionRequestI {
 
 	@Override
-	public void askForHost(String uri) throws Exception {
-		((AdmissionRequestI)this.offering).askForHost(uri);
+	public void askForHost(AdmissionI admission) throws Exception {
+		((AdmissionRequestI)this.offering).askForHost(admission);
 
 	}
 
 	@Override
-	public void askForHostAndWaitResponse(String uri) throws Exception {
-		((AdmissionRequestI)this.offering).askForHostAndWaitResponse(uri);
+	public void askForHostAndWaitResponse(AdmissionI admission) throws Exception {
+		((AdmissionRequestI)this.offering).askForHostAndWaitResponse(admission);
 
 	}
 

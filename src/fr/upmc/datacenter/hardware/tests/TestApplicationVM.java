@@ -263,6 +263,9 @@ extends		AbstractCVM
 	public void			testScenario() throws Exception
 	{
 		AllocatedCore[] ac = this.csPort.allocateCores(4) ;
+		System.out.println("------------------------------------------");
+		System.out.println(ac.length);
+		System.out.println("------------------------------------------");
 
 		ApplicationVM vm =
 			new ApplicationVM("vm0",

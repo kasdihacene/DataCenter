@@ -19,14 +19,14 @@ public interface AdmissionRequestI
 	 * @param uri
 	 * @throws Exception
 	 */
-	public void askForHost( String uri) throws Exception;
+	public void askForHost( AdmissionI admission) throws Exception;
 	
 	/**
 	 * 
 	 * @param uri
 	 * @throws Exception
 	 */
-	public void askForHostAndWaitResponse( String uri) throws Exception;
+	public void askForHostAndWaitResponse( AdmissionI admission) throws Exception;
 
 	
 }

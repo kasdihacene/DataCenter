@@ -318,11 +318,16 @@ protected ApplicationVMManagementOutboundPort avmPort1 ;
 
 		// Allocate the 4 cores of the computer to the application virtual
 		// machine.
-		AllocatedCore[] ac0 = this.csPort0.allocateCores(4) ;
+		AllocatedCore[] ac0 = this.csPort0.allocateCores(3) ;
 		this.avmPort0.allocateCores(ac0);
 		
 		AllocatedCore[] ac1 = this.csPort1.allocateCores(4) ;
 		this.avmPort1.allocateCores(ac1);
+		
+		System.out.println(this.c0.getDynamicState().getCurrentCoreReservations()[0][0]);
+		System.out.println(this.c0.getDynamicState().getCurrentCoreReservations()[0][1]);
+		System.out.println(this.c0.getDynamicState().getCurrentCoreReservations()[1][0]);
+		System.out.println(this.c0.getDynamicState().getCurrentCoreReservations()[1][1]);
 		
 		this.rd.connectAVM(avmURI0, RequestSubmissionInboundPortURI0, RequestNotificationOutboundPortURI0);
 		this.rd.connectAVM(avmURI1, RequestSubmissionInboundPortURI1, RequestNotificationOutboundPortURI1);

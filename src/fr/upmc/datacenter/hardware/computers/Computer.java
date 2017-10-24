@@ -1082,6 +1082,6 @@ implements	ProcessorStateDataConsumerI,
 				sb.append(leading + "    " + pt + "  " + pURIs.get(pt) + "\n") ;
 			}
 		}
-		return sb.toString() ;
+		return sb.toString();
 	}
 }

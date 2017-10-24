@@ -2,6 +2,7 @@ package fr.upmc.datacenter.software.admissionController.ports;
 
 import fr.upmc.components.ComponentI;
 import fr.upmc.components.ports.AbstractInboundPort;
+import fr.upmc.datacenter.software.admissionController.interfaces.AdmissionI;
 import fr.upmc.datacenter.software.admissionController.interfaces.AdmissionRequestHandlerI;
 import fr.upmc.datacenter.software.admissionController.interfaces.AdmissionRequestI;
 
@@ -38,28 +39,28 @@ public class AdmissionRequestInboundPort
 		//----------------------------------------------------//
 
 	@Override
-	public void askForHost(String uri) throws Exception {
+	public void askForHost(AdmissionI admission) throws Exception {
 		final AdmissionRequestHandlerI aHandlerI =
 				(AdmissionRequestHandlerI)this.owner;
 		this.owner.handleRequestAsync(new ComponentI.ComponentService<Void>() {
 
 			@Override
 			public Void call() throws Exception {
-				aHandlerI.inspectResources(uri);
+				aHandlerI.inspectResources(admission);
 				return null;
 			}
 		});
 	}
 
 	@Override
-	public void askForHostAndWaitResponse(String uri) throws Exception {
+	public void askForHostAndWaitResponse(AdmissionI admission) throws Exception {
 		final AdmissionRequestHandlerI aHandlerI =
 				(AdmissionRequestHandlerI)this.owner;
 		this.owner.handleRequestAsync(new ComponentI.ComponentService<Void>() {
 
 			@Override
 			public Void call() throws Exception {
-				aHandlerI.inspectResourcesAndNotifiy(uri);
+				aHandlerI.inspectResourcesAndNotifiy(admission);
 				return null;
 			}
 		});

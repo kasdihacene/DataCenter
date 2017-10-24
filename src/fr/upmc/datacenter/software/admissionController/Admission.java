@@ -1,5 +1,6 @@
 package fr.upmc.datacenter.software.admissionController;
 
+import fr.upmc.components.cvm.AbstractCVM;
 import fr.upmc.datacenter.software.admissionController.interfaces.AdmissionI;
 
 public class Admission implements AdmissionI{
@@ -12,9 +13,12 @@ public class Admission implements AdmissionI{
 	private String applicationURI;
 	private String admissionNotificationInboundPortURI;
 	private String admissionControllerInboundPortURI;
+	private AbstractCVM abstractCVM;
 	
+	private String RequestSubmissionInboundPortRD;
 
 	public Admission(
+			AbstractCVM abstractCVM,
 			String applicationURI, 
 			String admissionNotificationInboundPortURI,
 			String admissionControllerInboundPortURI) {
@@ -22,7 +26,12 @@ public class Admission implements AdmissionI{
 		this.applicationURI = applicationURI;
 		this.admissionNotificationInboundPortURI = admissionNotificationInboundPortURI;
 		this.admissionControllerInboundPortURI = admissionControllerInboundPortURI;
+		
+		this.abstractCVM=abstractCVM;
+		
 	}
+
+
 
 	@Override
 	public boolean isAllowed() throws Exception {
@@ -65,5 +74,36 @@ public class Admission implements AdmissionI{
 	public void setAdmissionControllerInboundPortURI(String acipURI) throws Exception {
 		this.admissionControllerInboundPortURI=acipURI;
 	}
+
+
+
+	@Override
+	public AbstractCVM getAbstractCVM() throws Exception {
+		return abstractCVM;
+	}
+
+
+
+	@Override
+	public void setAbstractCVM(AbstractCVM abstractCVM) throws Exception {
+		this.abstractCVM=abstractCVM;
+	}
+
+
+
+	@Override
+	public void setRequestSubmissionInboundPortRD(String rsip) throws Exception {
+		RequestSubmissionInboundPortRD = rsip;
+		
+	}
+
+
+
+	@Override
+	public String getRequestSubmissionInboundPortRD() throws Exception {
+		return RequestSubmissionInboundPortRD;
+	}
+
+
 
 }

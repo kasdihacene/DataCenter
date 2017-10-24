@@ -17,12 +17,12 @@ public interface AdmissionRequestHandlerI {
 	 * @param uri
 	 * @throws Exception
 	 */
-	public void inspectResources(String uri) throws Exception;
+	public void inspectResources(AdmissionI admission) throws Exception;
 	
 	/**
 	 * 
 	 * @param uri
 	 * @throws Exception
 	 */
-	public void inspectResourcesAndNotifiy(String uri) throws Exception;
+	public void inspectResourcesAndNotifiy(AdmissionI admission) throws Exception;
 }

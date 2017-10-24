@@ -304,7 +304,11 @@ extends		AbstractCVM
 
 //		 Allocate the 4 cores of the computer to the application virtual
 	//	 machine.
-		AllocatedCore[] ac = this.csPort.allocateCores(4) ;
+		AllocatedCore[] ac = this.csPort.allocateCores(1) ;
+		
+		if (ac.length > 0) {
+			System.out.println("\n RESSOURCES DISPONIBLES ! \n"+ac.length+"  "+this.csPort.allocateCores(7).length);
+		}
 		this.avmPort.allocateCores(ac) ;
 	}
 

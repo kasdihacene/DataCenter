@@ -2,6 +2,8 @@ package fr.upmc.datacenter.software.admissionController.interfaces;
 
 import java.io.Serializable;
 
+import fr.upmc.components.cvm.AbstractCVM;
+
 public interface AdmissionI extends Serializable {
 
 	/**
@@ -23,4 +25,11 @@ public interface AdmissionI extends Serializable {
 	
 	public String getAdmissionControllerInboundPortURI() throws Exception;
 	public void setAdmissionControllerInboundPortURI(String acipURI) throws Exception;
+	
+	public AbstractCVM getAbstractCVM() throws Exception;
+	public void setAbstractCVM(AbstractCVM abstractCVM) throws Exception;
+	
+	public void setRequestSubmissionInboundPortRD(String rsip) throws Exception;
+	public String getRequestSubmissionInboundPortRD() throws Exception;
+
 }
