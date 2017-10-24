@@ -1,5 +1,6 @@
 package fr.upmc.datacenter.software.admissionController.TEST;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -7,20 +8,18 @@ import java.util.Set;
 
 import fr.upmc.components.AbstractComponent;
 import fr.upmc.components.connectors.DataConnector;
-import fr.upmc.components.ports.PortI;
 import fr.upmc.datacenter.connectors.ControlledDataConnector;
 import fr.upmc.datacenter.hardware.computers.Computer;
 import fr.upmc.datacenter.hardware.computers.connectors.ComputerServicesConnector;
 import fr.upmc.datacenter.hardware.computers.ports.ComputerServicesOutboundPort;
 import fr.upmc.datacenter.hardware.processors.Processor;
 import fr.upmc.datacenter.hardware.tests.ComputerMonitor;
+import fr.upmc.datacenter.software.admissionController.Admission;
 import fr.upmc.datacenter.software.admissionController.AdmissionController;
 import fr.upmc.datacenter.software.admissionController.connectors.AdmissionRequestConnector;
-import fr.upmc.datacenter.software.admissionController.interfaces.AdmissionRequestI;
-import fr.upmc.datacenter.software.admissionController.ports.AdmissionRequestInboundPort;
-import fr.upmc.datacenter.software.connectors.RequestSubmissionConnector;
+import fr.upmc.datacenter.software.applicationcontainer.ApplicationContainer;
+import fr.upmc.datacenter.software.applicationcontainer.connectors.AdmissionNotificationConnector;
 import fr.upmc.datacenterclient.requestgenerator.RequestGenerator;
-import fr.upmc.datacenterclient.requestgenerator.connectors.RequestGeneratorManagementConnector;
 import fr.upmc.datacenterclient.requestgenerator.ports.RequestGeneratorManagementOutboundPort;
 
 public class TestAdmissionController extends fr.upmc.components.cvm.AbstractCVM{
@@ -57,10 +56,7 @@ public class TestAdmissionController extends fr.upmc.components.cvm.AbstractCVM{
 	
 
 	// PREDIFINED URIs OF PORTS OF INTAKE CONTROLLER
-	/**
-	 * ADMISSION CONTROLLER PORTS
-	 */
-	public static final String	AdmissionControllerInboundPortURI = "admissionControllerIN" ;
+	
 	
 	// PREDEFINED URIs OF PORTS OF REQUEST GENERATORS
 	/**
@@ -70,7 +66,6 @@ public class TestAdmissionController extends fr.upmc.components.cvm.AbstractCVM{
 	public static final String	RequestNotificationInboundPortURI = "rnibp-generator1" ;
 	public static final String	RequestGeneratorManagementInboundPortURI = "rgmip-generator1" ;
 	public static final String	RequestGeneratorManagementOutboundPortURI = "rgmop-generator1" ;
-	public static final String	AdmissionControllerOutboundPortURI = "admissionControllerOUT" ;
 	/**
 	 * REQUEST GENERATOR 2
 	 */
@@ -80,11 +75,26 @@ public class TestAdmissionController extends fr.upmc.components.cvm.AbstractCVM{
 	public static final String	RequestGeneratorManagementOutboundPortURI2 = "rgmop2-generator2" ;
 	
 	
+	/**
+	 * APPLICATION CONTAINER
+	 */
+	public static final String	AdmissionNotificationInboundPortURI = "admissionNotifyIN-APPLICATION" ;
+	public static final String	AdmissionControllerOutboundPortURI = "admissionControllerIN-APPLICATION" ;
+	
+	/**
+	 * ADMISSION CONTROLLER PORTS
+	 */
+	public static final String	AdmissionControllerInboundPortURI = "admissionControllerIN-CONTROLLER" ;
+	public static final String	AdmissionNotificationOutboundPortURI = "admissionNofifyOUT-CONTROLLER" ;
+	
 	//--------------------------------------------------------------------------
 	// ADD THE COMPONENTS
 	//--------------------------------------------------------------------------
 	/**		Intake admission component										*/
 	protected AdmissionController						admissionController;
+	/**		Admission Notification component								*/
+	protected ApplicationContainer applicationContainer;
+	
 	/** 	Request generator component.										*/
 	protected RequestGenerator							rg1,rg2;
 	
@@ -94,7 +104,10 @@ public class TestAdmissionController extends fr.upmc.components.cvm.AbstractCVM{
 	
 	protected Computer c0, c1;
 	protected ComputerMonitor cm0, cm1;
-
+	
+	protected ArrayList<Computer> listComputers;
+	
+	protected Admission admission;
 	//--------------------------------------------------------------------------
 
 	@Override
@@ -102,6 +115,7 @@ public class TestAdmissionController extends fr.upmc.components.cvm.AbstractCVM{
 		AbstractComponent.configureLogging("", "", 0, '|') ;
 		Processor.DEBUG = true ;
 		
+		listComputers = new ArrayList<Computer>();
 		/**
 		 * characteristics of Computers 
 		 */
@@ -133,6 +147,9 @@ public class TestAdmissionController extends fr.upmc.components.cvm.AbstractCVM{
 				ComputerDynamicStateDataInboundPortURI0);
 		this.addDeployedComponent(c0);
 
+		
+		listComputers.add(c0);
+		
 		// Create a mock-up computer services port to later allocate its cores
 		// to the application virtual machine.
 		this.csPort0 = new ComputerServicesOutboundPort(ComputerServicesOutboundPortURI0, new AbstractComponent(0, 0) {});
@@ -203,33 +220,64 @@ public class TestAdmissionController extends fr.upmc.components.cvm.AbstractCVM{
 		// Creating the request generators component.
 		// --------------------------------------------------------------------
 		
+		Admission admission = new Admission(
+				this, 
+				"applicationURI", 
+				AdmissionNotificationInboundPortURI, 
+				AdmissionControllerInboundPortURI);
+	
+		/**
+		 * CREATE THE APPLICATION
+		 */
+		this.applicationContainer =
+				new ApplicationContainer(
+						"APP-", 
+						admission,
+						AdmissionNotificationInboundPortURI,
+						AdmissionControllerOutboundPortURI);
+		this.addDeployedComponent(applicationContainer);
+		
 		/**
 		 * CREATE THE ADMISSION CONTROLLER
 		 */
 	
-//		this.admissionController = new AdmissionController(
-//				"Controller1",
-//				AdmissionControllerInboundPortURI);
-//		this.addDeployedComponent(admissionController);
+		this.admissionController = new AdmissionController(
+				"Controller1",
+				AdmissionControllerInboundPortURI,
+				AdmissionNotificationOutboundPortURI,
+				listComputers);
+		this.addDeployedComponent(admissionController);
 		
+		/**
+		 * CONNEXION F THE COMPONENT
+		 */
+		this.applicationContainer.doPortConnection(
+				AdmissionControllerOutboundPortURI, 
+				AdmissionControllerInboundPortURI, 
+				AdmissionRequestConnector.class.getCanonicalName());
 		
+		this.admissionController.doPortConnection(
+				AdmissionNotificationOutboundPortURI, 
+				AdmissionNotificationInboundPortURI, 
+				AdmissionNotificationConnector.class.getCanonicalName());
 		/**
 		 * CREATE THE FIRST REQUEST GENERATOR				
 		 */
-		this.rg1 = new RequestGenerator(
-									"rg1",			// generator component URI
-									500.0,			// mean time between two requests
-									6000000000L,	// mean number of instructions in requests
-									RequestGeneratorManagementInboundPortURI,
-									RequestSubmissionOutboundPortURI,
-									RequestNotificationInboundPortURI) ;
-						this.addDeployedComponent(rg1) ;
-
-						// Toggle on tracing and logging in the request generator to
-						// follow the submission and end of execution notification of
-						// individual requests.
-						this.rg1.toggleTracing() ;
-						this.rg1.toggleLogging() ;
+//		this.rg1 = new RequestGenerator(
+//									"rg1",			// generator component URI
+//									500.0,			// mean time between two requests
+//									6000000000L,	// mean number of instructions in requests
+//									RequestGeneratorManagementInboundPortURI,
+//									RequestSubmissionOutboundPortURI,
+//									RequestNotificationInboundPortURI,
+//									AdmissionControllerOutboundPortURI) ;
+//						this.addDeployedComponent(rg1) ;
+//
+//						// Toggle on tracing and logging in the request generator to
+//						// follow the submission and end of execution notification of
+//						// individual requests.
+//						this.rg1.toggleTracing() ;
+//						this.rg1.toggleLogging() ;
 				
 		/**
 		 * CREATE THE SECOND REQUEST GENERATOR				
@@ -263,24 +311,24 @@ public class TestAdmissionController extends fr.upmc.components.cvm.AbstractCVM{
 //								RequestGeneratorManagementConnector.class.getCanonicalName()) ;
 //			
 
-	/**
-	 * PORT CONNECTIONS BETWEEN COMPONENTS 
-	 */						
-			this.rg1.doPortConnection(
-					AdmissionControllerOutboundPortURI, 
-					AdmissionControllerInboundPortURI,
-					AdmissionRequestConnector.class.getCanonicalName());
-			
-	/**
-	 * CREATE THE FIRST REQUEST GENERATOR MANAGER
-	 */
-			this.rgmop = new RequestGeneratorManagementOutboundPort(
-					RequestGeneratorManagementOutboundPortURI,
-					new AbstractComponent(0, 0) {}) ;
-				this.rgmop.publishPort() ;
-				this.rgmop.doConnection(
-							RequestGeneratorManagementInboundPortURI,
-							RequestGeneratorManagementConnector.class.getCanonicalName()) ;
+//	/**
+//	 * PORT CONNECTIONS BETWEEN COMPONENTS 
+//	 */						
+//			this.rg1.doPortConnection(
+//					AdmissionControllerOutboundPortURI, 
+//					AdmissionControllerInboundPortURI,
+//					AdmissionRequestConnector.class.getCanonicalName());
+//			
+//	/**
+//	 * CREATE THE FIRST REQUEST GENERATOR MANAGER
+//	 */
+//			this.rgmop = new RequestGeneratorManagementOutboundPort(
+//					RequestGeneratorManagementOutboundPortURI,
+//					new AbstractComponent(0, 0) {}) ;
+//				this.rgmop.publishPort() ;
+//				this.rgmop.doConnection(
+//							RequestGeneratorManagementInboundPortURI,
+//							RequestGeneratorManagementConnector.class.getCanonicalName()) ;
 					
 	
 							
@@ -294,28 +342,15 @@ public class TestAdmissionController extends fr.upmc.components.cvm.AbstractCVM{
 	public void			start() throws Exception
 	{
 		super.start() ;
+		
 	}
 	
 	
 	public void			testScenario() throws Exception
 	{
-		// start the request generation in the request generator.
-		this.rgmop.startGeneration() ;
-		// wait 20 seconds
-		Thread.sleep(20000L) ;
-		// then stop the generation.
-		this.rgmop.stopGeneration() ;
-		
-	}
-	public void			testScenario2() throws Exception
-	{
-		// start the request generation in the request generator.
-		this.rgmop2.startGeneration() ;
-		// wait 20 seconds
-		Thread.sleep(20000L) ;
-		// then stop the generation.
-		this.rgmop2.stopGeneration() ;
-		
+	
+		this.applicationContainer.askForHostingApllication();
+
 	}
 	
 	

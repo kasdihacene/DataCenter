@@ -1,4 +1,4 @@
-package fr.upmc.datacenter.software.requestDispatcher.test;
+package fr.upmc.datacenter.software.requestDispatcher.TEST;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -324,10 +324,27 @@ protected ApplicationVMManagementOutboundPort avmPort1 ;
 		AllocatedCore[] ac1 = this.csPort1.allocateCores(4) ;
 		this.avmPort1.allocateCores(ac1);
 		
-		System.out.println(this.c0.getDynamicState().getCurrentCoreReservations()[0][0]);
-		System.out.println(this.c0.getDynamicState().getCurrentCoreReservations()[0][1]);
-		System.out.println(this.c0.getDynamicState().getCurrentCoreReservations()[1][0]);
-		System.out.println(this.c0.getDynamicState().getCurrentCoreReservations()[1][1]);
+		System.out.println("-------------------------------------------------------------");
+		System.out.println("---------------- CORES ALLOCATED COMPUTER 1------------------");
+		System.out.println("------------------------------ CORE 1 -----------------------");
+		System.out.print("\t \t["+this.c0.getDynamicState().getCurrentCoreReservations()[0][0]+"]");
+		System.out.println("["+this.c0.getDynamicState().getCurrentCoreReservations()[0][1]+"]");
+		System.out.println("-------------------------------------------------------------");
+		System.out.println("------------------------------ CORE 2 -----------------------");
+		System.out.print("\t \t["+this.c0.getDynamicState().getCurrentCoreReservations()[1][0]+"]");
+		System.out.println("["+this.c0.getDynamicState().getCurrentCoreReservations()[1][1]+"]");
+		System.out.println("-------------------------------------------------------------");
+		System.err.println("\n");
+		System.out.println("-------------------------------------------------------------");
+		System.out.println("---------------- CORES ALLOCATED COMPUTER 2------------------");
+		System.out.println("------------------------------ CORE 1 -----------------------");
+		System.out.print("\t \t["+this.c1.getDynamicState().getCurrentCoreReservations()[0][0]+"]");
+		System.out.println("["+this.c1.getDynamicState().getCurrentCoreReservations()[0][1]+"]");
+		System.out.println("-------------------------------------------------------------");
+		System.out.println("------------------------------ CORE 2 -----------------------");
+		System.out.print("\t \t["+this.c1.getDynamicState().getCurrentCoreReservations()[1][0]+"]");
+		System.out.println("["+this.c1.getDynamicState().getCurrentCoreReservations()[1][1]+"]");
+		System.out.println("-------------------------------------------------------------");
 		
 		this.rd.connectAVM(avmURI0, RequestSubmissionInboundPortURI0, RequestNotificationOutboundPortURI0);
 		this.rd.connectAVM(avmURI1, RequestSubmissionInboundPortURI1, RequestNotificationOutboundPortURI1);

@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import fr.upmc.components.AbstractComponent;
+import fr.upmc.datacenter.software.connectors.RequestNotificationConnector;
 import fr.upmc.datacenter.software.connectors.RequestSubmissionConnector;
 import fr.upmc.datacenter.software.interfaces.RequestI;
 import fr.upmc.datacenter.software.interfaces.RequestNotificationHandlerI;
