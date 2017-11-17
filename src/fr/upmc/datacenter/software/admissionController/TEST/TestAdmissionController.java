@@ -31,28 +31,16 @@ public class TestAdmissionController extends fr.upmc.components.cvm.AbstractCVM{
 	/**
 	* All URIs and ports for first computer
 	*/
-	// URIs
-	public static final String ComputerServicesInboundPortURI0 = "cs1-ibp";
-	public static final String ComputerServicesOutboundPortURI0 = "cs1-obp";
-	public static final String ComputerStaticStateDataInboundPortURI0 = "css1-dip";
-	public static final String ComputerStaticStateDataOutboundPortURI0 = "css1-dop";
-	public static final String ComputerDynamicStateDataInboundPortURI0 = "cds1-dip";
-	public static final String ComputerDynamicStateDataOutboundPortURI0 = "cds1-dop";
-	// Ports
-	protected ComputerServicesOutboundPort csPort0;
-
-	/**
-	* All URIs and ports for second computer
-	*/
-	// URIs
-	public static final String ComputerServicesInboundPortURI1 = "cs1-ibp";
-	public static final String ComputerServicesOutboundPortURI1 = "cs1-obp";
-	public static final String ComputerStaticStateDataInboundPortURI1 = "css1-dip";
-	public static final String ComputerStaticStateDataOutboundPortURI1 = "css1-dop";
-	public static final String ComputerDynamicStateDataInboundPortURI1 = "cds1-dip";
-	public static final String ComputerDynamicStateDataOutboundPortURI1 = "cds1-dop";
-	// Ports
-	protected ComputerServicesOutboundPort csPort1;
+	protected final static int COMPUTER_NUMBER = 10;
+	protected final static String COMPUTER_URI = "computer";
+	protected final static String COMPUTER_MONITOR_URI = "monitor";
+	protected final static String COMPUTER_SERVICE_INBOUND_PORT_SUFFIX = "csip";
+	protected final static String COMPUTER_SERVICE_OUTBOUND_PORT_SUFFIX = "csop";
+	protected final static String COMPUTER_STATIC_DATA_INBOUND_PORT_SUFFIX = "csdip";
+	protected final static String COMPUTER_STATIC_DATA_OUTBOUND_PORT_SUFFIX = "csdop";
+	protected final static String COMPUTER_DYNAMIC_DATA_INBOUND_PORT_SUFFIX = "cddip";
+	protected final static String COMPUTER_DYNAMIC_DATA_OUTBOUND_PORT_SUFFIX = "cddop";
+	protected Computer[] computers = new Computer[COMPUTER_NUMBER];
 	
 
 	// PREDIFINED URIs OF PORTS OF INTAKE CONTROLLER
@@ -80,6 +68,9 @@ public class TestAdmissionController extends fr.upmc.components.cvm.AbstractCVM{
 	 */
 	public static final String	AdmissionNotificationInboundPortURI = "admissionNotifyIN-APPLICATION" ;
 	public static final String	AdmissionControllerOutboundPortURI = "admissionControllerIN-APPLICATION" ;
+	
+	public static final String	AdmissionNotificationInboundPortURI2 = "admissionNotifyIN-APPLICATION2" ;
+	public static final String	AdmissionControllerOutboundPortURI2 = "admissionControllerIN-APPLICATION2" ;
 	
 	/**
 	 * ADMISSION CONTROLLER PORTS
@@ -116,9 +107,11 @@ public class TestAdmissionController extends fr.upmc.components.cvm.AbstractCVM{
 		Processor.DEBUG = true ;
 		
 		listComputers = new ArrayList<Computer>();
+		
 		/**
-		 * characteristics of Computers 
+		 * DYNAMYC CREATION OF COMPUTERS
 		 */
+		
 		int numberOfProcessors = 2;
 		int numberOfCores = 2;
 		Set<Integer> admissibleFrequencies = new HashSet<Integer>();
@@ -128,96 +121,33 @@ public class TestAdmissionController extends fr.upmc.components.cvm.AbstractCVM{
 		processingPower.put(1500, 1500000); // 1,5 GHz executes 1,5 Mips
 		processingPower.put(3000, 3000000); // 3 GHz executes 3 Mips
 
-		
-		// --------------------------------------------------------------------
-		// Create and deploy first computer with his monitor
-		// --------------------------------------------------------------------
-		/** First computer component */
-		String computerURI0 = "computer0";
-		this.c0 = new Computer(
-				computerURI0, 
-				admissibleFrequencies, 
-				processingPower, 
-				1500, // Test scenario 1, frequency = 1,5 GHz
-				1500, // max frequency gap within a processor
-				numberOfProcessors,
-				numberOfCores, 
-				ComputerServicesInboundPortURI0,
-				ComputerStaticStateDataInboundPortURI0, 
-				ComputerDynamicStateDataInboundPortURI0);
-		this.addDeployedComponent(c0);
+		for (int i = 0; i < COMPUTER_NUMBER; i++) {
+			String computerURI = COMPUTER_URI + i;
+			System.out.println(computerURI);
+			String csipURI = computerURI + COMPUTER_SERVICE_INBOUND_PORT_SUFFIX;
+			String csopURI = computerURI + COMPUTER_SERVICE_OUTBOUND_PORT_SUFFIX;
+			String csdipURI = computerURI + COMPUTER_STATIC_DATA_INBOUND_PORT_SUFFIX;
+			String csdopURI = computerURI + COMPUTER_STATIC_DATA_OUTBOUND_PORT_SUFFIX;
+			String cddipURI = computerURI + COMPUTER_DYNAMIC_DATA_INBOUND_PORT_SUFFIX;
+			String cddopURI = computerURI + COMPUTER_DYNAMIC_DATA_OUTBOUND_PORT_SUFFIX;
+			Computer computer = new Computer(computerURI, admissibleFrequencies, processingPower, 1500, 1500,
+					numberOfProcessors, numberOfCores, csipURI, csdipURI, cddipURI);
 
-		
-		listComputers.add(c0);
-		
-		// Create a mock-up computer services port to later allocate its cores
-		// to the application virtual machine.
-		this.csPort0 = new ComputerServicesOutboundPort(ComputerServicesOutboundPortURI0, new AbstractComponent(0, 0) {});
-		this.csPort0.publishPort();
-		this.csPort0.doConnection(
-				ComputerServicesInboundPortURI0, 
-				ComputerServicesConnector.class.getCanonicalName());
-		/** Monitor component */
-		this.cm0 = new ComputerMonitor(
-				computerURI0, 
-				true, 
-				ComputerStaticStateDataOutboundPortURI0,
-				ComputerDynamicStateDataOutboundPortURI0);
-		this.addDeployedComponent(this.cm0);
-		this.cm0.doPortConnection(
-				ComputerStaticStateDataOutboundPortURI0, 
-				ComputerStaticStateDataInboundPortURI0,
-				DataConnector.class.getCanonicalName());
+			ComputerServicesOutboundPort csPort = new ComputerServicesOutboundPort(csopURI,
+					new AbstractComponent(0, 0) {
+					});
+			csPort.publishPort();
+			csPort.doConnection(csipURI, ComputerServicesConnector.class.getCanonicalName());
 
-		this.cm0.doPortConnection(
-				ComputerDynamicStateDataOutboundPortURI0, 
-				ComputerDynamicStateDataInboundPortURI0,
-				ControlledDataConnector.class.getCanonicalName());
-		
-		// --------------------------------------------------------------------
-		// Create and deploy second computer with his monitor
-		// -------------------------------------------------------------------
-		/** Second computer component */
-		String computerURI = "computer1";
-		this.c1 = new Computer(
-				computerURI, 
-				admissibleFrequencies, 
-				processingPower, 
-				1500, // Test scenario 1, frequency = 1,5 GHz
-				1500, // max frequency gap within a processor
-				numberOfProcessors,
-				numberOfCores, 
-				ComputerServicesInboundPortURI1,
-				ComputerStaticStateDataInboundPortURI1, 
-				ComputerDynamicStateDataInboundPortURI1);
-		this.addDeployedComponent(c1);
-		
-		// ADD THE COMPUTER TO THE LIST
-		listComputers.add(c1);
-		
-		// Create a mock-up computer services port to later allocate its cores
-		// to the application virtual machine.
-		this.csPort1 = new ComputerServicesOutboundPort(ComputerServicesOutboundPortURI1, new AbstractComponent(0, 0) {});
-		this.csPort1.publishPort();
-		this.csPort1.doConnection(
-				ComputerServicesInboundPortURI1, 
-				ComputerServicesConnector.class.getCanonicalName());
-		/** Monitor component */
-		this.cm1 = new ComputerMonitor(
-				computerURI, 
-				true, 
-				ComputerStaticStateDataOutboundPortURI1,
-				ComputerDynamicStateDataOutboundPortURI1);
-		this.addDeployedComponent(this.cm1);
-		this.cm1.doPortConnection(
-				ComputerStaticStateDataOutboundPortURI1, 
-				ComputerStaticStateDataInboundPortURI1,
-				DataConnector.class.getCanonicalName());
-
-		this.cm1.doPortConnection(
-				ComputerDynamicStateDataOutboundPortURI0, 
-				ComputerDynamicStateDataInboundPortURI0,
-				ControlledDataConnector.class.getCanonicalName());
+			ComputerMonitor cm = new ComputerMonitor(COMPUTER_MONITOR_URI + i, true, csdopURI, cddopURI);
+			this.addDeployedComponent(cm);
+			cm.doPortConnection(csdopURI, csdipURI, DataConnector.class.getCanonicalName());
+			cm.doPortConnection(cddopURI, cddipURI, ControlledDataConnector.class.getCanonicalName());
+			System.out.println(csdopURI + csdipURI + cddopURI + cddipURI);
+			
+			listComputers.add(computer);
+			System.out.println(String.format("DEPLOYING : %d-th computer deployed", i + 1));
+		}
 
 		// --------------------------------------------------------------------
 		// Creating the request generators component.
@@ -238,6 +168,9 @@ public class TestAdmissionController extends fr.upmc.components.cvm.AbstractCVM{
 						AdmissionNotificationInboundPortURI,
 						AdmissionControllerOutboundPortURI);
 		this.addDeployedComponent(applicationContainer);
+		
+		
+		
 		
 		/**
 		 * CREATE THE ADMISSION CONTROLLER

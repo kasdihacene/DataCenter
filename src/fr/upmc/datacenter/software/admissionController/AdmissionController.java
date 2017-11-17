@@ -211,99 +211,14 @@ import javassist.CtMethod;
 		        
 //		        Class class1 = cii.toClass();
 //				JavassistUtility.createRD(admission, listComputers);
+				
+				
 		        JavassistUtility.createRequestDispatcher(admission, listComputers);
-//				this.createRequestDispatcher();
 				Thread.sleep(1000) ;
 				// NOTIFY THE APPLICATION CONTAINER
 				this.anOutboundPort.notifyAdmissionNotification(this.admission);
 				
 			}
-		}
-		
-
-	
-		public void createRequestDispatcher() throws Exception {
-			
-			// --------------------------------------------------------------------
-			// Create and deploy first avm component
-			// --------------------------------------------------------------------
-			this.avm0 = new ApplicationVM(
-					avmURI0,	// application vm component URI
-					ApplicationVMManagementInboundPortURI0,
-					RequestSubmissionInboundPortURI0,
-					RequestNotificationOutboundPortURI0) ;
-			getAdmission().getAbstractCVM().addDeployedComponent(this.avm0) ;
-	
-			// Create a mock up port to manage the AVM component (allocate cores).
-			this.avmPort0 = new ApplicationVMManagementOutboundPort(
-					ApplicationVMManagementOutboundPortURI0,
-					new AbstractComponent(0, 0) {}) ;
-			this.avmPort0.publishPort() ;
-			this.avmPort0.doConnection(
-					ApplicationVMManagementInboundPortURI0,
-					ApplicationVMManagementConnector.class.getCanonicalName()) ;
-	
-			// Toggle on tracing and logging in the application virtual machine to
-			// follow the execution of individual requests.
-			this.avm0.toggleTracing() ;
-			this.avm0.toggleLogging() ;
-			
-			// --------------------------------------------------------------------
-			// Create and deploy second avm component
-			// --------------------------------------------------------------------
-			avm1 = new ApplicationVM(
-					avmURI1,	// application vm component URI
-					ApplicationVMManagementInboundPortURI1,
-					RequestSubmissionInboundPortURI1,
-					RequestNotificationOutboundPortURI1) ;
-			getAdmission().getAbstractCVM().addDeployedComponent(avm1) ;
-	
-			// Create a mock up port to manage the AVM component (allocate cores).
-			this.avmPort1 = new ApplicationVMManagementOutboundPort(
-					ApplicationVMManagementOutboundPortURI1,
-					new AbstractComponent(0, 0) {}) ;
-			this.avmPort1.publishPort() ;
-			this.avmPort1.doConnection(
-					ApplicationVMManagementInboundPortURI1,
-					ApplicationVMManagementConnector.class.getCanonicalName()) ;
-	
-			// Toggle on tracing and logging in the application virtual machine to
-			// follow the execution of individual requests.
-			this.avm1.toggleTracing() ;
-			this.avm1.toggleLogging() ;
-	
-	// --------------------------------------------------------------------
-	// Creating the request Dispatcher component.
-	// --------------------------------------------------------------------
-	this.rd = new RequestDispatcher("RDispatcher", 
-			RequestSubmissionInboundPortURI, 
-			RequestNotificationOutboundPortURI);
-	getAdmission().getAbstractCVM().addDeployedComponent(rd);
-	
-	
-	//Allocate the 4 cores of the computer to the application virtual machine
-			AllocatedCore[] ac0 = this.listComputers.get(0).allocateCores(4) ;
-			this.avmPort0.allocateCores(ac0);
-			
-			AllocatedCore[] ac1 = this.listComputers.get(1).allocateCores(4) ;
-			this.avmPort1.allocateCores(ac1);
-			
-			
-	this.rd.connectAVM(avmURI0, RequestSubmissionInboundPortURI0, RequestNotificationOutboundPortURI0);
-	this.rd.connectAVM(avmURI1, RequestSubmissionInboundPortURI1, RequestNotificationOutboundPortURI1);
-	
-	
-	System.out.println("REQUEST DISPATCHER AND APPLICATION VM ARE CREATED ...");
-	
-	this.admission.setRequestSubmissionInboundPortRD(RequestSubmissionInboundPortURI);
-	
-	
-	
-	// NOTIFY THE APPLICATION CONTAINER
-	this.anOutboundPort.notifyAdmissionNotification(this.admission);
-	
-	
-	
 		}
 		
 		@Override
