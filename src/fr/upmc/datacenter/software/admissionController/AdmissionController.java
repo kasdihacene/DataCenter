@@ -196,21 +196,22 @@ import javassist.CtMethod;
 				/**
 				 * CREATE REQUEST DISPATCHER AND APPLICATIONVM WITH JAVASSIST
 				 */
-				ClassPool pool = ClassPool.getDefault() ;
-		        CtClass cii = pool.get("fr.upmc.datacenter.software.javassist.JavassistUtility") ;
-		        CtMethod[] methodsToImplement = cii.getDeclaredMethods() ;
-		        System.out.println("Nombre de methodes: "+methodsToImplement.length);
-		        CtMethod mCtMethod=null;
-		        for (int i = 0 ; i < methodsToImplement.length ; i++) {
-		         if (methodsToImplement[i].getName().equals("createRD")) {
-					System.out.println("found");
-					mCtMethod = methodsToImplement[i];
-		         }
-		        }
+//				ClassPool pool = ClassPool.getDefault() ;
+//		        CtClass cii = pool.get("fr.upmc.datacenter.software.javassist.JavassistUtility") ;
+//		        CtMethod[] methodsToImplement = cii.getDeclaredMethods() ;
+//		        System.out.println("Nombre de methodes: "+methodsToImplement.length);
+//		        CtMethod mCtMethod=null;
+//		        for (int i = 0 ; i < methodsToImplement.length ; i++) {
+//		         if (methodsToImplement[i].getName().equals("createRD")) {
+//					System.out.println("found");
+//					mCtMethod = methodsToImplement[i];
+//		         }
+//		        }
 //		        JavassistRD.addInstrumentation(mCtMethod);
 		        
-		        Class class1 = cii.toClass();
+//		        Class class1 = cii.toClass();
 //				JavassistUtility.createRD(admission, listComputers);
+		        JavassistUtility.createRequestDispatcher(admission, listComputers);
 //				this.createRequestDispatcher();
 				Thread.sleep(1000) ;
 				// NOTIFY THE APPLICATION CONTAINER

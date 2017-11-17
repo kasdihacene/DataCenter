@@ -77,7 +77,7 @@ public class JavassistUtility {
 
     }
 
-    private static void createRequestDispatcher(
+    public static void createRequestDispatcher(
     		
     		AdmissionI admission,
     		ArrayList<Computer> listComputers
@@ -154,7 +154,6 @@ public class JavassistUtility {
     			rd.connectAVM(avmURI1, RequestSubmissionInboundPortURI1, RequestNotificationOutboundPortURI1);
     			
     			admission.setRequestSubmissionInboundPortRD(RequestSubmissionInboundPortURI);
-    			absCVM.deploy();
     }
 
 

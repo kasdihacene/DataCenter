@@ -162,7 +162,7 @@ public class ApplicationContainer
 					System.out.println("\n REQUEST GENERATOR CREATED ! \n");
 					
 					rgmop.startGeneration();
-					Thread.sleep(10);
+					Thread.sleep(1000);
 					rgmop.startGeneration();
 	}
 }
