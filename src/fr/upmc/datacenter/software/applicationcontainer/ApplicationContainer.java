@@ -2,6 +2,7 @@ package fr.upmc.datacenter.software.applicationcontainer;
 
 import fr.upmc.components.AbstractComponent;
 import fr.upmc.datacenter.software.admissionController.Admission;
+import fr.upmc.datacenter.software.admissionController.connectors.AdmissionRequestConnector;
 import fr.upmc.datacenter.software.admissionController.interfaces.AdmissionI;
 import fr.upmc.datacenter.software.admissionController.interfaces.AdmissionRequestI;
 import fr.upmc.datacenter.software.admissionController.ports.AdmissionRequestOutboundPort;
@@ -60,33 +61,33 @@ public class ApplicationContainer
 		
 		this.APP_URI = uri;
 		this.admission=admission;
-		admission.setApplicationURI(APP_URI);
+		admission.setAdmissionNotificationInboundPortURI(APP_URI+AdmissionNotificationInboundPortURI);
 		
 		//ADD THE INBOUND PORT		O--		Notification
 		this.addOfferedInterface(AdmissionNotificationI.class);
 		this.admissionNotificationInboundPort =
-				new AdmissionNotificationInboundPort(AdmissionNotificationInboundPortURI,this);
+				new AdmissionNotificationInboundPort(APP_URI+AdmissionNotificationInboundPortURI,this);
 		this.addPort(this.admissionNotificationInboundPort);
 		this.admissionNotificationInboundPort.publishPort();
 		
 		//ADD THE OUTBOUND PORT 	--C		Request
 		this.addRequiredInterface(AdmissionRequestI.class);
 		this.admissionRequestOutboundPort = 
-				new AdmissionRequestOutboundPort(AdmissionControllerOutboundPortURI,this);
+				new AdmissionRequestOutboundPort(APP_URI+AdmissionControllerOutboundPortURI,this);
 		this.addPort(this.admissionRequestOutboundPort);
 		this.admissionRequestOutboundPort.publishPort();
 		
 		 rg = new RequestGenerator(
-				"rg",			// generator component URI
+				 APP_URI+"rg",			// generator component URI
 				500.0,			// mean time between two requests
 				6000000000L,	// mean number of instructions in requests
-				RequestGeneratorManagementInboundPortURI,
-				RequestSubmissionOutboundPortURI,
-				RequestNotificationInboundPortURI) ;
+				APP_URI+RequestGeneratorManagementInboundPortURI,
+				APP_URI+RequestSubmissionOutboundPortURI,
+				APP_URI+RequestNotificationInboundPortURI) ;
 	admission.getAbstractCVM().addDeployedComponent(rg) ;
 //	admission.setRequestSubmissionInboundPortRD(RequestSubmissionInboundPortURI);
 		
-		System.out.println("\n PORT CREATED ON THE APPLICATION CONTAINER \n");
+		System.out.println("\n PORT CREATED ON THE APPLICATION CONTAINER "+APP_URI+"\n");
 		
 	}
 	
@@ -96,7 +97,15 @@ public class ApplicationContainer
 
 	public void askForHostingApllication() throws Exception{
 		System.out.println("ASK FOR HOSTIN OF THE APPLICATION ...");
+
+		admission.setApplicationURI(APP_URI);
 		this.admissionRequestOutboundPort.askForHost(this.admission);
+	}
+	
+	public void connectWithAdmissionController(String admissionControllerInboundPortURI) throws Exception {
+		this.admissionRequestOutboundPort.doConnection(
+				admissionControllerInboundPortURI,
+				AdmissionRequestConnector.class.getCanonicalName());
 	}
 
 	@Override
@@ -124,7 +133,7 @@ public class ApplicationContainer
 	public void startAsync() throws Exception
 	{
 		final ApplicationContainer application = this;
-		this.handleRequestAsync(new ComponentService<Void>() {
+		this.handleRequestSync(new ComponentService<Void>() {
 			@Override
 			public Void call() throws Exception {
 				application.askForHostingApllication();
@@ -134,7 +143,6 @@ public class ApplicationContainer
 	}
 	
 	public void startApplication() throws Exception {
-		System.out.println("\n STARTING APPLICATION ....");
 		// --------------------------------------------------------------------
 		// Creating the request generator component.
 		// --------------------------------------------------------------------
@@ -145,24 +153,28 @@ public class ApplicationContainer
 					 */
 		
 						getRequestGenerator().doPortConnection(
-								RequestSubmissionOutboundPortURI,
+								APP_URI+RequestSubmissionOutboundPortURI,
 //								RequestSubmissionInboundPortURI
 								this.admission.getRequestSubmissionInboundPortRD(),
 								RequestSubmissionConnector.class.getCanonicalName()) ;
 
 
 						this.rgmop = new RequestGeneratorManagementOutboundPort(
-								RequestGeneratorManagementOutboundPortURI,
+								APP_URI+RequestGeneratorManagementOutboundPortURI,
 								new AbstractComponent(0, 0) {}) ;
 						this.rgmop.publishPort() ;
 						this.rgmop.doConnection(
-					RequestGeneratorManagementInboundPortURI,
+								APP_URI+RequestGeneratorManagementInboundPortURI,
 					RequestGeneratorManagementConnector.class.getCanonicalName()) ;
 						
 					System.out.println("\n REQUEST GENERATOR CREATED ! \n");
-					
-					rgmop.startGeneration();
-					Thread.sleep(1000);
-					rgmop.startGeneration();
+
+					System.out.println("\n STARTING APPLICATION ....\n");
+					rg.startGeneration();
+					Thread.sleep(10000L);
+					rg.stopGeneration();
+					rgmop.doDisconnection();
+					rg.doPortDisconnection(APP_URI+RequestSubmissionOutboundPortURI);
+					System.out.println("APPLICATION "+admission.getApplicationURI()+" STOPPED !");
 	}
 }

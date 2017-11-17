@@ -1,26 +1,23 @@
 	package fr.upmc.datacenter.software.admissionController;
 	
 	import java.util.ArrayList;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import fr.upmc.components.AbstractComponent;
 import fr.upmc.datacenter.hardware.computers.Computer;
-import fr.upmc.datacenter.hardware.computers.Computer.AllocatedCore;
 import fr.upmc.datacenter.hardware.tests.ComputerMonitor;
 import fr.upmc.datacenter.software.admissionController.interfaces.AdmissionI;
 import fr.upmc.datacenter.software.admissionController.interfaces.AdmissionRequestHandlerI;
 import fr.upmc.datacenter.software.admissionController.interfaces.AdmissionRequestI;
 import fr.upmc.datacenter.software.admissionController.ports.AdmissionRequestInboundPort;
+import fr.upmc.datacenter.software.applicationcontainer.connectors.AdmissionNotificationConnector;
 import fr.upmc.datacenter.software.applicationcontainer.interfaces.AdmissionNotificationI;
 import fr.upmc.datacenter.software.applicationcontainer.ports.AdmissionNotificationOutboundPort;
 import fr.upmc.datacenter.software.applicationvm.ApplicationVM;
-import fr.upmc.datacenter.software.applicationvm.connectors.ApplicationVMManagementConnector;
 import fr.upmc.datacenter.software.applicationvm.ports.ApplicationVMManagementOutboundPort;
-import fr.upmc.datacenter.software.javassist.JavassistRD;
 import fr.upmc.datacenter.software.javassist.JavassistUtility;
 import fr.upmc.datacenter.software.requestDispatcher.RequestDispatcher;
-import javassist.ClassPool;
-import javassist.CtClass;
-import javassist.CtMethod;
 	
 	/**
 	 * <p><strong>Description</string></p>
@@ -82,7 +79,6 @@ import javassist.CtMethod;
 	
 			// PREDIFINED URI OF PORTS 
 			public static final String	RequestSubmissionInboundPortURI = "rsibp" ;
-//			public static final String	RequestSubmissionOutboundPortURI = "rsobp" ;
 			public static final String	RequestNotificationInboundPortURI = "rnibp" ;
 			public static final String	RequestNotificationOutboundPortURI = "rnobp" ;
 			
@@ -90,6 +86,12 @@ import javassist.CtMethod;
 			
 			/** 	Request Dispatcher component.							*/
 			protected RequestDispatcher							rd ;
+			
+		/**
+		 * Synchronized access to the critical resource	
+		 */
+			private final Object monitor = new Object();
+			private final Lock verrou = new ReentrantLock();
 			
 			
 		
@@ -196,29 +198,22 @@ import javassist.CtMethod;
 				/**
 				 * CREATE REQUEST DISPATCHER AND APPLICATIONVM WITH JAVASSIST
 				 */
-//				ClassPool pool = ClassPool.getDefault() ;
-//		        CtClass cii = pool.get("fr.upmc.datacenter.software.javassist.JavassistUtility") ;
-//		        CtMethod[] methodsToImplement = cii.getDeclaredMethods() ;
-//		        System.out.println("Nombre de methodes: "+methodsToImplement.length);
-//		        CtMethod mCtMethod=null;
-//		        for (int i = 0 ; i < methodsToImplement.length ; i++) {
-//		         if (methodsToImplement[i].getName().equals("createRD")) {
-//					System.out.println("found");
-//					mCtMethod = methodsToImplement[i];
-//		         }
-//		        }
-//		        JavassistRD.addInstrumentation(mCtMethod);
-		        
-//		        Class class1 = cii.toClass();
-//				JavassistUtility.createRD(admission, listComputers);
+
 				
+					System.out.println("========================");
+					System.out.println("REQUEST RECEIVED FROM == "+admission.getApplicationURI());
+					JavassistUtility.createRequestDispatcher(admission, listComputers);
+					System.out.println(admission.getRequestSubmissionInboundPortRD());
+					this.connectWithApplicationContainer(admission.getAdmissionNotificationInboundPortURI());
+					this.anOutboundPort.notifyAdmissionNotification(admission);
+					System.out.println("========================");
+					anOutboundPort.doDisconnection();
 				
-		        JavassistUtility.createRequestDispatcher(admission, listComputers);
-				Thread.sleep(1000) ;
-				// NOTIFY THE APPLICATION CONTAINER
-				this.anOutboundPort.notifyAdmissionNotification(this.admission);
 				
 			}
+		}
+		public void connectWithApplicationContainer(String AdmissionNotificationInboundPortURI) throws Exception {
+		anOutboundPort.doConnection(AdmissionNotificationInboundPortURI, AdmissionNotificationConnector.class.getCanonicalName());	
 		}
 		
 		@Override

@@ -55,7 +55,6 @@ public class JavassistUtility {
 
 		// PREDIFINED URI OF PORTS 
 		public static final String	RequestSubmissionInboundPortURI = "rsibp" ;
-//		public static final String	RequestSubmissionOutboundPortURI = "rsobp" ;
 		public static final String	RequestNotificationInboundPortURI = "rnibp" ;
 		public static final String	RequestNotificationOutboundPortURI = "rnobp" ;
 		
@@ -69,13 +68,7 @@ public class JavassistUtility {
         super();
     }
 
-    public static void createRD(
-    		AdmissionI admission,
-    		ArrayList<Computer> listComputers) throws Exception{
-
-       JavassistUtility.createRequestDispatcher(admission, listComputers);
-
-    }
+ 
 
     public static void createRequestDispatcher(
     		
@@ -86,6 +79,7 @@ public class JavassistUtility {
     	// --------------------------------------------------------------------
     				// Create and deploy first avm component
     				// --------------------------------------------------------------------
+    	System.out.println("JAVASSIST");
     	AbstractCVM absCVM = admission.getAbstractCVM();
     	avm0 = new ApplicationVM(
     						avmURI0,	// application vm component URI
@@ -137,8 +131,8 @@ public class JavassistUtility {
     	// Creating the request Dispatcher component.
     	// --------------------------------------------------------------------
     	RequestDispatcher rd = new RequestDispatcher("RDispatcher", 
-    			RequestSubmissionInboundPortURI, 
-    			RequestNotificationOutboundPortURI);
+    			RequestSubmissionInboundPortURI+admission.getApplicationURI(), 
+    			RequestNotificationOutboundPortURI+admission.getApplicationURI());
     	absCVM.addDeployedComponent(rd);
     	
     	
@@ -153,7 +147,9 @@ public class JavassistUtility {
     			rd.connectAVM(avmURI0, RequestSubmissionInboundPortURI0, RequestNotificationOutboundPortURI0);
     			rd.connectAVM(avmURI1, RequestSubmissionInboundPortURI1, RequestNotificationOutboundPortURI1);
     			
-    			admission.setRequestSubmissionInboundPortRD(RequestSubmissionInboundPortURI);
+    			String RSIP = RequestSubmissionInboundPortURI+admission.getApplicationURI();
+    			admission.setRequestSubmissionInboundPortRD(RSIP);
+    			System.out.println("============ REQUEST DISPATCHER CREATED ============ ");
     }
 
 
