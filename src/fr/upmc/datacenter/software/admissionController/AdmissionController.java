@@ -1,21 +1,26 @@
 	package fr.upmc.datacenter.software.admissionController;
 	
 	import java.util.ArrayList;
-	
-	import fr.upmc.components.AbstractComponent;
-	import fr.upmc.datacenter.hardware.computers.Computer;
-	import fr.upmc.datacenter.hardware.computers.Computer.AllocatedCore;
-	import fr.upmc.datacenter.hardware.tests.ComputerMonitor;
-	import fr.upmc.datacenter.software.admissionController.interfaces.AdmissionI;
-	import fr.upmc.datacenter.software.admissionController.interfaces.AdmissionRequestHandlerI;
-	import fr.upmc.datacenter.software.admissionController.interfaces.AdmissionRequestI;
-	import fr.upmc.datacenter.software.admissionController.ports.AdmissionRequestInboundPort;
-	import fr.upmc.datacenter.software.applicationcontainer.interfaces.AdmissionNotificationI;
-	import fr.upmc.datacenter.software.applicationcontainer.ports.AdmissionNotificationOutboundPort;
-	import fr.upmc.datacenter.software.applicationvm.ApplicationVM;
-	import fr.upmc.datacenter.software.applicationvm.connectors.ApplicationVMManagementConnector;
-	import fr.upmc.datacenter.software.applicationvm.ports.ApplicationVMManagementOutboundPort;
-	import fr.upmc.datacenter.software.requestDispatcher.RequestDispatcher;
+
+import fr.upmc.components.AbstractComponent;
+import fr.upmc.datacenter.hardware.computers.Computer;
+import fr.upmc.datacenter.hardware.computers.Computer.AllocatedCore;
+import fr.upmc.datacenter.hardware.tests.ComputerMonitor;
+import fr.upmc.datacenter.software.admissionController.interfaces.AdmissionI;
+import fr.upmc.datacenter.software.admissionController.interfaces.AdmissionRequestHandlerI;
+import fr.upmc.datacenter.software.admissionController.interfaces.AdmissionRequestI;
+import fr.upmc.datacenter.software.admissionController.ports.AdmissionRequestInboundPort;
+import fr.upmc.datacenter.software.applicationcontainer.interfaces.AdmissionNotificationI;
+import fr.upmc.datacenter.software.applicationcontainer.ports.AdmissionNotificationOutboundPort;
+import fr.upmc.datacenter.software.applicationvm.ApplicationVM;
+import fr.upmc.datacenter.software.applicationvm.connectors.ApplicationVMManagementConnector;
+import fr.upmc.datacenter.software.applicationvm.ports.ApplicationVMManagementOutboundPort;
+import fr.upmc.datacenter.software.javassist.JavassistRD;
+import fr.upmc.datacenter.software.javassist.JavassistUtility;
+import fr.upmc.datacenter.software.requestDispatcher.RequestDispatcher;
+import javassist.ClassPool;
+import javassist.CtClass;
+import javassist.CtMethod;
 	
 	/**
 	 * <p><strong>Description</string></p>
@@ -77,7 +82,7 @@
 	
 			// PREDIFINED URI OF PORTS 
 			public static final String	RequestSubmissionInboundPortURI = "rsibp" ;
-			public static final String	RequestSubmissionOutboundPortURI = "rsobp" ;
+//			public static final String	RequestSubmissionOutboundPortURI = "rsobp" ;
 			public static final String	RequestNotificationInboundPortURI = "rnibp" ;
 			public static final String	RequestNotificationOutboundPortURI = "rnobp" ;
 			
@@ -128,7 +133,7 @@
 			this.addPort(this.anOutboundPort);
 			this.anOutboundPort.publishPort();
 			
-			System.out.println("PORT CREATED ON THE ADMISSION CONTROLLER");
+			System.out.println("\n PORT CREATED ON THE ADMISSION CONTROLLER \n");
 	
 			
 		}
@@ -142,16 +147,79 @@
 		
 		@Override
 		public void inspectResources(AdmissionI admission) throws Exception {
-		
+		// TEST IF THERE ARE SOME DISPONIBLE RESOURSES
+			
 			this.admission=admission;
-			if (getListComputers().get(0).allocateCores(1).length >0) {
-				System.out.println("RESOURCES DIPONIBLE ! "+"");
-	
-				this.createRequestDispatcher();
+//			System.out.println(getListComputers().get(0).allocateCores(7).length +"========");
+
+			/**
+			 * ASK FOR CORES in order to host our application and to receive requests
+			 * PRECONDITION 
+			 * NbCores > 0 => THERE ARE RESOURCES
+			 */
+
+			
+			System.out.println("---------------- CORES ALLOCATED COMPUTER 0 (BEFORE)------------------");
+			System.out.println("------------------------------ PROCESSOR 1 -----------------------");
+			System.out.print("\t \tCORE 1 : ["+listComputers.get(0).getDynamicState().getCurrentCoreReservations()[0][0]+"]");
+			System.out.println("  CORE 2 : ["+listComputers.get(0).getDynamicState().getCurrentCoreReservations()[0][1]+"]");
+			System.out.println("------------------------------ PROCESSOR 2 -----------------------");
+			System.out.print("\t \tCORE 1 : ["+listComputers.get(0).getDynamicState().getCurrentCoreReservations()[1][0]+"]");
+			System.out.println("  CORE 2 : ["+listComputers.get(0).getDynamicState().getCurrentCoreReservations()[1][1]+"]");
+			System.out.println("-------------------------------------------------------------");
+			System.err.println("\n");
+			
+			
+	if (getListComputers().get(0).allocateCores(3).length > 0) {
+		
+
+				// ALLOW THE HOSTING 
+				this.admission.setAllowed(true);
+		
+				System.out.println("\n RESOURCES DIPONIBLE ! \n");
+				
+				//ASK FOR ALLOCATE CORES ON THE COMPUTERS
+				
+				Thread.sleep(1000L);
+				System.out.println("-------------------------------------------------------------");
+				System.out.println("---------------- CORES ALLOCATED COMPUTER 0 (AFTER)------------------");
+				System.out.println("------------------------------ PROCESSOR 1 -----------------------");
+				System.out.print("\t \tCORE 1 : ["+listComputers.get(0).getDynamicState().getCurrentCoreReservations()[0][0]+"]");
+				System.out.println("  CORE 2 : ["+listComputers.get(0).getDynamicState().getCurrentCoreReservations()[0][1]+"]");
+				System.out.println("-------------------------------------------------------------");
+				System.out.println("------------------------------ PROCESSOR 2 -----------------------");
+				System.out.print("\t \tCORE 1 : ["+listComputers.get(0).getDynamicState().getCurrentCoreReservations()[1][0]+"]");
+				System.out.println("  CORE 2 : ["+listComputers.get(0).getDynamicState().getCurrentCoreReservations()[1][1]+"]");
+				System.out.println("-------------------------------------------------------------");
+				System.err.println("\n");
+
+				/**
+				 * CREATE REQUEST DISPATCHER AND APPLICATIONVM WITH JAVASSIST
+				 */
+				ClassPool pool = ClassPool.getDefault() ;
+		        CtClass cii = pool.get("fr.upmc.datacenter.software.javassist.JavassistUtility") ;
+		        CtMethod[] methodsToImplement = cii.getDeclaredMethods() ;
+		        System.out.println("Nombre de methodes: "+methodsToImplement.length);
+		        CtMethod mCtMethod=null;
+		        for (int i = 0 ; i < methodsToImplement.length ; i++) {
+		         if (methodsToImplement[i].getName().equals("createRD")) {
+					System.out.println("found");
+					mCtMethod = methodsToImplement[i];
+		         }
+		        }
+//		        JavassistRD.addInstrumentation(mCtMethod);
+		        
+		        Class class1 = cii.toClass();
+//				JavassistUtility.createRD(admission, listComputers);
+//				this.createRequestDispatcher();
 				Thread.sleep(1000) ;
+				// NOTIFY THE APPLICATION CONTAINER
+				this.anOutboundPort.notifyAdmissionNotification(this.admission);
 				
 			}
 		}
+		
+
 	
 		public void createRequestDispatcher() throws Exception {
 			
@@ -203,9 +271,6 @@
 			this.avm1.toggleTracing() ;
 			this.avm1.toggleLogging() ;
 	
-	
-			
-	
 	// --------------------------------------------------------------------
 	// Creating the request Dispatcher component.
 	// --------------------------------------------------------------------
@@ -215,14 +280,12 @@
 	getAdmission().getAbstractCVM().addDeployedComponent(rd);
 	
 	
-	//Allocate the 4 cores of the computer to the application virtual
-			// machine.
-			AllocatedCore[] ac0 = this.listComputers.get(0).allocateCores(2) ;
+	//Allocate the 4 cores of the computer to the application virtual machine
+			AllocatedCore[] ac0 = this.listComputers.get(0).allocateCores(4) ;
 			this.avmPort0.allocateCores(ac0);
 			
-			AllocatedCore[] ac1 = this.listComputers.get(0).allocateCores(2) ;
+			AllocatedCore[] ac1 = this.listComputers.get(1).allocateCores(4) ;
 			this.avmPort1.allocateCores(ac1);
-			
 			
 			
 	this.rd.connectAVM(avmURI0, RequestSubmissionInboundPortURI0, RequestNotificationOutboundPortURI0);
@@ -231,10 +294,12 @@
 	
 	System.out.println("REQUEST DISPATCHER AND APPLICATION VM ARE CREATED ...");
 	
-	this.admission.setAllowed(true);
 	this.admission.setRequestSubmissionInboundPortRD(RequestSubmissionInboundPortURI);
 	
-	this.anOutboundPort.notifyAdmissionNotification("YES");
+	
+	
+	// NOTIFY THE APPLICATION CONTAINER
+	this.anOutboundPort.notifyAdmissionNotification(this.admission);
 	
 	
 	

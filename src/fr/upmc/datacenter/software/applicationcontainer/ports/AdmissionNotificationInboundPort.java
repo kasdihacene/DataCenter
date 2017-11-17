@@ -2,6 +2,7 @@ package fr.upmc.datacenter.software.applicationcontainer.ports;
 
 import fr.upmc.components.ComponentI;
 import fr.upmc.components.ports.AbstractInboundPort;
+import fr.upmc.datacenter.software.admissionController.interfaces.AdmissionI;
 import fr.upmc.datacenter.software.applicationcontainer.interfaces.AdmissionNotificationHandlerI;
 import fr.upmc.datacenter.software.applicationcontainer.interfaces.AdmissionNotificationI;
 
@@ -34,7 +35,7 @@ public class AdmissionNotificationInboundPort
 	private static final long serialVersionUID = 1L;
 
 	@Override
-	public void notifyAdmissionNotification(String uri) throws Exception {
+	public void notifyAdmissionNotification(AdmissionI admission) throws Exception {
 
 		final AdmissionNotificationHandlerI admissionNotificationHandlerI = 
 				(AdmissionNotificationHandlerI)this.owner;
@@ -43,7 +44,7 @@ public class AdmissionNotificationInboundPort
 
 					@Override
 					public Void call() throws Exception {
-						admissionNotificationHandlerI.allowOrRefuseAdmissionNotification(uri);
+						admissionNotificationHandlerI.allowOrRefuseAdmissionNotification(admission);
 						return null;
 					}
 					

@@ -222,7 +222,6 @@ public class TestAdmissionNotification extends fr.upmc.components.cvm.AbstractCV
 		
 		Admission admission = new Admission(
 				this, 
-				"applicationURI", 
 				AdmissionNotificationInboundPortURI, 
 				AdmissionControllerInboundPortURI);
 	

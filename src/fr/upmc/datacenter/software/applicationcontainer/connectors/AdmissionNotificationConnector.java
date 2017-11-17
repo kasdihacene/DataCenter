@@ -1,6 +1,7 @@
 package fr.upmc.datacenter.software.applicationcontainer.connectors;
 
 import fr.upmc.components.connectors.AbstractConnector;
+import fr.upmc.datacenter.software.admissionController.interfaces.AdmissionI;
 import fr.upmc.datacenter.software.applicationcontainer.interfaces.AdmissionNotificationI;
 
 public class AdmissionNotificationConnector 
@@ -8,8 +9,8 @@ public class AdmissionNotificationConnector
 		implements AdmissionNotificationI {
 
 	@Override
-	public void notifyAdmissionNotification(String uri) throws Exception {
-		((AdmissionNotificationI)this.offering).notifyAdmissionNotification(uri);
+	public void notifyAdmissionNotification(AdmissionI admission) throws Exception {
+		((AdmissionNotificationI)this.offering).notifyAdmissionNotification(admission);
 
 	}
 

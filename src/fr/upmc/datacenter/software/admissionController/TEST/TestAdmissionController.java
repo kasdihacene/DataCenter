@@ -192,6 +192,9 @@ public class TestAdmissionController extends fr.upmc.components.cvm.AbstractCVM{
 				ComputerDynamicStateDataInboundPortURI1);
 		this.addDeployedComponent(c1);
 		
+		// ADD THE COMPUTER TO THE LIST
+		listComputers.add(c1);
+		
 		// Create a mock-up computer services port to later allocate its cores
 		// to the application virtual machine.
 		this.csPort1 = new ComputerServicesOutboundPort(ComputerServicesOutboundPortURI1, new AbstractComponent(0, 0) {});
@@ -222,7 +225,6 @@ public class TestAdmissionController extends fr.upmc.components.cvm.AbstractCVM{
 		
 		Admission admission = new Admission(
 				this, 
-				"applicationURI", 
 				AdmissionNotificationInboundPortURI, 
 				AdmissionControllerInboundPortURI);
 	
@@ -231,7 +233,7 @@ public class TestAdmissionController extends fr.upmc.components.cvm.AbstractCVM{
 		 */
 		this.applicationContainer =
 				new ApplicationContainer(
-						"APP-", 
+						"APP1-", 
 						admission,
 						AdmissionNotificationInboundPortURI,
 						AdmissionControllerOutboundPortURI);
@@ -249,7 +251,7 @@ public class TestAdmissionController extends fr.upmc.components.cvm.AbstractCVM{
 		this.addDeployedComponent(admissionController);
 		
 		/**
-		 * CONNEXION F THE COMPONENT
+		 * CONNEXION OF THE COMPONENT
 		 */
 		this.applicationContainer.doPortConnection(
 				AdmissionControllerOutboundPortURI, 
@@ -349,7 +351,7 @@ public class TestAdmissionController extends fr.upmc.components.cvm.AbstractCVM{
 	public void			testScenario() throws Exception
 	{
 	
-		this.applicationContainer.askForHostingApllication();
+		applicationContainer.startAsync();
 
 	}
 	

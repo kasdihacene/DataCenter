@@ -19,11 +19,9 @@ public class Admission implements AdmissionI{
 
 	public Admission(
 			AbstractCVM abstractCVM,
-			String applicationURI, 
 			String admissionNotificationInboundPortURI,
 			String admissionControllerInboundPortURI) {
 		super();
-		this.applicationURI = applicationURI;
 		this.admissionNotificationInboundPortURI = admissionNotificationInboundPortURI;
 		this.admissionControllerInboundPortURI = admissionControllerInboundPortURI;
 		

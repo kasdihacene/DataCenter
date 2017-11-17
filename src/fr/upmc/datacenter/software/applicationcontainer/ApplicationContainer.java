@@ -2,14 +2,13 @@ package fr.upmc.datacenter.software.applicationcontainer;
 
 import fr.upmc.components.AbstractComponent;
 import fr.upmc.datacenter.software.admissionController.Admission;
+import fr.upmc.datacenter.software.admissionController.interfaces.AdmissionI;
 import fr.upmc.datacenter.software.admissionController.interfaces.AdmissionRequestI;
 import fr.upmc.datacenter.software.admissionController.ports.AdmissionRequestOutboundPort;
 import fr.upmc.datacenter.software.applicationcontainer.interfaces.AdmissionNotificationHandlerI;
 import fr.upmc.datacenter.software.applicationcontainer.interfaces.AdmissionNotificationI;
 import fr.upmc.datacenter.software.applicationcontainer.ports.AdmissionNotificationInboundPort;
 import fr.upmc.datacenter.software.connectors.RequestSubmissionConnector;
-import fr.upmc.datacenter.software.interfaces.RequestSubmissionI;
-import fr.upmc.datacenter.software.ports.RequestSubmissionOutboundPort;
 import fr.upmc.datacenterclient.requestgenerator.RequestGenerator;
 import fr.upmc.datacenterclient.requestgenerator.connectors.RequestGeneratorManagementConnector;
 import fr.upmc.datacenterclient.requestgenerator.ports.RequestGeneratorManagementOutboundPort;
@@ -44,7 +43,7 @@ public class ApplicationContainer
 
 	// PREDIFINED URI OF PORTS 
 	public static final String	RequestSubmissionInboundPortURI = "rsibp" ;
-	public static final String	RequestSubmissionOutboundPortURI = "rsobp" ;
+	public static final String	RequestSubmissionOutboundPortURI = "rsobp_" ;
 	public static final String	RequestNotificationInboundPortURI = "rnibp" ;
 	public static final String	RequestNotificationOutboundPortURI = "rnobp" ;
 	public static final String	RequestGeneratorManagementInboundPortURI = "rgmip" ;
@@ -61,6 +60,7 @@ public class ApplicationContainer
 		
 		this.APP_URI = uri;
 		this.admission=admission;
+		admission.setApplicationURI(APP_URI);
 		
 		//ADD THE INBOUND PORT		O--		Notification
 		this.addOfferedInterface(AdmissionNotificationI.class);
@@ -84,8 +84,9 @@ public class ApplicationContainer
 				RequestSubmissionOutboundPortURI,
 				RequestNotificationInboundPortURI) ;
 	admission.getAbstractCVM().addDeployedComponent(rg) ;
+//	admission.setRequestSubmissionInboundPortRD(RequestSubmissionInboundPortURI);
 		
-		System.out.println("PORT CREATED ON THE APPLICATION CONTAINER");
+		System.out.println("\n PORT CREATED ON THE APPLICATION CONTAINER \n");
 		
 	}
 	
@@ -94,16 +95,21 @@ public class ApplicationContainer
 	}
 
 	public void askForHostingApllication() throws Exception{
-		System.out.println("ASK FOR HOSTIN GTHE APPLICATION ...");
+		System.out.println("ASK FOR HOSTIN OF THE APPLICATION ...");
 		this.admissionRequestOutboundPort.askForHost(this.admission);
 	}
 
 	@Override
-	public void allowOrRefuseAdmissionNotification(String uri) throws Exception {
-		if(uri.equals("NO")) {
-			System.out.println("-------------------------------");
-			System.out.println("-------- HOSTING REFUSED-------");
-			System.out.println("-------------------------------");
+	public void allowOrRefuseAdmissionNotification(AdmissionI admission) throws Exception {
+		if(!admission.isAllowed()) {
+
+			System.out.println("----------------**-------------");
+			System.out.println("---------------*--*------------");
+			System.out.println("-------------*--||---*---------");
+			System.out.println("-----------*----||-----*-------");
+			System.out.println("---------*------**-------*-----");
+			System.out.println("-------********************----");
+			System.out.println("----- HOSTING REFUSED FOR "+admission.getApplicationURI()+"-------");
 		}else {
 			
 			System.out.println("-------------------------------");
@@ -115,23 +121,33 @@ public class ApplicationContainer
 		
 	}
 
+	public void startAsync() throws Exception
+	{
+		final ApplicationContainer application = this;
+		this.handleRequestAsync(new ComponentService<Void>() {
+			@Override
+			public Void call() throws Exception {
+				application.askForHostingApllication();
+				return null;
+			}
+		});
+	}
 	
 	public void startApplication() throws Exception {
 		System.out.println("\n STARTING APPLICATION ....");
 		// --------------------------------------------------------------------
-				// Creating the request generator component.
-				// --------------------------------------------------------------------
+		// Creating the request generator component.
+		// --------------------------------------------------------------------
 		
 				
 					/**
 					 * COMPONENT CONNECTIONS -----------------------------------------
 					 */
 		
-						
-		;
 						getRequestGenerator().doPortConnection(
 								RequestSubmissionOutboundPortURI,
-								RequestSubmissionInboundPortURI,
+//								RequestSubmissionInboundPortURI
+								this.admission.getRequestSubmissionInboundPortRD(),
 								RequestSubmissionConnector.class.getCanonicalName()) ;
 
 
@@ -143,8 +159,10 @@ public class ApplicationContainer
 					RequestGeneratorManagementInboundPortURI,
 					RequestGeneratorManagementConnector.class.getCanonicalName()) ;
 						
-					System.out.println("REQUEST GENERATOR CREATED !");
+					System.out.println("\n REQUEST GENERATOR CREATED ! \n");
 					
+					rgmop.startGeneration();
+					Thread.sleep(10);
 					rgmop.startGeneration();
 	}
 }

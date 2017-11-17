@@ -2,6 +2,7 @@ package fr.upmc.datacenter.software.applicationcontainer.interfaces;
 
 import fr.upmc.components.interfaces.OfferedI;
 import fr.upmc.components.interfaces.RequiredI;
+import fr.upmc.datacenter.software.admissionController.interfaces.AdmissionI;
 
 /**
  * 
@@ -19,7 +20,7 @@ public interface AdmissionNotificationI
 	 * @param uri
 	 * @throws Exception
 	 */
-	public void notifyAdmissionNotification(String uri) throws Exception;
+	public void notifyAdmissionNotification(AdmissionI admission) throws Exception;
 	
 
 }
