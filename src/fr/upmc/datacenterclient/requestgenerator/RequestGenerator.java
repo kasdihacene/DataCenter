@@ -212,8 +212,7 @@ implements	RequestNotificationHandlerI
 		assert	this.rng != null && this.counter >= 0 ;
 		assert	this.meanInterArrivalTime > 0.0 ;
 		assert	this.meanNumberOfInstructions > 0 ;
-		assert	this.rsop != null && this.rsop instanceof RequestSubmissionI ;
-		assert 	this.admissionRequestOutboundPort instanceof AdmissionRequestI;
+		assert	this.rsop != null;
 
 	}
 
