@@ -203,7 +203,7 @@ public class TestAdmissionNotification extends fr.upmc.components.cvm.AbstractCV
 		 * CREATE THE ADMISSION CONTROLLER
 		 */
 
-		this.admissionController = new AdmissionController(this, "Controller1", AdmissionControllerInboundPortURI,
+		this.admissionController = new AdmissionController("Controller1", AdmissionControllerInboundPortURI,
 				AdmissionNotificationOutboundPortURI, listComputers);
 		this.addDeployedComponent(admissionController);
 

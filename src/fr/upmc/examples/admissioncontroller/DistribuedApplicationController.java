@@ -95,7 +95,7 @@ public class DistribuedApplicationController extends AbstractDistributedCVM {
 			System.out.println(String.format("DEPLOYING : %d-th computer deployed", i + 1));
 		}
 
-		this.ac = new AdmissionController(this, StaticData.ADMISSION_CONTROLLER_JVM_URI,
+		this.ac = new AdmissionController(StaticData.ADMISSION_CONTROLLER_JVM_URI,
 				StaticData.ADMISSION_REQUEST_INBOUND_PORT_URI, StaticData.ADMISSION_NOTIFICATION_OUTBOUND_PORT_URI,
 				computers);
 		this.ac.start();
