@@ -6,7 +6,8 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import fr.upmc.components.AbstractComponent;
 import fr.upmc.datacenter.hardware.computers.Computer;
-import fr.upmc.datacenter.hardware.tests.ComputerMonitor;
+import fr.upmc.datacenter.hardware.computers.interfaces.ComputerDynamicStateI;
+import fr.upmc.datacenter.hardware.computers.interfaces.ComputerStaticStateI;
 import fr.upmc.datacenter.software.admissionController.interfaces.AdmissionI;
 import fr.upmc.datacenter.software.admissionController.interfaces.AdmissionRequestHandlerI;
 import fr.upmc.datacenter.software.admissionController.interfaces.AdmissionRequestI;
@@ -14,18 +15,18 @@ import fr.upmc.datacenter.software.admissionController.ports.AdmissionRequestInb
 import fr.upmc.datacenter.software.applicationcontainer.connectors.AdmissionNotificationConnector;
 import fr.upmc.datacenter.software.applicationcontainer.interfaces.AdmissionNotificationI;
 import fr.upmc.datacenter.software.applicationcontainer.ports.AdmissionNotificationOutboundPort;
-import fr.upmc.datacenter.software.applicationvm.ApplicationVM;
-import fr.upmc.datacenter.software.applicationvm.ports.ApplicationVMManagementOutboundPort;
 import fr.upmc.datacenter.software.javassist.JavassistUtility;
-import fr.upmc.datacenter.software.requestDispatcher.RequestDispatcher;
 	
 	/**
 	 * <p><strong>Description</string></p>
 	 * 
 	 * This component <code>AdmissionController</code> receives the requests from the Costumers
-	 * in this context we can consider Costumers as <code>RequestGenerator</code> who want to host their
-	 * applications <code>RequestI</code>. the controller can accept if there is some available
+	 * in this context we can consider Costumers as <code>ApplicationContainer</code> who want to host their
+	 * applications <code>RequestI</code> of the <code>RequestGenerator</code>. the controller can accept if there is some available
 	 * resources or refuse if all computers are busy on handling the requests of other Costumers. 
+	 * 
+	 * This Class knows the state of all computers available, Many methods can check the state of Cores of Processors.
+	 * 
 	 * 
 	 * @author Hacene Kasdi & Marc REN
 	 * @version 2012.10.20.HK
@@ -42,50 +43,12 @@ import fr.upmc.datacenter.software.requestDispatcher.RequestDispatcher;
 		
 		/** URI oOF THE ADMISSION CONTROLLER 			*/
 		protected String admConURI;
-		//-----------------------------------------------//
-		//---------------------PORTS---------------------//
-		//-----------------------------------------------//
 		
-		/**
-		 * All URIs and ports for first AVM
-		 */
-		// URIs
-		public static final String	avmURI0 = "avm0";
-		public static final String	ApplicationVMManagementInboundPortURI0 = "avm0-ibp" ;
-		public static final String	ApplicationVMManagementOutboundPortURI0 = "avm0-obp" ;
-		public static final String	RequestSubmissionInboundPortURI0 = "rsibp0";
-		public static final String	RequestNotificationOutboundPortURI0 = "rnobp0"; 
-		// Ports
-		protected ApplicationVMManagementOutboundPort avmPort0 ;
-	
-		/**
-		 * All URIs and ports for second AVM
-		 */
-		// URIs
-		public static final String	avmURI1 = "avm1";
-		public static final String	ApplicationVMManagementInboundPortURI1 = "avm1-ibp" ;
-		public static final String	ApplicationVMManagementOutboundPortURI1 = "avm1-obp" ;
-		public static final String	RequestSubmissionInboundPortURI1 = "rsibp1";
-		public static final String	RequestNotificationOutboundPortURI1 = "rnobp1"; 
-		// Ports
-		protected ApplicationVMManagementOutboundPort avmPort1 ;
 		
-	
-	
-		protected Computer c0, c1;
-		protected ComputerMonitor cm0, cm1;
-		protected ApplicationVM avm0, avm1;
-	
-	
 			// PREDIFINED URI OF PORTS 
 			public static final String	RequestSubmissionInboundPortURI = "rsibp" ;
 			public static final String	RequestNotificationInboundPortURI = "rnibp" ;
 			public static final String	RequestNotificationOutboundPortURI = "rnobp" ;
-			
-	
-			
-			/** 	Request Dispatcher component.							*/
-			protected RequestDispatcher							rd ;
 			
 		/**
 		 * Synchronized access to the critical resource	
@@ -118,6 +81,7 @@ import fr.upmc.datacenter.software.requestDispatcher.RequestDispatcher;
 			assert admisionRequestInboundPortURI		 != null;
 			assert admissionNotificationOutbounPortURI   != null;
 			
+			/** List of computers					*/
 			this.listComputers=new ArrayList<Computer>(listComputers);
 			this.admConURI=admConURI;
 			
@@ -139,20 +103,32 @@ import fr.upmc.datacenter.software.requestDispatcher.RequestDispatcher;
 	
 			
 		}
+		
+		/**
+		 * 
+		 * @return the instance on the Object Admission
+		 */
 		public AdmissionI getAdmission() {
 			return this.admission;
 		}
+		
+		/**
+		 * 
+		 * @return the list of available computers
+		 */
 		public ArrayList<Computer> getListComputers(){
 			return listComputers;
 		}
 		
-		
+		/**
+		 * Inspect the resources in the computers, if there is any available Core than we call and answer the other side
+		 * witch is the ApplicationContainer
+		 */
 		@Override
 		public void inspectResources(AdmissionI admission) throws Exception {
 		// TEST IF THERE ARE SOME DISPONIBLE RESOURSES
 			
 			this.admission=admission;
-//			System.out.println(getListComputers().get(0).allocateCores(7).length +"========");
 
 			/**
 			 * ASK FOR CORES in order to host our application and to receive requests
@@ -172,13 +148,13 @@ import fr.upmc.datacenter.software.requestDispatcher.RequestDispatcher;
 			System.err.println("\n");
 			
 			
-	if (getListComputers().get(0).allocateCores(3).length > 0) {
+	if (getListComputers().get(0).allocateCores(1).length > 0) {
 		
 
 				// ALLOW THE HOSTING 
 				this.admission.setAllowed(true);
 		
-				System.out.println("\n RESOURCES DIPONIBLE ! \n");
+				System.out.println("AVAILABLE RESOURCES FOR : "+admission.getApplicationURI()+" \n");
 				
 				//ASK FOR ALLOCATE CORES ON THE COMPUTERS
 				
@@ -195,21 +171,37 @@ import fr.upmc.datacenter.software.requestDispatcher.RequestDispatcher;
 				System.out.println("-------------------------------------------------------------");
 				System.err.println("\n");
 
-				/**
-				 * CREATE REQUEST DISPATCHER AND APPLICATIONVM WITH JAVASSIST
+				/*
+				 * Generate a Class Connector (AdmissionNotificationConnector) using the abstract method of the class 
+				 * JavassistUtility using Javassist
 				 */
-
+//				HashMap<String, String> mapMethods = new HashMap<String, String>();
+//				mapMethods.put("notifyAdmissionNotification", "allowOrRefuseAdmissionNotification");
+//				Class<?> admissionConnector = JavassistUtility.makeConnectorClassJavassist(
+//						"fr.upmc.datacenter.software.applicationcontainer.connectors.AdmissionNotifConnector", 
+//						AbstractConnector.class, 
+//						AdmissionNotificationI.class, 
+//						AdmissionNotificationI.class, 
+//						mapMethods);
 				
 					System.out.println("========================");
-					System.out.println("REQUEST RECEIVED FROM == "+admission.getApplicationURI());
 					JavassistUtility.createRequestDispatcher(admission, listComputers);
 					System.out.println(admission.getRequestSubmissionInboundPortRD());
 					this.connectWithApplicationContainer(admission.getAdmissionNotificationInboundPortURI());
 					this.anOutboundPort.notifyAdmissionNotification(admission);
 					System.out.println("========================");
 					anOutboundPort.doDisconnection();
+					
 				
 				
+			}else {
+				System.out.println("NO AVAILABLE RESOURCES FOR : "+admission.getApplicationURI()+" \n");
+				System.out.println("========================");
+				this.connectWithApplicationContainer(admission.getAdmissionNotificationInboundPortURI());
+				admission.setAllowed(false);
+				this.anOutboundPort.notifyAdmissionNotification(admission);
+				System.out.println("========================");
+				anOutboundPort.doDisconnection();
 			}
 		}
 		public void connectWithApplicationContainer(String AdmissionNotificationInboundPortURI) throws Exception {
@@ -221,5 +213,62 @@ import fr.upmc.datacenter.software.requestDispatcher.RequestDispatcher;
 			
 	
 		}
-	
+		
+		/**
+		 * 
+		 * @return number of Cores (idle and allocated)
+		 * @throws Exception
+		 */
+		public int getNumberOfCore() throws Exception {
+			return getNumberOfCore(0);
+		}
+		/**
+		 * 
+		 * @return number of Idle cores
+		 * @throws Exception
+		 */
+		public int getNumberOfIdleCore() throws Exception {
+			return getNumberOfCore(1);
+		}
+		/**
+		 * 
+		 * @param c <code>Computer</code>
+		 * @return Number of Idle cores of a specific <code>Computer</code>
+		 * @throws Exception
+		 */
+		public int getNumberOfIdleCore(Computer c) throws Exception{
+			return getNumberOfCore(c, 1);
+		}
+		
+		public int getNumberOfCore(int state) throws Exception {
+			int res = 0;
+			for(Computer computer : listComputers) res += getNumberOfCore(computer, state);
+			return res;
+		}
+		
+		/**
+		 * 
+		 * @param c : <code>Computer</code>  
+		 * @param state : 0 all, 1 just idle ones, -1 just allocated one
+		 * @return Number of Cores according to the state
+		 * @throws Exception
+		 */
+		public int getNumberOfCore(Computer c, int state) throws Exception{
+			int res = 0;
+			ComputerStaticStateI css = c.getStaticState();
+			ComputerDynamicStateI cds = c.getDynamicState();
+			boolean[][] processorsCoresState= cds.getCurrentCoreReservations();
+			int nbProcessors = css.getNumberOfProcessors();
+			int nbCoresByProcessor = css.getNumberOfCoresPerProcessor();
+			
+			for(int i = 0; i < nbProcessors; i++) {
+				for(int j = 0; j < nbCoresByProcessor; j++) {
+					if(state == 0) res++;
+					if(state == 1 && !processorsCoresState[i][j]) res++;
+					if(state == -1 && processorsCoresState[i][j]) res++;
+				}
+			}
+			return res;
+		}
+		
 	}

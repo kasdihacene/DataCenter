@@ -140,8 +140,10 @@ public class JavassistUtility {
     			AllocatedCore[] ac0 = listComputers.get(0).allocateCores(4) ;
     			avmPort0.allocateCores(ac0);
     			
+    			System.out.println(ac0.length);
     			AllocatedCore[] ac1 = listComputers.get(1).allocateCores(4) ;
     			avmPort1.allocateCores(ac1);
+    			System.out.println(ac1.length);
     			
     			
     			rd.connectAVM(avmURI0, RequestSubmissionInboundPortURI0, RequestNotificationOutboundPortURI0);
