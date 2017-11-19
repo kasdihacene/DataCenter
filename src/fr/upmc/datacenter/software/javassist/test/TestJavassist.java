@@ -2,7 +2,6 @@ package fr.upmc.datacenter.software.javassist.test;
 
 import java.util.HashMap;
 
-import fr.upmc.datacenter.software.javassist.JavassistRD;
 import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.CtClass;

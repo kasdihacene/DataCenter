@@ -1,8 +1,6 @@
 	package fr.upmc.datacenter.software.admissionController;
 	
 	import java.util.ArrayList;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 import fr.upmc.components.AbstractComponent;
 import fr.upmc.datacenter.hardware.computers.Computer;
@@ -50,11 +48,6 @@ import fr.upmc.datacenter.software.javassist.JavassistUtility;
 			public static final String	RequestNotificationInboundPortURI = "rnibp" ;
 			public static final String	RequestNotificationOutboundPortURI = "rnobp" ;
 			
-		/**
-		 * Synchronized access to the critical resource	
-		 */
-			private final Object monitor = new Object();
-			private final Lock verrou = new ReentrantLock();
 			
 			
 		
@@ -135,20 +128,9 @@ import fr.upmc.datacenter.software.javassist.JavassistUtility;
 			 * PRECONDITION 
 			 * NbCores > 0 => THERE ARE RESOURCES
 			 */
-
 			
-			System.out.println("---------------- CORES ALLOCATED COMPUTER 0 (BEFORE)------------------");
-			System.out.println("------------------------------ PROCESSOR 1 -----------------------");
-			System.out.print("\t \tCORE 1 : ["+listComputers.get(0).getDynamicState().getCurrentCoreReservations()[0][0]+"]");
-			System.out.println("  CORE 2 : ["+listComputers.get(0).getDynamicState().getCurrentCoreReservations()[0][1]+"]");
-			System.out.println("------------------------------ PROCESSOR 2 -----------------------");
-			System.out.print("\t \tCORE 1 : ["+listComputers.get(0).getDynamicState().getCurrentCoreReservations()[1][0]+"]");
-			System.out.println("  CORE 2 : ["+listComputers.get(0).getDynamicState().getCurrentCoreReservations()[1][1]+"]");
-			System.out.println("-------------------------------------------------------------");
-			System.err.println("\n");
-			
-			
-	if (getListComputers().get(0).allocateCores(1).length > 0) {
+			System.out.println(getIndexAvailableComputer());
+	if (getIndexAvailableComputer()>-1) {
 		
 
 				// ALLOW THE HOSTING 
@@ -158,19 +140,6 @@ import fr.upmc.datacenter.software.javassist.JavassistUtility;
 				
 				//ASK FOR ALLOCATE CORES ON THE COMPUTERS
 				
-				Thread.sleep(1000L);
-				System.out.println("-------------------------------------------------------------");
-				System.out.println("---------------- CORES ALLOCATED COMPUTER 0 (AFTER)------------------");
-				System.out.println("------------------------------ PROCESSOR 1 -----------------------");
-				System.out.print("\t \tCORE 1 : ["+listComputers.get(0).getDynamicState().getCurrentCoreReservations()[0][0]+"]");
-				System.out.println("  CORE 2 : ["+listComputers.get(0).getDynamicState().getCurrentCoreReservations()[0][1]+"]");
-				System.out.println("-------------------------------------------------------------");
-				System.out.println("------------------------------ PROCESSOR 2 -----------------------");
-				System.out.print("\t \tCORE 1 : ["+listComputers.get(0).getDynamicState().getCurrentCoreReservations()[1][0]+"]");
-				System.out.println("  CORE 2 : ["+listComputers.get(0).getDynamicState().getCurrentCoreReservations()[1][1]+"]");
-				System.out.println("-------------------------------------------------------------");
-				System.err.println("\n");
-
 				/*
 				 * Generate a Class Connector (AdmissionNotificationConnector) using the abstract method of the class 
 				 * JavassistUtility using Javassist
@@ -185,7 +154,8 @@ import fr.upmc.datacenter.software.javassist.JavassistUtility;
 //						mapMethods);
 				
 					System.out.println("========================");
-					JavassistUtility.createRequestDispatcher(admission, listComputers);
+					int indexAvailableComputer = getIndexAvailableComputer();
+					JavassistUtility.createRequestDispatcher(admission, listComputers, indexAvailableComputer);
 					System.out.println(admission.getRequestSubmissionInboundPortRD());
 					this.connectWithApplicationContainer(admission.getAdmissionNotificationInboundPortURI());
 					this.anOutboundPort.notifyAdmissionNotification(admission);
@@ -269,6 +239,21 @@ import fr.upmc.datacenter.software.javassist.JavassistUtility;
 				}
 			}
 			return res;
+		}
+		/**
+		 * 
+		 * @return the index of the available Computer
+		 * @throws Exception
+		 */
+		public int getIndexAvailableComputer() throws Exception {
+			int index=-1;
+			for (int i = 0; i < this.listComputers.size(); i++) {
+				if (getNumberOfCore(listComputers.get(i), 1) == 4) {
+					index= i;
+					break;
+				}
+			}
+			return index;
 		}
 		
 	}

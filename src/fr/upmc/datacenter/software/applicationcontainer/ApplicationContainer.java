@@ -133,7 +133,7 @@ public class ApplicationContainer
 	public void startAsync() throws Exception
 	{
 		final ApplicationContainer application = this;
-		this.handleRequestSync(new ComponentService<Void>() {
+		this.handleRequestAsync(new ComponentService<Void>() {
 			@Override
 			public Void call() throws Exception {
 				application.askForHostingApllication();

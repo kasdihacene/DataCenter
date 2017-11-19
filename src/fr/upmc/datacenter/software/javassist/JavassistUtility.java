@@ -70,16 +70,25 @@ public class JavassistUtility {
 
  
 
+    /**
+     * Static method to create a RequestDispatcher
+     * @param admission 				: the Interface contains some information about the current state of the system and some 
+     * 									  setters to update the state of the system
+     * @param listComputers 			: list of Computers
+     * @param indexAvailableComputer 	: the Index of the Available <code><computer</code> witch contains available resources 
+     * @throws Exception
+     */
     public static void createRequestDispatcher(
     		
     		AdmissionI admission,
-    		ArrayList<Computer> listComputers
+    		ArrayList<Computer> listComputers,
+    		int indexAvailableComputer
     		) throws Exception {
 
     	// --------------------------------------------------------------------
-    				// Create and deploy first avm component
-    				// --------------------------------------------------------------------
-    	System.out.println("JAVASSIST");
+    	// Create and deploy first avm component
+    	// --------------------------------------------------------------------
+    	
     	AbstractCVM absCVM = admission.getAbstractCVM();
     	avm0 = new ApplicationVM(
     						avmURI0,	// application vm component URI
@@ -137,13 +146,11 @@ public class JavassistUtility {
     	
     	
     	//Allocate the 4 cores of the computer to the application virtual machine
-    			AllocatedCore[] ac0 = listComputers.get(0).allocateCores(4) ;
+    			AllocatedCore[] ac0 = listComputers.get(indexAvailableComputer).allocateCores(2) ;
     			avmPort0.allocateCores(ac0);
     			
-    			System.out.println(ac0.length);
-    			AllocatedCore[] ac1 = listComputers.get(1).allocateCores(4) ;
+    			AllocatedCore[] ac1 = listComputers.get(indexAvailableComputer).allocateCores(2) ;
     			avmPort1.allocateCores(ac1);
-    			System.out.println(ac1.length);
     			
     			
     			rd.connectAVM(avmURI0, RequestSubmissionInboundPortURI0, RequestNotificationOutboundPortURI0);
@@ -151,7 +158,7 @@ public class JavassistUtility {
     			
     			String RSIP = RequestSubmissionInboundPortURI+admission.getApplicationURI();
     			admission.setRequestSubmissionInboundPortRD(RSIP);
-    			System.out.println("============ REQUEST DISPATCHER CREATED ============ ");
+    			System.out.println("RequestDispatcher created successefuly ...");
     }
 
 

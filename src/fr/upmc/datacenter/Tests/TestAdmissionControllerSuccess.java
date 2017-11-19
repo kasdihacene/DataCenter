@@ -1,4 +1,4 @@
-package fr.upmc.datacenter.software.admissionController.TEST;
+package fr.upmc.datacenter.Tests;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,9 +18,9 @@ import fr.upmc.datacenter.software.admissionController.Admission;
 import fr.upmc.datacenter.software.admissionController.AdmissionController;
 import fr.upmc.datacenter.software.applicationcontainer.ApplicationContainer;
 
-public class TestAdmissionController extends fr.upmc.components.cvm.AbstractCVM{
+public class TestAdmissionControllerSuccess extends fr.upmc.components.cvm.AbstractCVM{
 
-	public TestAdmissionController() throws Exception {
+	public TestAdmissionControllerSuccess() throws Exception {
 		super();
 	}
 	
@@ -198,7 +198,7 @@ public class TestAdmissionController extends fr.upmc.components.cvm.AbstractCVM{
 	
 	public static void main(String[] args) {
 		try {
-			TestAdmissionController testAdmissionControler = new TestAdmissionController();
+			TestAdmissionControllerSuccess testAdmissionControler = new TestAdmissionControllerSuccess();
 			// DEPLY THE COMPONENTS
 			System.out.println("DEPLOYING COMPONENTS...");
 			testAdmissionControler.deploy();

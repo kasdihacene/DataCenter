@@ -3,20 +3,38 @@ package fr.upmc.datacenter.software.admissionController;
 import fr.upmc.components.cvm.AbstractCVM;
 import fr.upmc.datacenter.software.admissionController.interfaces.AdmissionI;
 
+/**
+ * This class <code>Admission</code> implements the interface <code>AdmissionI</code> witch offers the services that we transit 
+ * between the components <code>ApplicationContainer</code> and the <code>AdmissionController</code>, this interface allows us to update the state 
+ * of the components using the information collected in the transaction.  
+ * 
+ * @author Hacene KASDI & Marc REN
+ * @version 2012.10.20.HK
+ */
 public class Admission implements AdmissionI{
 
-	/**
-	 * 
-	 */
+	
 	private static final long serialVersionUID = 1L;
+	// A boolean variable to update if there is any available resource 
 	private boolean isAllow;
+	// URI of the ApplicationContainer
 	private String applicationURI;
+	// URI of the admission notification port 
 	private String admissionNotificationInboundPortURI;
+	// URI of the admission controller port
 	private String admissionControllerInboundPortURI;
+	// the main component to deploy the created components 
 	private AbstractCVM abstractCVM;
 	
+	// URI of the Request Dispatcher
 	private String RequestSubmissionInboundPortRD;
 
+	/**
+	 * Constructor of the Admission
+	 * @param abstractCVM
+	 * @param admissionNotificationInboundPortURI
+	 * @param admissionControllerInboundPortURI
+	 */
 	public Admission(
 			AbstractCVM abstractCVM,
 			String admissionNotificationInboundPortURI,
@@ -24,12 +42,13 @@ public class Admission implements AdmissionI{
 		super();
 		this.admissionNotificationInboundPortURI = admissionNotificationInboundPortURI;
 		this.admissionControllerInboundPortURI = admissionControllerInboundPortURI;
-		
 		this.abstractCVM=abstractCVM;
 		
 	}
 
-
+/**
+ * Getters and Setters
+ */
 
 	@Override
 	public boolean isAllowed() throws Exception {

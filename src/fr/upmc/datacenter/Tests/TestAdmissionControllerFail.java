@@ -1,4 +1,4 @@
-package fr.upmc.datacenter.software.admissionController.TEST;
+package fr.upmc.datacenter.Tests;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,16 +18,16 @@ import fr.upmc.datacenter.software.admissionController.Admission;
 import fr.upmc.datacenter.software.admissionController.AdmissionController;
 import fr.upmc.datacenter.software.applicationcontainer.ApplicationContainer;
 
-public class TestAdmissionController extends fr.upmc.components.cvm.AbstractCVM{
+public class TestAdmissionControllerFail extends fr.upmc.components.cvm.AbstractCVM{
 
-	public TestAdmissionController() throws Exception {
+	public TestAdmissionControllerFail() throws Exception {
 		super();
 	}
 	
 	/**
 	* All URIs and ports for first computer
 	*/
-	protected final static int COMPUTER_NUMBER = 2;
+	protected final static int COMPUTER_NUMBER = 1;
 	protected final static String COMPUTER_URI = "computer";
 	protected final static String COMPUTER_MONITOR_URI = "monitor";
 	protected final static String COMPUTER_SERVICE_INBOUND_PORT_SUFFIX = "csip";
@@ -198,7 +198,7 @@ public class TestAdmissionController extends fr.upmc.components.cvm.AbstractCVM{
 	
 	public static void main(String[] args) {
 		try {
-			TestAdmissionController testAdmissionControler = new TestAdmissionController();
+			TestAdmissionControllerFail testAdmissionControler = new TestAdmissionControllerFail();
 			// DEPLY THE COMPONENTS
 			System.out.println("DEPLOYING COMPONENTS...");
 			testAdmissionControler.deploy();
