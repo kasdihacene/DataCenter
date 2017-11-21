@@ -1,0 +1,9 @@
+<deployment>
+  <cyclicBarrier   hostname="localhost" port="55253"/>
+  <globalRegistry  hostname="localhost" port="55252"/>
+  <rmiRegistryPort no="55999"/>
+  <jvms2hostnames>
+  	<jvm2hostname jvmuri="controller" rmiRegistryCreator="true"
+                  hostname="localhost"/>
+  </jvms2hostnames>
+</deployment>
