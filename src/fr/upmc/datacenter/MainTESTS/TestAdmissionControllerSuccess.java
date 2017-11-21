@@ -1,4 +1,4 @@
-package fr.upmc.datacenter.Tests;
+package fr.upmc.datacenter.MainTESTS;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,6 +18,21 @@ import fr.upmc.datacenter.software.admissionController.Admission;
 import fr.upmc.datacenter.software.admissionController.AdmissionController;
 import fr.upmc.datacenter.software.applicationcontainer.ApplicationContainer;
 
+/**
+ * This class shows a test of one hosting two <code>ApplicationContainer</code>
+ * 
+ * In this case we use 2 <code>Computer</code> in our data center means that we can allocate 4 <code>Processor</code>
+ * with 2 <code>Cores</code> or we can say that the ApplicationVM reserve 4 cores to execute the received requests.
+ * The test will succeed because there are available resources for 2 <code>ApplicationConatiner</code>
+ * 
+ *  Test :  2 Computer 
+ *  		2 * 2 Processors
+ *  		8 Cores ( 4 cores for each ApplicationVM )
+ *  		2 ApplicationContainer
+ * 
+ * @author Hacene & Marc
+ *
+ */
 public class TestAdmissionControllerSuccess extends fr.upmc.components.cvm.AbstractCVM{
 
 	public TestAdmissionControllerSuccess() throws Exception {
@@ -190,8 +205,8 @@ public class TestAdmissionControllerSuccess extends fr.upmc.components.cvm.Abstr
 	public void			testScenario() throws Exception
 	{
 	
-		applicationContainer.startAsync();
-		applicationContainer2.startAsync();
+		applicationContainer.startSync();
+		applicationContainer2.startSync();
 
 	}
 	

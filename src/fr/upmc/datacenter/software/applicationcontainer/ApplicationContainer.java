@@ -14,6 +14,14 @@ import fr.upmc.datacenterclient.requestgenerator.RequestGenerator;
 import fr.upmc.datacenterclient.requestgenerator.connectors.RequestGeneratorManagementConnector;
 import fr.upmc.datacenterclient.requestgenerator.ports.RequestGeneratorManagementOutboundPort;
 
+/**
+ * The class <code>ApplicationContainer</code> contains 1 <code>RequestGenerator</code> who generate requests, in this context
+ * the <code>ApplicationContainer</code> asks the <code>AdmissionController</code> for available resources in the <code>Computer</code>
+ * the <code>ApplicationContainer</code> asks for hosting the application.
+ * 
+ * @author Hacene KASDI & Marc REN
+ *
+ */
 public class ApplicationContainer 
 			extends AbstractComponent
 			implements AdmissionNotificationHandlerI{
@@ -95,6 +103,10 @@ public class ApplicationContainer
 		return rg;
 	}
 
+	/**
+	 * Invoke the method on the Connector ( asks for hosting ) 
+	 * @throws Exception
+	 */
 	public void askForHostingApllication() throws Exception{
 		System.out.println("ASK FOR HOSTIN OF THE APPLICATION ...");
 
@@ -102,6 +114,11 @@ public class ApplicationContainer
 		this.admissionRequestOutboundPort.askForHost(this.admission);
 	}
 	
+	/**
+	 * Make a connection with the InboundPort of the <code>AdmissionController</code>
+	 * @param admissionControllerInboundPortURI
+	 * @throws Exception
+	 */
 	public void connectWithAdmissionController(String admissionControllerInboundPortURI) throws Exception {
 		this.admissionRequestOutboundPort.doConnection(
 				admissionControllerInboundPortURI,
@@ -130,10 +147,14 @@ public class ApplicationContainer
 		
 	}
 
-	public void startAsync() throws Exception
+	/**
+	 * Starts a Synchronous request 
+	 * @throws Exception
+	 */
+	public void startSync() throws Exception
 	{
 		final ApplicationContainer application = this;
-		this.handleRequestAsync(new ComponentService<Void>() {
+		this.handleRequestSync(new ComponentService<Void>() {
 			@Override
 			public Void call() throws Exception {
 				application.askForHostingApllication();
@@ -142,6 +163,10 @@ public class ApplicationContainer
 		});
 	}
 	
+	/**
+	 * Starts the sending of requests to the RequestDispatcher on the other side
+	 * @throws Exception
+	 */
 	public void startApplication() throws Exception {
 		// --------------------------------------------------------------------
 		// Creating the request generator component.
@@ -154,7 +179,6 @@ public class ApplicationContainer
 		
 						getRequestGenerator().doPortConnection(
 								APP_URI+RequestSubmissionOutboundPortURI,
-//								RequestSubmissionInboundPortURI
 								this.admission.getRequestSubmissionInboundPortRD(),
 								RequestSubmissionConnector.class.getCanonicalName()) ;
 

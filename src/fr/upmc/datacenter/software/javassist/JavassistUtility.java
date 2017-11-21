@@ -19,7 +19,13 @@ import javassist.CtClass;
 import javassist.CtMethod;
 
 
-
+/**
+ * <code>JavassistUtility</code> create a <code>RequestDipatcher</code> and 2 <code>ApplicationVM</code> and reserves 2 <code>Processor</code>
+ * we generate a code of a connector with javassist
+ * 
+ * @author Hacene & Marc
+ *
+ */
 public class JavassistUtility {
 
 	/**
@@ -135,7 +141,7 @@ public class JavassistUtility {
     				avm1.toggleTracing() ;
     				avm1.toggleLogging() ;
     	
-    		
+    				
     	// --------------------------------------------------------------------
     	// Creating the request Dispatcher component.
     	// --------------------------------------------------------------------
@@ -155,7 +161,7 @@ public class JavassistUtility {
     			
     			rd.connectAVM(avmURI0, RequestSubmissionInboundPortURI0, RequestNotificationOutboundPortURI0);
     			rd.connectAVM(avmURI1, RequestSubmissionInboundPortURI1, RequestNotificationOutboundPortURI1);
-    			
+
     			String RSIP = RequestSubmissionInboundPortURI+admission.getApplicationURI();
     			admission.setRequestSubmissionInboundPortRD(RSIP);
     			System.out.println("RequestDispatcher created successefuly ...");
@@ -163,6 +169,17 @@ public class JavassistUtility {
 
 
 
+    /**
+     * This method creates a Class connector 
+     * 
+     * @param connectorCanonicalClassName
+     * @param connectorSuperclass
+     * @param connectorImplementedInterface
+     * @param offeredInterface
+     * @param methodNamesMap
+     * @return a Class Connector
+     * @throws Exception
+     */
     public static Class<?> makeConnectorClassJavassist(String connectorCanonicalClassName,
                                                        Class<?> connectorSuperclass,
                                                        Class<?> connectorImplementedInterface,

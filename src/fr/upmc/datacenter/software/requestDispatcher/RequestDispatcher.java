@@ -17,6 +17,13 @@ import fr.upmc.datacenter.software.ports.RequestSubmissionInboundPort;
 import fr.upmc.datacenter.software.ports.RequestSubmissionOutboundPort;
 import fr.upmc.datacenter.software.requestDispatcher.interfaces.RequestDispatcherManagementI;
 
+/**
+ * <code>RequestDispatcher</code> receives requests from the <code>ApplicationContainer</code> witch contains <code>RequestGenerator</code>
+ * this component dispatch the requests to the 2 <code>ApplicationVM</code> here we use one policy -Round Robin- to distribute requests
+ *  
+ * @author Hacene KASDI & Marc REN
+ *
+ */
 public class RequestDispatcher extends AbstractComponent
 		implements 
 		RequestSubmissionHandlerI,
@@ -97,6 +104,9 @@ public class RequestDispatcher extends AbstractComponent
 		
 	}
 
+	/**
+	 * Receives the request and treats the requests
+	 */
 	@Override
 	public void acceptRequestSubmissionAndNotify(RequestI r) throws Exception {
 		
@@ -141,7 +151,7 @@ public class RequestDispatcher extends AbstractComponent
 		RequestSubmissionOutboundPort rsop = new RequestSubmissionOutboundPort(this);
 		this.addPort(rsop);
 		rsop.publishPort();
-		
+																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																			
 		// CONNECT THE RequestDispatcher Port (RequestSubmissionOutboundPort) to the AVM Port (RequestSubmissionInboundPort)
 		rsop.doConnection(
 				vmRequestSubmissionInboundPortURI, 
@@ -150,10 +160,6 @@ public class RequestDispatcher extends AbstractComponent
 		// ADD THE <KEY VALUE> TO THE COLLECTION OF PORTS <avmURI, RequestSubmissionOutboundPort>
 		this.submissionPorts.put(avmURI, rsop);
 		
-		
-		/**
-		 * TODO
-		 */
 		// Create Request Dispatcher request notification inbound port
 		RequestNotificationInboundPort rnip = new RequestNotificationInboundPort(this);
 		this.addPort(rnip);

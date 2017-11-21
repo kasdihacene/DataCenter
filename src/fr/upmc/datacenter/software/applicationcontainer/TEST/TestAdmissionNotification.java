@@ -22,6 +22,11 @@ import fr.upmc.datacenter.software.applicationcontainer.connectors.AdmissionNoti
 import fr.upmc.datacenterclient.requestgenerator.RequestGenerator;
 import fr.upmc.datacenterclient.requestgenerator.ports.RequestGeneratorManagementOutboundPort;
 
+/**
+ * 
+ * @author Hacene
+ *
+ */
 public class TestAdmissionNotification extends fr.upmc.components.cvm.AbstractCVM{
 
 	public TestAdmissionNotification() throws Exception {
@@ -262,76 +267,6 @@ public class TestAdmissionNotification extends fr.upmc.components.cvm.AbstractCV
 		/**
 		 * CREATE THE FIRST REQUEST GENERATOR				
 		 */
-//		this.rg1 = new RequestGenerator(
-//									"rg1",			// generator component URI
-//									500.0,			// mean time between two requests
-//									6000000000L,	// mean number of instructions in requests
-//									RequestGeneratorManagementInboundPortURI,
-//									RequestSubmissionOutboundPortURI,
-//									RequestNotificationInboundPortURI,
-//									AdmissionControllerOutboundPortURI) ;
-//						this.addDeployedComponent(rg1) ;
-//
-//						// Toggle on tracing and logging in the request generator to
-//						// follow the submission and end of execution notification of
-//						// individual requests.
-//						this.rg1.toggleTracing() ;
-//						this.rg1.toggleLogging() ;
-				
-		/**
-		 * CREATE THE SECOND REQUEST GENERATOR				
-		 */
-//		this.rg2 = new RequestGenerator(
-//									"rg2",			// generator component URI
-//									500.0,			// mean time between two requests
-//									6000000000L,	// mean number of instructions in requests
-//									RequestGeneratorManagementInboundPortURI2,
-//									RequestSubmissionOutboundPortURI2,
-//									RequestNotificationInboundPortURI2) ;
-//						this.addDeployedComponent(rg2) ;
-//
-//						// Toggle on tracing and logging in the request generator to
-//						// follow the submission and end of execution notification of
-//						// individual requests.
-//						this.rg2.toggleTracing() ;
-//						this.rg2.toggleLogging() ;
-				
-						
-					
-		/**
-		 * CREATE THE SECOND REQUEST GENERATOR MANAGER
-		 */
-//				this.rgmop2 = new RequestGeneratorManagementOutboundPort(
-//						RequestGeneratorManagementOutboundPortURI2,
-//						new AbstractComponent(0, 0) {}) ;
-//					this.rgmop2.publishPort() ;
-//					this.rgmop2.doConnection(
-//								RequestGeneratorManagementInboundPortURI2,
-//								RequestGeneratorManagementConnector.class.getCanonicalName()) ;
-//			
-
-//	/**
-//	 * PORT CONNECTIONS BETWEEN COMPONENTS 
-//	 */						
-//			this.rg1.doPortConnection(
-//					AdmissionControllerOutboundPortURI, 
-//					AdmissionControllerInboundPortURI,
-//					AdmissionRequestConnector.class.getCanonicalName());
-//			
-//	/**
-//	 * CREATE THE FIRST REQUEST GENERATOR MANAGER
-//	 */
-//			this.rgmop = new RequestGeneratorManagementOutboundPort(
-//					RequestGeneratorManagementOutboundPortURI,
-//					new AbstractComponent(0, 0) {}) ;
-//				this.rgmop.publishPort() ;
-//				this.rgmop.doConnection(
-//							RequestGeneratorManagementInboundPortURI,
-//							RequestGeneratorManagementConnector.class.getCanonicalName()) ;
-					
-	
-							
-
 		
 		super.deploy();
 
