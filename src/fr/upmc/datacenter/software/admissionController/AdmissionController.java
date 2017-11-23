@@ -13,7 +13,8 @@ import fr.upmc.datacenter.software.admissionController.ports.AdmissionRequestInb
 import fr.upmc.datacenter.software.applicationcontainer.connectors.AdmissionNotificationConnector;
 import fr.upmc.datacenter.software.applicationcontainer.interfaces.AdmissionNotificationI;
 import fr.upmc.datacenter.software.applicationcontainer.ports.AdmissionNotificationOutboundPort;
-import fr.upmc.datacenter.software.javassist.JavassistUtility;
+import javassist.ClassPool;
+import javassist.CtClass;
 	
 	/**
 	 * <p><strong>Description</string></p>
@@ -154,10 +155,22 @@ import fr.upmc.datacenter.software.javassist.JavassistUtility;
 //						mapMethods);
 				
 					System.out.println("========================");
+
+					// Creation of the resquest Dispatcher with Javassist
 					int indexAvailableComputer = getIndexAvailableComputer();
-					JavassistUtility.createRequestDispatcher(admission, listComputers, indexAvailableComputer);
-					System.out.println(admission.getRequestSubmissionInboundPortRD());
 					this.connectWithApplicationContainer(admission.getAdmissionNotificationInboundPortURI());
+					ClassPool pool = ClassPool.getDefault();
+					CtClass cc = pool.get("fr.upmc.datacenter.software.javassist.JavassistUtility");
+					cc.setName("fr.upmc.datacenter.software.javassist.JavassistCopy");
+					cc.writeFile();
+					Class<?> clazz = pool.toClass(cc);
+					java.lang.reflect.Method [] listM = clazz.getMethods();
+					listM[0].invoke(
+							clazz, new Object[]
+							{admission
+							,listComputers
+							,indexAvailableComputer});
+					
 					this.anOutboundPort.notifyAdmissionNotification(admission);
 					System.out.println("========================");
 					anOutboundPort.doDisconnection();

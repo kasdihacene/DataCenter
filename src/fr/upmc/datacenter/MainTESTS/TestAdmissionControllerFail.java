@@ -133,7 +133,7 @@ public class TestAdmissionControllerFail extends fr.upmc.components.cvm.Abstract
 			System.out.println(csdopURI + csdipURI + cddopURI + cddipURI);
 			
 			listComputers.add(computer);
-			System.out.println(String.format("DEPLOYING : %d-th computer deployed", i + 1));
+			System.out.println(String.format("DEPLOYING : Computer %d deployed", i + 1));
 		}
 
 		// --------------------------------------------------------------------
