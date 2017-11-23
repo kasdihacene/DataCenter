@@ -1,3 +1,6 @@
+# Local for each user
+.classpath
+
 # Compiled class file
 *.class
 
