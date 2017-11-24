@@ -14,8 +14,8 @@ import fr.upmc.datacenter.hardware.computers.connectors.ComputerServicesConnecto
 import fr.upmc.datacenter.hardware.computers.ports.ComputerServicesOutboundPort;
 import fr.upmc.datacenter.hardware.processors.Processor;
 import fr.upmc.datacenter.hardware.tests.ComputerMonitor;
-import fr.upmc.datacenter.software.admissionController.Admission;
-import fr.upmc.datacenter.software.admissionController.AdmissionController;
+import fr.upmc.datacenter.software.admissioncontroller.Admission;
+import fr.upmc.datacenter.software.admissioncontroller.AdmissionController;
 import fr.upmc.datacenter.software.applicationcontainer.ApplicationContainer;
 
 /**
@@ -131,7 +131,6 @@ public class TestAdmissionControllerSuccess extends fr.upmc.components.cvm.Abstr
 			this.addDeployedComponent(cm);
 			cm.doPortConnection(csdopURI, csdipURI, DataConnector.class.getCanonicalName());
 			cm.doPortConnection(cddopURI, cddipURI, ControlledDataConnector.class.getCanonicalName());
-			System.out.println(csdopURI + csdipURI + cddopURI + cddipURI);
 			
 			listComputers.add(computer);
 			System.out.println(String.format("DEPLOYING : %d-th computer deployed", i + 1));
@@ -142,12 +141,10 @@ public class TestAdmissionControllerSuccess extends fr.upmc.components.cvm.Abstr
 		// --------------------------------------------------------------------
 		
 		Admission admission = new Admission(
-				this, 
 				AdmissionNotificationInboundPortURI, 
 				AdmissionControllerInboundPortURI);
 		
 		Admission admission2 = new Admission(
-				this, 
 				AdmissionNotificationInboundPortURI2, 
 				AdmissionControllerInboundPortURI2);
 	
@@ -156,7 +153,8 @@ public class TestAdmissionControllerSuccess extends fr.upmc.components.cvm.Abstr
 		 */
 		this.applicationContainer =
 				new ApplicationContainer(
-						"APP1-", 
+						"APP1-",
+						this,
 						admission,
 						AdmissionNotificationInboundPortURI,
 						AdmissionControllerOutboundPortURI);
@@ -165,7 +163,8 @@ public class TestAdmissionControllerSuccess extends fr.upmc.components.cvm.Abstr
 		
 		this.applicationContainer2 =
 				new ApplicationContainer(
-						"APP2-", 
+						"APP2-",
+						this,
 						admission2,
 						AdmissionNotificationInboundPortURI2,
 						AdmissionControllerOutboundPortURI2);
@@ -177,6 +176,7 @@ public class TestAdmissionControllerSuccess extends fr.upmc.components.cvm.Abstr
 	
 		this.admissionController = new AdmissionController(
 				"Controller1",
+				this,
 				AdmissionControllerInboundPortURI,
 				AdmissionNotificationOutboundPortURI,
 				listComputers);

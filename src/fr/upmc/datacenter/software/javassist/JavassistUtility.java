@@ -9,11 +9,11 @@ import fr.upmc.components.cvm.AbstractCVM;
 import fr.upmc.datacenter.hardware.computers.Computer;
 import fr.upmc.datacenter.hardware.computers.Computer.AllocatedCore;
 import fr.upmc.datacenter.hardware.tests.ComputerMonitor;
-import fr.upmc.datacenter.software.admissionController.interfaces.AdmissionI;
+import fr.upmc.datacenter.software.admissioncontroller.interfaces.AdmissionI;
 import fr.upmc.datacenter.software.applicationvm.ApplicationVM;
 import fr.upmc.datacenter.software.applicationvm.connectors.ApplicationVMManagementConnector;
 import fr.upmc.datacenter.software.applicationvm.ports.ApplicationVMManagementOutboundPort;
-import fr.upmc.datacenter.software.requestDispatcher.RequestDispatcher;
+import fr.upmc.datacenter.software.requestdispatcher.RequestDispatcher;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtMethod;
@@ -60,6 +60,7 @@ public class JavassistUtility {
 
 
 		// PREDIFINED URI OF PORTS 
+		public static final String RequestDispatcherManagementInboundPort = "rdmip";
 		public static final String	RequestSubmissionInboundPortURI = "rsibp" ;
 		public static final String	RequestNotificationInboundPortURI = "rnibp" ;
 		public static final String	RequestNotificationOutboundPortURI = "rnobp" ;
@@ -86,6 +87,7 @@ public class JavassistUtility {
      */
     public static void createRequestDispatcher(
     		
+    		AbstractCVM cvm,
     		AdmissionI admission,
     		ArrayList<Computer> listComputers,
     		int indexAvailableComputer
@@ -94,14 +96,13 @@ public class JavassistUtility {
     	// --------------------------------------------------------------------
     	// Create and deploy first avm component
     	// --------------------------------------------------------------------
-    	
-    	AbstractCVM absCVM = admission.getAbstractCVM();
+    	System.out.println("called");
     	avm0 = new ApplicationVM(
     						avmURI0,	// application vm component URI
     						ApplicationVMManagementInboundPortURI0,
     						RequestSubmissionInboundPortURI0,
     						RequestNotificationOutboundPortURI0) ;
-    				absCVM.addDeployedComponent(avm0) ;
+    				cvm.addDeployedComponent(avm0) ;
     		
     				// Create a mock up port to manage the AVM component (allocate cores).
     				avmPort0 = new ApplicationVMManagementOutboundPort(
@@ -125,7 +126,7 @@ public class JavassistUtility {
     						ApplicationVMManagementInboundPortURI1,
     						RequestSubmissionInboundPortURI1,
     						RequestNotificationOutboundPortURI1) ;
-    				absCVM.addDeployedComponent(avm1) ;
+    				cvm.addDeployedComponent(avm1) ;
     		
     				// Create a mock up port to manage the AVM component (allocate cores).
     				avmPort1 = new ApplicationVMManagementOutboundPort(
@@ -141,15 +142,17 @@ public class JavassistUtility {
     				avm1.toggleTracing() ;
     				avm1.toggleLogging() ;
     	
-    				
+    	System.out.println("avm created");			
     	// --------------------------------------------------------------------
     	// Creating the request Dispatcher component.
     	// --------------------------------------------------------------------
-    	RequestDispatcher rd = new RequestDispatcher("RDispatcher", 
-    			RequestSubmissionInboundPortURI+admission.getApplicationURI(), 
+    	RequestDispatcher rd = new RequestDispatcher("RDispatcher",
+    			RequestDispatcherManagementInboundPort+ admission.getApplicationURI(),
+    			RequestSubmissionInboundPortURI+admission.getApplicationURI(),
+    			RequestNotificationInboundPortURI+admission.getApplicationURI(),
     			RequestNotificationOutboundPortURI+admission.getApplicationURI());
-    	absCVM.addDeployedComponent(rd);
-    	
+    	cvm.addDeployedComponent(rd);
+    	System.out.println("rd created");
     	
     	//Allocate the 4 cores of the computer to the application virtual machine
     			AllocatedCore[] ac0 = listComputers.get(indexAvailableComputer).allocateCores(2) ;

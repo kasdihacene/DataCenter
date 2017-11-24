@@ -14,8 +14,8 @@ import fr.upmc.datacenter.hardware.computers.connectors.ComputerServicesConnecto
 import fr.upmc.datacenter.hardware.computers.ports.ComputerServicesOutboundPort;
 import fr.upmc.datacenter.hardware.processors.Processor;
 import fr.upmc.datacenter.hardware.tests.ComputerMonitor;
-import fr.upmc.datacenter.software.admissionController.Admission;
-import fr.upmc.datacenter.software.admissionController.AdmissionController;
+import fr.upmc.datacenter.software.admissioncontroller.Admission;
+import fr.upmc.datacenter.software.admissioncontroller.AdmissionController;
 import fr.upmc.datacenter.software.applicationcontainer.ApplicationContainer;
 
 /**
@@ -141,12 +141,10 @@ public class TestAdmissionControllerFail extends fr.upmc.components.cvm.Abstract
 		// --------------------------------------------------------------------
 		
 		Admission admission = new Admission(
-				this, 
 				AdmissionNotificationInboundPortURI, 
 				AdmissionControllerInboundPortURI);
 		
 		Admission admission2 = new Admission(
-				this, 
 				AdmissionNotificationInboundPortURI2, 
 				AdmissionControllerInboundPortURI2);
 	
@@ -156,6 +154,7 @@ public class TestAdmissionControllerFail extends fr.upmc.components.cvm.Abstract
 		this.applicationContainer =
 				new ApplicationContainer(
 						"APP1-", 
+						this,
 						admission,
 						AdmissionNotificationInboundPortURI,
 						AdmissionControllerOutboundPortURI);
@@ -165,6 +164,7 @@ public class TestAdmissionControllerFail extends fr.upmc.components.cvm.Abstract
 		this.applicationContainer2 =
 				new ApplicationContainer(
 						"APP2-", 
+						this,
 						admission2,
 						AdmissionNotificationInboundPortURI2,
 						AdmissionControllerOutboundPortURI2);
@@ -176,6 +176,7 @@ public class TestAdmissionControllerFail extends fr.upmc.components.cvm.Abstract
 	
 		this.admissionController = new AdmissionController(
 				"Controller1",
+				this,
 				AdmissionControllerInboundPortURI,
 				AdmissionNotificationOutboundPortURI,
 				listComputers);

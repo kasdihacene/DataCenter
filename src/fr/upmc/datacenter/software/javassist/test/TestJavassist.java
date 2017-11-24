@@ -6,7 +6,7 @@ import fr.upmc.datacenter.hardware.computers.Computer;
 import fr.upmc.datacenter.hardware.tests.ComputerMonitor;
 import fr.upmc.datacenter.software.applicationvm.ApplicationVM;
 import fr.upmc.datacenter.software.applicationvm.ports.ApplicationVMManagementOutboundPort;
-import fr.upmc.datacenter.software.requestDispatcher.RequestDispatcher;
+import fr.upmc.datacenter.software.requestdispatcher.RequestDispatcher;
 import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.CtClass;

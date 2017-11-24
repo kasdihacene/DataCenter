@@ -2,7 +2,7 @@ package fr.upmc.datacenter.software.applicationcontainer.ports;
 
 import fr.upmc.components.ComponentI;
 import fr.upmc.components.ports.AbstractOutboundPort;
-import fr.upmc.datacenter.software.admissionController.interfaces.AdmissionI;
+import fr.upmc.datacenter.software.admissioncontroller.interfaces.AdmissionI;
 import fr.upmc.datacenter.software.applicationcontainer.interfaces.AdmissionNotificationI;
 
 public class AdmissionNotificationOutboundPort 
@@ -24,7 +24,6 @@ public class AdmissionNotificationOutboundPort
 
 	@Override
 	public void notifyAdmissionNotification(AdmissionI admission) throws Exception {
-			
 		((AdmissionNotificationI)this.connector).notifyAdmissionNotification(admission);
 	}
 

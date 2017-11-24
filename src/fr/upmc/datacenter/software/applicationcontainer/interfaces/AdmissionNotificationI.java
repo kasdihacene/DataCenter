@@ -2,7 +2,7 @@ package fr.upmc.datacenter.software.applicationcontainer.interfaces;
 
 import fr.upmc.components.interfaces.OfferedI;
 import fr.upmc.components.interfaces.RequiredI;
-import fr.upmc.datacenter.software.admissionController.interfaces.AdmissionI;
+import fr.upmc.datacenter.software.admissioncontroller.interfaces.AdmissionI;
 
 /**
  * 

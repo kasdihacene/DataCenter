@@ -1,0 +1,5 @@
+#!/bin/bash
+
+java -ea -cp '../jars/*' -Djava.security.manager \
+   -Djava.security.policy=dcvm.policy \
+   fr.upmc.examples.avm.DistribuedAVM avm config_avm.xml

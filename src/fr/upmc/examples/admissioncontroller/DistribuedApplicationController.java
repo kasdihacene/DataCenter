@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.Set;
 
 import fr.upmc.components.AbstractComponent;
@@ -14,12 +15,13 @@ import fr.upmc.datacenter.hardware.computers.Computer;
 import fr.upmc.datacenter.hardware.computers.connectors.ComputerServicesConnector;
 import fr.upmc.datacenter.hardware.computers.ports.ComputerServicesOutboundPort;
 import fr.upmc.datacenter.hardware.tests.ComputerMonitor;
-import fr.upmc.datacenter.software.admissionController.AdmissionController;
+import fr.upmc.datacenter.software.admissioncontroller.AdmissionController;
 
 public class DistribuedApplicationController extends AbstractDistributedCVM {
 
 	protected AdmissionController ac;
-	protected int computerNumber = 0;
+	protected int computerNumber = 2;
+	protected int coresByAVM = 4;
 
 	protected final static String COMPUTER_URI = "computer";
 	protected final static String COMPUTER_MONITOR_URI = "monitor";
@@ -32,16 +34,21 @@ public class DistribuedApplicationController extends AbstractDistributedCVM {
 	protected ArrayList<Computer> computers = new ArrayList<Computer>();
 
 	public DistribuedApplicationController(String[] args) throws Exception {
-		
+
 		super(args);
-		
+
 		String jvmURI = args[0];
-		int computerNumber = Integer.parseInt(args[2]);
-		
-		assert jvmURI.equals(StaticData.ADMISSION_CONTROLLER_JVM_URI);
-		assert computerNumber > 0;
-		
-		this.computerNumber = computerNumber;
+		int computerNumber = args.length > 2 ? Integer.parseInt(args[2]) : 0;
+		int coresByAVM = args.length > 3 ? Integer.parseInt(args[3]) : 0;
+
+		if (computerNumber > 0)
+			this.computerNumber = computerNumber;
+		else
+			System.out.println(String.format("Default %d computers for one controller", this.computerNumber));
+		if (computerNumber > 0)
+			this.computerNumber = computerNumber;
+		else
+			System.out.println(String.format("Default %d cores allocated for one avm", this.coresByAVM));
 	}
 
 	@Override
@@ -51,9 +58,9 @@ public class DistribuedApplicationController extends AbstractDistributedCVM {
 
 	@Override
 	public void instantiateAndPublish() throws Exception {
-		
+
 		super.instantiateAndPublish();
-		
+
 		/**
 		 * Computer default configuration
 		 */
@@ -87,7 +94,7 @@ public class DistribuedApplicationController extends AbstractDistributedCVM {
 			this.addDeployedComponent(cm);
 			cm.doPortConnection(csdopURI, csdipURI, DataConnector.class.getCanonicalName());
 			cm.doPortConnection(cddopURI, cddipURI, ControlledDataConnector.class.getCanonicalName());
-			
+
 			this.computers.add(computer);
 			System.out.println("START computer " + i);
 			cm.start();
@@ -95,23 +102,22 @@ public class DistribuedApplicationController extends AbstractDistributedCVM {
 			System.out.println(String.format("DEPLOYING : %d-th computer deployed", i + 1));
 		}
 
-		this.ac = new AdmissionController(StaticData.ADMISSION_CONTROLLER_JVM_URI,
-				StaticData.ADMISSION_REQUEST_INBOUND_PORT_URI, StaticData.ADMISSION_NOTIFICATION_OUTBOUND_PORT_URI,
-				computers);
+		this.ac = new AdmissionController(thisJVMURI, this, this.coresByAVM, StaticData.ADMISSION_REQUEST_INBOUND_PORT_URI,
+				StaticData.ADMISSION_NOTIFICATION_OUTBOUND_PORT_URI, computers);
 		this.ac.start();
-	
+
 	}
 
 	@Override
-	public void interconnect() throws Exception{
+	public void interconnect() throws Exception {
 		super.interconnect();
 	}
-	
+
 	@Override
-	public void start() throws Exception{
+	public void start() throws Exception {
 		super.start();
 	}
-	
+
 	public static void main(String[] args) {
 		System.out.println("Beginning distribued Admission Controller");
 		try {
@@ -120,8 +126,7 @@ public class DistribuedApplicationController extends AbstractDistributedCVM {
 			System.out.println("All component deployed");
 			System.out.println("Start\n");
 			dac.start();
-			while(true) {}
-		}catch(Exception e) {
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}

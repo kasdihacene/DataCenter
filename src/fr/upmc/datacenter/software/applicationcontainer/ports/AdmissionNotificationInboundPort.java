@@ -2,7 +2,7 @@ package fr.upmc.datacenter.software.applicationcontainer.ports;
 
 import fr.upmc.components.ComponentI;
 import fr.upmc.components.ports.AbstractInboundPort;
-import fr.upmc.datacenter.software.admissionController.interfaces.AdmissionI;
+import fr.upmc.datacenter.software.admissioncontroller.interfaces.AdmissionI;
 import fr.upmc.datacenter.software.applicationcontainer.interfaces.AdmissionNotificationHandlerI;
 import fr.upmc.datacenter.software.applicationcontainer.interfaces.AdmissionNotificationI;
 
@@ -36,7 +36,6 @@ public class AdmissionNotificationInboundPort
 
 	@Override
 	public void notifyAdmissionNotification(AdmissionI admission) throws Exception {
-
 		final AdmissionNotificationHandlerI admissionNotificationHandlerI = 
 				(AdmissionNotificationHandlerI)this.owner;
 		this.owner.handleRequestAsync(

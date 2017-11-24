@@ -1,6 +1,6 @@
 package fr.upmc.datacenter.software.applicationcontainer.interfaces;
 
-import fr.upmc.datacenter.software.admissionController.interfaces.AdmissionI;
+import fr.upmc.datacenter.software.admissioncontroller.interfaces.AdmissionI;
 /**
  * 
  * @author Hacene

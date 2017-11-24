@@ -1,22 +1,25 @@
 package fr.upmc.examples.admissioncontroller;
 
+import java.util.Scanner;
+
 import fr.upmc.components.cvm.AbstractDistributedCVM;
-import fr.upmc.datacenter.software.admissionController.Admission;
+import fr.upmc.datacenter.software.admissioncontroller.Admission;
+import fr.upmc.datacenter.software.admissioncontroller.interfaces.AdmissionI;
 import fr.upmc.datacenter.software.applicationcontainer.ApplicationContainer;
 
-public class DistribuedApplicationContainer extends AbstractDistributedCVM{
+public class DistribuedApplicationContainer extends AbstractDistributedCVM {
 
+	protected String jvmURI;
 	protected ApplicationContainer ac;
 
 	public DistribuedApplicationContainer(String[] args) throws Exception {
 		super(args);
 
 		String jvmURI = args[0];
-		
-		System.out.println(jvmURI);
-		
-		assert jvmURI.equals(StaticData.APPLICATION_CONTAINER_JVM_URI0)
-				|| jvmURI.equals(StaticData.APPLICATION_CONTAINER_JVM_URI1);
+
+		assert jvmURI != null;
+
+		this.jvmURI = jvmURI;
 	}
 
 	@Override
@@ -27,35 +30,24 @@ public class DistribuedApplicationContainer extends AbstractDistributedCVM{
 	@Override
 	public void instantiateAndPublish() throws Exception {
 		super.instantiateAndPublish();
-		Admission admission;
-		if (this.thisJVMURI.equals(StaticData.APPLICATION_CONTAINER_JVM_URI0)) {
-			admission = new Admission(this, StaticData.AC_ADMISSION_NOTIFICATION_INBOUND_PORT0,
-					StaticData.AC_REQUEST_SUBMISSION_OUTBOUND_PORT0);
-			this.ac = new ApplicationContainer(StaticData.APPLICATION_CONTAINER_JVM_URI0, admission,
-					StaticData.AC_ADMISSION_NOTIFICATION_INBOUND_PORT0,
-					StaticData.AC_REQUEST_SUBMISSION_OUTBOUND_PORT0);
-		}
-		if (this.thisJVMURI.equals(StaticData.APPLICATION_CONTAINER_JVM_URI1)) {
-			admission = new Admission(this, StaticData.AC_ADMISSION_NOTIFICATION_INBOUND_PORT1,
-					StaticData.AC_REQUEST_SUBMISSION_OUTBOUND_PORT1);
-			this.ac = new ApplicationContainer(StaticData.APPLICATION_CONTAINER_JVM_URI1, admission,
-					StaticData.AC_ADMISSION_NOTIFICATION_INBOUND_PORT1,
-					StaticData.AC_REQUEST_SUBMISSION_OUTBOUND_PORT1);
-		}
+		String anip = this.jvmURI + StaticData.AC_ADMISSION_NOTIFICATION_INBOUND_SUFFIX;
+		String rsop = this.jvmURI + StaticData.AC_REQUEST_SUBMISSION_OUTBOUND_SUFFIX;
+		AdmissionI admission = new Admission(anip, rsop);
+		this.ac = new ApplicationContainer(this.jvmURI, this, admission, anip, rsop);
 	}
-	
+
 	@Override
-	public void interconnect() throws Exception{
+	public void interconnect() throws Exception {
 		super.interconnect();
 		this.ac.connectWithAdmissionController(StaticData.ADMISSION_REQUEST_INBOUND_PORT_URI);
 	}
-	
+
 	@Override
-	public void start() throws Exception{
+	public void start() throws Exception {
 		super.start();
 		this.ac.askForHostingApllication();
 	}
-	
+
 	public static void main(String[] args) {
 		System.out.println("Beginning distribued application container " + args[0]);
 		try {
@@ -64,10 +56,13 @@ public class DistribuedApplicationContainer extends AbstractDistributedCVM{
 			System.out.println("All component deployed");
 			System.out.println("Start\n");
 			dac.start();
-		}catch(Exception e) {
+			System.out.println(">>>> TYPE ENTER TO CLOSE APPLICATION <<<<");
+			Scanner sc = new Scanner(System.in);
+			sc.nextLine();
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
-		System.out.println("Admission Controller ending");
+		System.out.println("APPLICATION CLOSED");
 		System.exit(0);
 	}
 }
