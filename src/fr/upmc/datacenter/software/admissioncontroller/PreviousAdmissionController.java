@@ -81,7 +81,6 @@ import javassist.CtClass;
 			assert notificationOutbounPortURI != null;
 			assert listComputers.size() > 0;
 			
-			/** List of computers					*/
 			this.listComputers=new ArrayList<Computer>(listComputers);
 			this.uri=uri;
 			this.cvm = cvm;

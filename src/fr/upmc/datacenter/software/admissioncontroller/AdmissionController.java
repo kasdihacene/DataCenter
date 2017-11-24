@@ -49,7 +49,7 @@ import fr.upmc.datacenter.software.requestdispatcher.ports.RequestDispatcherMana
 
 public class AdmissionController extends AbstractComponent implements AdmissionRequestHandlerI {
 
-	private int CORES_BY_AVM = 3;
+	private int CORES_BY_AVM = 2;
 	private static final String LOCAL_AVM_URI = "CONTROLLER-avm";
 	private static final String LOCAL_REQUEST_DISPATCHER_URI = "CONTROLLER-dispatcher";
 	private static final String LOCAL_AVM_MANAGEMENT_INPORT_SUFFIX = "mibp";
@@ -357,6 +357,8 @@ public class AdmissionController extends AbstractComponent implements AdmissionR
 						dispatcherURI, avmURI));
 			} else {
 				System.out.println(String.format("CONTROLLER<%s>: no idle core, cannot create more avm", this.acURI));
+				System.out.println(String.format("CONTROLLER<%s>: dispatcher<%s> allocated for application<%s> with %d avms",
+						this.acURI, dispatcherURI, admission.getApplicationURI(), i));
 				admission.setAVMNumber(i);
 				return dispatcherRSIP;
 			}
@@ -372,6 +374,20 @@ public class AdmissionController extends AbstractComponent implements AdmissionR
 	 * ALL FUNCTIONS FOR HANDLING ADMISSION REQUEST
 	 */
 	public void notify(AdmissionI admission) throws Exception {
+		/*
+		 * Generate a Class Connector (AdmissionNotificationConnector) using the abstract method of the class 
+		 * JavassistUtility using Javassist
+		 */
+//		HashMap<String, String> mapMethods = new HashMap<String, String>();
+//		mapMethods.put("notifyAdmissionNotification", "notifyAdmissionNotification");
+//		Class<?> admissionConnector = JavassistUtility.makeConnectorClassJavassist(
+//				"AdmissionNotificationConnector", 
+//				AbstractConnector.class, 
+//				AdmissionNotificationI.class, 
+//				AdmissionNotificationI.class, 
+//				mapMethods);
+//		this.admissionNotificationOutboundPort.doConnection(admission.getAdmissionNotificationInboundPortURI(),
+//				admissionConnector.getCanonicalName());
 		this.admissionNotificationOutboundPort.doConnection(admission.getAdmissionNotificationInboundPortURI(),
 				AdmissionNotificationConnector.class.getCanonicalName());
 		this.admissionNotificationOutboundPort.notifyAdmissionNotification(admission);

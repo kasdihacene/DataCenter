@@ -59,6 +59,7 @@ public class DistribuedApplicationContainer extends AbstractDistributedCVM {
 			System.out.println(">>>> TYPE ENTER TO CLOSE APPLICATION <<<<");
 			Scanner sc = new Scanner(System.in);
 			sc.nextLine();
+			sc.close();
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}

@@ -189,11 +189,15 @@ public class JavassistUtility {
                                                        Class<?> offeredInterface,
                                                        HashMap<String,String> methodNamesMap ) throws Exception
     {
-
+    	System.out.println("get pool==============");
         ClassPool pool = ClassPool.getDefault() ;
+        System.out.println("get connector superclass");
         CtClass cs = pool.get(connectorSuperclass.getCanonicalName()) ;
+        System.out.println("get implemented interface");
         CtClass cii = pool.get(connectorImplementedInterface.getCanonicalName()) ;
+        System.out.println("get offered interface");
         CtClass oi = pool.get(offeredInterface.getCanonicalName()) ;
+        System.out.println("make class");
         CtClass connectorCtClass = pool.makeClass(connectorCanonicalClassName) ;
 
         connectorCtClass.setSuperclass(cs) ;

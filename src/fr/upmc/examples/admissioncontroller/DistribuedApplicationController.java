@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Scanner;
 import java.util.Set;
 
 import fr.upmc.components.AbstractComponent;
@@ -37,7 +36,6 @@ public class DistribuedApplicationController extends AbstractDistributedCVM {
 
 		super(args);
 
-		String jvmURI = args[0];
 		int computerNumber = args.length > 2 ? Integer.parseInt(args[2]) : 0;
 		int coresByAVM = args.length > 3 ? Integer.parseInt(args[3]) : 0;
 
@@ -45,8 +43,8 @@ public class DistribuedApplicationController extends AbstractDistributedCVM {
 			this.computerNumber = computerNumber;
 		else
 			System.out.println(String.format("Default %d computers for one controller", this.computerNumber));
-		if (computerNumber > 0)
-			this.computerNumber = computerNumber;
+		if (coresByAVM > 0)
+			this.coresByAVM = coresByAVM;
 		else
 			System.out.println(String.format("Default %d cores allocated for one avm", this.coresByAVM));
 	}

@@ -2,8 +2,6 @@ package fr.upmc.datacenter.software.admissioncontroller.interfaces;
 
 import java.io.Serializable;
 
-import fr.upmc.components.cvm.AbstractCVM;
-
 public interface AdmissionI extends Serializable {
 
 	/**

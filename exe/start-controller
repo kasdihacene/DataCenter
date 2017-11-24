@@ -6,7 +6,7 @@ if [ $# -lt 2 ]; then
 if [ -e ../jars/DataCenter.jar ]; then
   java -ea -cp '../jars/*' -Djava.security.manager \
      -Djava.security.policy=dcvm.policy \
-     fr.upmc.examples.admissioncontroller.DistribuedApplicationController controller config.xml $1
+     fr.upmc.examples.admissioncontroller.DistribuedApplicationController controller config.xml $1 $2
 else
   echo 'The project must be exported into a jar named DataCenter.jar in folder ../jars'
 fi
