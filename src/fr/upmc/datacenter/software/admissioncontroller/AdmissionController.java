@@ -79,7 +79,7 @@ public class AdmissionController extends AbstractComponent implements AdmissionR
 	protected Map<String, ApplicationVMManagementOutboundPort> avms = new HashMap<String, ApplicationVMManagementOutboundPort>();
 	protected Map<String, RequestDispatcherManagementOutboundPort> dispatchers = new HashMap<String, RequestDispatcherManagementOutboundPort>();
 	protected Map<String, String> applicationDispatcher = new HashMap<String, String>();
-	
+
 	public AdmissionController(String acURI, AbstractCVM cvm, String asipURI, String anopURI) throws Exception {
 
 		super(1, 1);
@@ -119,23 +119,23 @@ public class AdmissionController extends AbstractComponent implements AdmissionR
 		this.cvm.addDeployedComponent(this.dynamicComponentCreator);
 
 	}
-	
+
 	public AdmissionController(String acURI, AbstractCVM cvm, int cores, String asipURI, String anopURI)
 			throws Exception {
 		this(acURI, cvm, asipURI, anopURI);
 		assert cores > 0;
 		this.CORES_BY_AVM = cores;
 	}
-	
+
 	public AdmissionController(String acURI, AbstractCVM cvm, String asipURI, String anopURI, List<Computer> computers)
 			throws Exception {
 		this(acURI, cvm, asipURI, anopURI);
 		assert computers.size() > 0;
 		this.computers = computers;
 	}
-	
-	public AdmissionController(String acURI, AbstractCVM cvm, int cores, String asipURI, String anopURI, List<Computer> computers)
-			throws Exception {
+
+	public AdmissionController(String acURI, AbstractCVM cvm, int cores, String asipURI, String anopURI,
+			List<Computer> computers) throws Exception {
 		this(acURI, cvm, cores, asipURI, anopURI);
 		assert computers.size() > 0;
 		this.computers = computers;
@@ -244,6 +244,13 @@ public class AdmissionController extends AbstractComponent implements AdmissionR
 	/*
 	 * ALLOCATING FUNCTIONS
 	 */
+	/**
+	 * 
+	 * @param number
+	 *            : Number of core to allocate
+	 * @return <code>AllocatedCore</code> array with length <= number
+	 * @throws Exception
+	 */
 	public AllocatedCore[] allocateCores(int number) throws Exception {
 		assert number > 0;
 
@@ -270,13 +277,29 @@ public class AdmissionController extends AbstractComponent implements AdmissionR
 		return cores;
 	}
 
+	/**
+	 * 
+	 * @param coreNumber
+	 *            : Number of core wanted
+	 * @return URI of the allocated <code>ApplicationVM</code> with number of cores
+	 *         less or equal than coreNumber
+	 * @throws Exception
+	 */
 	public String allocateAVM(int coreNumber) throws Exception {
 		AllocatedCore[] cores = this.allocateCores(coreNumber);
 		return allocateAVM(cores);
 	}
 
+	/**
+	 * 
+	 * @param cores
+	 *            : <code>AllocatedCore</code> array to connect with avm
+	 * @return URI of the allocated <code>ApplicationVM</code> connected with each
+	 *         <code>AllocatedCore</code> in cores
+	 * @throws Exception
+	 */
 	public String allocateAVM(AllocatedCore[] cores) throws Exception {
-		
+
 		String avmURI = LOCAL_AVM_URI + avms.values().size();
 		System.out.println(
 				String.format("CONTROLLER<%s>: Try to start avm<%s> with %d cores", this.acURI, avmURI, cores.length));
@@ -285,7 +308,7 @@ public class AdmissionController extends AbstractComponent implements AdmissionR
 		String ApplicationVMManagementOutboundPortURI = avmURI + LOCAL_AVM_MANAGEMENT_OUTPORT_SUFFIX;
 		String RequestSubmissionInboundPortURI = avmURI + LOCAL_REQUEST_SUB_INPORT_PORT_SUFFIX;
 		String RequestNotificationOutboundPortURI = avmURI + LOCAL_REQUEST_NOT_OUTPORT_PORT_SUFFIX;
-		
+
 		System.out.println(String.format("CONTROLLER<%s>: create avm<%s>", this.acURI, avmURI));
 		this.dynamicComponentCreator.createComponent(ApplicationVM.class.getCanonicalName(),
 				new Object[] { avmURI, ApplicationVMManagementInboundPortURI, RequestSubmissionInboundPortURI,
@@ -308,10 +331,20 @@ public class AdmissionController extends AbstractComponent implements AdmissionR
 		return avmURI;
 	}
 
+	/**
+	 * 
+	 * @param admission
+	 *            : <code>AdmissionI</code> that describe requested
+	 *            <code>AdmissionI</code>
+	 * @return URI of the <code>RequestSubmissionOutboundPort</code> allocated
+	 *         <code>RequestDispatcher</code>
+	 * @throws Exception
+	 */
 	public String allocateDispatcher(AdmissionI admission) throws Exception {
 
-		System.out.println(String.format("CONTROLLER<%s>: Try to allocate a request dispatcher for application<%s> with %d avms",
-				this.acURI, admission.getApplicationURI(), admission.getAVMNumber()));
+		System.out.println(
+				String.format("CONTROLLER<%s>: Try to allocate a request dispatcher for application<%s> with %d avms",
+						this.acURI, admission.getApplicationURI(), admission.getAVMNumber()));
 
 		int dispatcherNumber = dispatchers.values().size();
 		String dispatcherURI = LOCAL_REQUEST_DISPATCHER_URI + dispatcherNumber;
@@ -357,8 +390,9 @@ public class AdmissionController extends AbstractComponent implements AdmissionR
 						dispatcherURI, avmURI));
 			} else {
 				System.out.println(String.format("CONTROLLER<%s>: no idle core, cannot create more avm", this.acURI));
-				System.out.println(String.format("CONTROLLER<%s>: dispatcher<%s> allocated for application<%s> with %d avms",
-						this.acURI, dispatcherURI, admission.getApplicationURI(), i));
+				System.out.println(
+						String.format("CONTROLLER<%s>: dispatcher<%s> allocated for application<%s> with %d avms",
+								this.acURI, dispatcherURI, admission.getApplicationURI(), i));
 				admission.setAVMNumber(i);
 				return dispatcherRSIP;
 			}
@@ -373,21 +407,28 @@ public class AdmissionController extends AbstractComponent implements AdmissionR
 	/*
 	 * ALL FUNCTIONS FOR HANDLING ADMISSION REQUEST
 	 */
+	/**
+	 * Notify the owner of the requested <code>AdmissionI</code>
+	 * 
+	 * @param admission
+	 *            : <code>AdmissionI</code> that describe requested admission
+	 * @throws Exception
+	 */
 	public void notify(AdmissionI admission) throws Exception {
 		/*
-		 * Generate a Class Connector (AdmissionNotificationConnector) using the abstract method of the class 
-		 * JavassistUtility using Javassist
+		 * Generate a Class Connector (AdmissionNotificationConnector) using the
+		 * abstract method of the class JavassistUtility using Javassist
 		 */
-//		HashMap<String, String> mapMethods = new HashMap<String, String>();
-//		mapMethods.put("notifyAdmissionNotification", "notifyAdmissionNotification");
-//		Class<?> admissionConnector = JavassistUtility.makeConnectorClassJavassist(
-//				"AdmissionNotificationConnector", 
-//				AbstractConnector.class, 
-//				AdmissionNotificationI.class, 
-//				AdmissionNotificationI.class, 
-//				mapMethods);
-//		this.admissionNotificationOutboundPort.doConnection(admission.getAdmissionNotificationInboundPortURI(),
-//				admissionConnector.getCanonicalName());
+		// HashMap<String, String> mapMethods = new HashMap<String, String>();
+		// mapMethods.put("notifyAdmissionNotification", "notifyAdmissionNotification");
+		// Class<?> admissionConnector = JavassistUtility.makeConnectorClassJavassist(
+		// "AdmissionNotificationConnector",
+		// AbstractConnector.class,
+		// AdmissionNotificationI.class,
+		// AdmissionNotificationI.class,
+		// mapMethods);
+		// this.admissionNotificationOutboundPort.doConnection(admission.getAdmissionNotificationInboundPortURI(),
+		// admissionConnector.getCanonicalName());
 		this.admissionNotificationOutboundPort.doConnection(admission.getAdmissionNotificationInboundPortURI(),
 				AdmissionNotificationConnector.class.getCanonicalName());
 		this.admissionNotificationOutboundPort.notifyAdmissionNotification(admission);
@@ -400,6 +441,10 @@ public class AdmissionController extends AbstractComponent implements AdmissionR
 		this.admissionNotificationOutboundPort.doDisconnection();
 	}
 
+	/**
+	 * Inspect the resources in the computers, if there is any available Core than
+	 * we call and answer the other side witch is the ApplicationContainer
+	 */
 	@Override
 	synchronized public void inspectResources(AdmissionI admission) throws Exception {
 		System.out.println(

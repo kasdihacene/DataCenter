@@ -7,6 +7,15 @@ import fr.upmc.datacenter.software.admissioncontroller.Admission;
 import fr.upmc.datacenter.software.admissioncontroller.interfaces.AdmissionI;
 import fr.upmc.datacenter.software.applicationcontainer.ApplicationContainer;
 
+/**
+ * This class create an <code>AbstractDistributedCVM</code> and add on this
+ * <code>AbstractDistributedCVM</code> an <code>ApplicationContainer</code> component
+ * Must launch with 1 argument, the JVM name
+ * 
+ * @author jaunecitron
+ *
+ */
+
 public class DistribuedApplicationContainer extends AbstractDistributedCVM {
 
 	protected String jvmURI;

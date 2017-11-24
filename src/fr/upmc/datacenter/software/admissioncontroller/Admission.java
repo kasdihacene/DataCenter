@@ -1,6 +1,5 @@
 package fr.upmc.datacenter.software.admissioncontroller;
 
-import fr.upmc.components.cvm.AbstractCVM;
 import fr.upmc.datacenter.software.admissioncontroller.interfaces.AdmissionI;
 
 /**

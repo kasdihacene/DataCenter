@@ -16,6 +16,19 @@ import fr.upmc.datacenter.hardware.computers.ports.ComputerServicesOutboundPort;
 import fr.upmc.datacenter.hardware.tests.ComputerMonitor;
 import fr.upmc.datacenter.software.admissioncontroller.AdmissionController;
 
+/**
+ * This class create an <code>AbstractDistributedCVM</code> and add on this
+ * <code>AbstractDistributedCVM</code> all <code>Computer</code>s and
+ * <code>AdmissionController</code> components
+ * 
+ * Must launch with more than one argument
+ * 1-st argument : jvm name
+ * 2-nd argument : number of <code>Computer</code> components
+ * 3-th argument : number of <code>AllocatedCore</code> for each <code>ApplicationVM</code> created
+ * @author jaunecitron
+ *
+ */
+
 public class DistribuedApplicationController extends AbstractDistributedCVM {
 
 	protected AdmissionController ac;
@@ -100,8 +113,9 @@ public class DistribuedApplicationController extends AbstractDistributedCVM {
 			System.out.println(String.format("DEPLOYING : %d-th computer deployed", i + 1));
 		}
 
-		this.ac = new AdmissionController(thisJVMURI, this, this.coresByAVM, StaticData.ADMISSION_REQUEST_INBOUND_PORT_URI,
-				StaticData.ADMISSION_NOTIFICATION_OUTBOUND_PORT_URI, computers);
+		this.ac = new AdmissionController(thisJVMURI, this, this.coresByAVM,
+				StaticData.ADMISSION_REQUEST_INBOUND_PORT_URI, StaticData.ADMISSION_NOTIFICATION_OUTBOUND_PORT_URI,
+				computers);
 		this.ac.start();
 
 	}
