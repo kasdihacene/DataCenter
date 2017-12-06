@@ -162,8 +162,8 @@ public class JavassistUtility {
     			avmPort1.allocateCores(ac1);
     			
     			
-    			rd.connectAVM(avmURI0, RequestSubmissionInboundPortURI0, RequestNotificationOutboundPortURI0);
-    			rd.connectAVM(avmURI1, RequestSubmissionInboundPortURI1, RequestNotificationOutboundPortURI1);
+    			rd.connectAVM(avmURI0, RequestSubmissionInboundPortURI0);
+    			rd.connectAVM(avmURI1, RequestSubmissionInboundPortURI1);
 
     			String RSIP = RequestSubmissionInboundPortURI+admission.getApplicationURI();
     			admission.setRequestSubmissionInboundPortRD(RSIP);

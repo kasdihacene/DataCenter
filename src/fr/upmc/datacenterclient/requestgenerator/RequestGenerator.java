@@ -425,7 +425,7 @@ implements	RequestNotificationHandlerI
 	throws Exception
 	{
 		assert	r != null ;
-
+		System.out.println("RG : request finished " + r.getRequestURI());
 		if (RequestGenerator.DEBUG_LEVEL == 2) {
 			this.logMessage("Request generator " + this.rgURI +
 							" is notified that request "+ r.getRequestURI() +

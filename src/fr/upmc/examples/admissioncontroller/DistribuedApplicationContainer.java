@@ -12,7 +12,7 @@ import fr.upmc.datacenter.software.applicationcontainer.ApplicationContainer;
  * <code>AbstractDistributedCVM</code> an <code>ApplicationContainer</code> component
  * Must launch with 1 argument, the JVM name
  * 
- * @author jaunecitron
+ * @author Hacene Kasdi & Marc Ren
  *
  */
 

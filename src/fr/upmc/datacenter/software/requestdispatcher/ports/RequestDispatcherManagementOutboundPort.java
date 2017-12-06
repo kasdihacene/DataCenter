@@ -24,8 +24,12 @@ public class RequestDispatcherManagementOutboundPort extends AbstractOutboundPor
 	}
 
 	@Override
-	public void connectAVM(String avmUri, String avmRequestSubmissionInboundPortURI,
-			String avmRequestNotificationOutboundPortUri) throws Exception {
-		((RequestDispatcherManagementI) this.connector).connectAVM(avmUri, avmRequestSubmissionInboundPortURI, avmRequestNotificationOutboundPortUri);
+	public void connectAVM(String avmUri, String avmRequestSubmissionInboundPortURI) throws Exception {
+		((RequestDispatcherManagementI) this.connector).connectAVM(avmUri, avmRequestSubmissionInboundPortURI);
+	}
+	
+	@Override
+	public void connectNotificationOutboundPort(String notficationInboundPort) throws Exception{
+		((RequestDispatcherManagementI) this.connector).connectNotificationOutboundPort(notficationInboundPort);
 	}
 }

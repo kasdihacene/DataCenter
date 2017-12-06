@@ -1,5 +1,6 @@
 # Local for each user
 .classpath
+.metadata
 
 # Compiled class file
 *.class

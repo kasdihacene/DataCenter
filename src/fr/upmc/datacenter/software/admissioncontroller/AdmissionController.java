@@ -9,6 +9,8 @@ import java.util.Map;
 import fr.upmc.components.AbstractComponent;
 import fr.upmc.components.cvm.AbstractCVM;
 import fr.upmc.components.cvm.pre.dcc.DynamicComponentCreator;
+import fr.upmc.components.pre.reflection.connectors.ReflectionConnector;
+import fr.upmc.components.pre.reflection.ports.ReflectionOutboundPort;
 import fr.upmc.datacenter.hardware.computers.Computer;
 import fr.upmc.datacenter.hardware.computers.Computer.AllocatedCore;
 import fr.upmc.datacenter.hardware.computers.interfaces.ComputerDynamicStateI;
@@ -23,6 +25,8 @@ import fr.upmc.datacenter.software.applicationcontainer.ports.AdmissionNotificat
 import fr.upmc.datacenter.software.applicationvm.ApplicationVM;
 import fr.upmc.datacenter.software.applicationvm.connectors.ApplicationVMManagementConnector;
 import fr.upmc.datacenter.software.applicationvm.ports.ApplicationVMManagementOutboundPort;
+import fr.upmc.datacenter.software.connectors.RequestNotificationConnector;
+import fr.upmc.datacenter.software.ports.RequestNotificationOutboundPort;
 import fr.upmc.datacenter.software.requestdispatcher.RequestDispatcher;
 import fr.upmc.datacenter.software.requestdispatcher.connectors.RequestDispatcherManagementConnector;
 import fr.upmc.datacenter.software.requestdispatcher.ports.RequestDispatcherManagementOutboundPort;
@@ -50,6 +54,8 @@ import fr.upmc.datacenter.software.requestdispatcher.ports.RequestDispatcherMana
 public class AdmissionController extends AbstractComponent implements AdmissionRequestHandlerI {
 
 	private int CORES_BY_AVM = 2;
+	private int AVMS_BY_APP = 2;
+
 	private static final String LOCAL_AVM_URI = "CONTROLLER-avm";
 	private static final String LOCAL_REQUEST_DISPATCHER_URI = "CONTROLLER-dispatcher";
 	private static final String LOCAL_AVM_MANAGEMENT_INPORT_SUFFIX = "mibp";
@@ -59,11 +65,17 @@ public class AdmissionController extends AbstractComponent implements AdmissionR
 	private static final String LOCAL_REQUEST_NOT_OUTPORT_PORT_SUFFIX = "rnobp";
 	private static final String LOCAL_RD_MANAGEMENT_INBOUND_PORT_SUFFIX = "rdmip";
 	private static final String LOCAL_RD_MANAGEMENT_OUTBOUND_PORT_SUFFIX = "rdmop";
-
+	
+	/*
+	 * COMPONENT TO CREATE DYNAMICALLY COMPONENTS
+	 * TODO : CALL THE COMPONENT BY AN DYNAMIC COMPONENT CREATOR OUTBOUND PORT
+	 */
 	protected DynamicComponentCreator dynamicComponentCreator;
 	protected final String LOCAL_DYNAMIC_COMPONENT_CREATOR_URI = "creator";
 	protected final String DCC_INBOUND_PORT_URI = "creator-ip";
-
+	
+	protected ReflectionOutboundPort rop;
+	
 	protected String acURI;
 	protected AbstractCVM cvm = null;
 	protected String anopURI;
@@ -114,10 +126,20 @@ public class AdmissionController extends AbstractComponent implements AdmissionR
 		this.admissionNotificationOutboundPort = new AdmissionNotificationOutboundPort(anopURI, this);
 		this.addPort(this.admissionNotificationOutboundPort);
 		this.admissionNotificationOutboundPort.publishPort();
-
+		
+		
+		/**
+		 * CREATING DCC
+		 */
 		this.dynamicComponentCreator = new DynamicComponentCreator(DCC_INBOUND_PORT_URI);
 		this.cvm.addDeployedComponent(this.dynamicComponentCreator);
-
+		
+		/**
+		 * CREATING REFLECTION OUTBOUND PORT
+		 */
+		this.rop = new ReflectionOutboundPort(this);
+		this.addPort(this.rop);
+		this.rop.localPublishPort();
 	}
 
 	public AdmissionController(String acURI, AbstractCVM cvm, int cores, String asipURI, String anopURI)
@@ -281,24 +303,28 @@ public class AdmissionController extends AbstractComponent implements AdmissionR
 	 * 
 	 * @param coreNumber
 	 *            : Number of core wanted
+	 * @param notificationInboundPortURI
+	 *            : URI of the port to get notified
 	 * @return URI of the allocated <code>ApplicationVM</code> with number of cores
 	 *         less or equal than coreNumber
 	 * @throws Exception
 	 */
-	public String allocateAVM(int coreNumber) throws Exception {
+	public String allocateAVM(int coreNumber, String notificationInboundPortURI) throws Exception {
 		AllocatedCore[] cores = this.allocateCores(coreNumber);
-		return allocateAVM(cores);
+		return allocateAVM(cores, notificationInboundPortURI);
 	}
 
 	/**
 	 * 
 	 * @param cores
 	 *            : <code>AllocatedCore</code> array to connect with avm
+	 * @param notificationInboundPortURI
+	 *            : URI of the port to get notified
 	 * @return URI of the allocated <code>ApplicationVM</code> connected with each
 	 *         <code>AllocatedCore</code> in cores
 	 * @throws Exception
 	 */
-	public String allocateAVM(AllocatedCore[] cores) throws Exception {
+	public String allocateAVM(AllocatedCore[] cores, String notificationInboundPortURI) throws Exception {
 
 		String avmURI = LOCAL_AVM_URI + avms.values().size();
 		System.out.println(
@@ -331,6 +357,49 @@ public class AdmissionController extends AbstractComponent implements AdmissionR
 		return avmURI;
 	}
 
+	public void connectAVMNotificationPort(String avmURI, String notificationInboundPortURI) throws Exception {
+		System.out.println("TRY TO CONNECT TO AVM");
+		this.rop.doConnection(avmURI, ReflectionConnector.class.getCanonicalName());
+		System.out.println("CONNECTED TO AVM, TRY TO DO PORT CONNECTION");
+		this.rop.doPortConnection(avmURI + LOCAL_REQUEST_NOT_OUTPORT_PORT_SUFFIX, notificationInboundPortURI,
+				RequestNotificationConnector.class.getCanonicalName());
+		System.out.println("PORTS CONNECTED, TRY TO DISCONNECT REFLECTION OUTBOUND PORT");
+		this.rop.doDisconnection();
+	}
+
+	/**
+	 * 
+	 * @param avmNumber
+	 *            : number of avm to allocate
+	 * @param notificationInboundPortURI
+	 *            : URI of the port to get notified
+	 * @return
+	 * @throws Exception
+	 */
+	public List<String> allocateAvms(int avmNumber, String notificationInboundPortURI) throws Exception {
+		List<String> avmURIs = new ArrayList<>();
+		for (int i = 0; i < AVMS_BY_APP; i++) {
+			int idleCoreNumber = getIdleCoreNumber();
+			String avmURI;
+			if (idleCoreNumber > 0) {
+				if (idleCoreNumber > CORES_BY_AVM) {
+					avmURI = allocateAVM(CORES_BY_AVM, notificationInboundPortURI);
+				} else {
+					if (idleCoreNumber < CORES_BY_AVM)
+						System.out.println(
+								String.format("CONTROLLER<%s>: expected %d cores for the avm but remain %d cores",
+										this.acURI, CORES_BY_AVM, idleCoreNumber));
+					avmURI = allocateAVM(idleCoreNumber, notificationInboundPortURI);
+				}
+				connectAVMNotificationPort(avmURI, notificationInboundPortURI);
+				avmURIs.add(avmURI);
+			} else {
+				System.out.println(String.format("CONTROLLER<%s>: no more cores for creating new avm", this.acURI));
+			}
+		}
+		return avmURIs;
+	}
+
 	/**
 	 * 
 	 * @param admission
@@ -344,7 +413,7 @@ public class AdmissionController extends AbstractComponent implements AdmissionR
 
 		System.out.println(
 				String.format("CONTROLLER<%s>: Try to allocate a request dispatcher for application<%s> with %d avms",
-						this.acURI, admission.getApplicationURI(), admission.getAVMNumber()));
+						this.acURI, admission.getApplicationURI(), AVMS_BY_APP));
 
 		int dispatcherNumber = dispatchers.values().size();
 		String dispatcherURI = LOCAL_REQUEST_DISPATCHER_URI + dispatcherNumber;
@@ -367,40 +436,15 @@ public class AdmissionController extends AbstractComponent implements AdmissionR
 		rdop.doConnection(dispatcherMIP, RequestDispatcherManagementConnector.class.getCanonicalName());
 		dispatchers.put(dispatcherURI, rdop);
 
-		int avmNumber = admission.getAVMNumber();
 		System.out.println(String.format("CONTROLLER<%s>: try to allocate %d avms for application<%s>", this.acURI,
-				admission.getAVMNumber(), admission.getApplicationURI()));
-		int i;
-		for (i = 0; i < avmNumber; i++) {
-			int idleCoreNumber = getIdleCoreNumber();
-			String avmURI;
-			if (idleCoreNumber > 0) {
-				if (idleCoreNumber > CORES_BY_AVM) {
-					avmURI = allocateAVM(CORES_BY_AVM);
-				} else {
-					if (idleCoreNumber < CORES_BY_AVM)
-						System.out.println(
-								String.format("CONTROLLER<%s>: expected %d cores for the avm but remain %d cores",
-										this.acURI, CORES_BY_AVM, idleCoreNumber));
-					avmURI = allocateAVM(idleCoreNumber);
-				}
-				rdop.connectAVM(avmURI, avmURI + LOCAL_REQUEST_SUB_INPORT_PORT_SUFFIX,
-						avmURI + LOCAL_REQUEST_NOT_OUTPORT_PORT_SUFFIX);
-				System.out.println(String.format("CONTROLLER<%s>: dispatcher<%s> connected with avm<%s>", this.acURI,
-						dispatcherURI, avmURI));
-			} else {
-				System.out.println(String.format("CONTROLLER<%s>: no idle core, cannot create more avm", this.acURI));
-				System.out.println(
-						String.format("CONTROLLER<%s>: dispatcher<%s> allocated for application<%s> with %d avms",
-								this.acURI, dispatcherURI, admission.getApplicationURI(), i));
-				admission.setAVMNumber(i);
-				return dispatcherRSIP;
-			}
-		}
+				AVMS_BY_APP, admission.getApplicationURI()));
+		List<String> avmURIs = allocateAvms(AVMS_BY_APP, dispatcherRNIP);
+		for (String avmURI : avmURIs)
+			rdop.connectAVM(avmURI, avmURI + LOCAL_REQUEST_SUB_INPORT_PORT_SUFFIX);
+		rdop.connectNotificationOutboundPort(admission.getAdmissionNotificationInboundPortURI());
 
-		admission.setAVMNumber(i + 1);
 		System.out.println(String.format("CONTROLLER<%s>: dispatcher<%s> allocated for application<%s> with %d avms",
-				this.acURI, dispatcherURI, admission.getApplicationURI(), i + 1));
+				this.acURI, dispatcherURI, admission.getApplicationURI(), avmURIs.size()));
 		return dispatcherRSIP;
 	}
 

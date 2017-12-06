@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import fr.upmc.components.AbstractComponent;
+import fr.upmc.datacenter.software.connectors.RequestNotificationConnector;
 import fr.upmc.datacenter.software.connectors.RequestSubmissionConnector;
 import fr.upmc.datacenter.software.interfaces.RequestI;
 import fr.upmc.datacenter.software.interfaces.RequestNotificationHandlerI;
@@ -27,12 +28,12 @@ public class RequestDispatcher extends AbstractComponent
 
 	// THE URI OF THE REQUEST DISPATCHER
 	protected String rdURI;
-	
+
 	protected RequestDispatcherManagementInboundPort requestDispatcherManagementInboundPort;
 
 	// A PORT TO RECEIVE REQUESTS PROVIDING FROM REQUEST GENERATOR
 	protected RequestSubmissionInboundPort requestSubmissionInboundPort;
-	
+
 	// A PORT TO RECEIVE NOTIFICATION OF ENDING REQUEST
 	protected RequestNotificationInboundPort requestNotificationInboundPort;
 
@@ -44,14 +45,15 @@ public class RequestDispatcher extends AbstractComponent
 	protected Map<String, RequestSubmissionOutboundPort> submissionPorts;
 	// Coin like fair threads
 	protected int coin = 0;
-	
+
 	protected boolean verbose;
-	
+
 	public RequestDispatcher(String rdURI, String rdmip, String rsip, String rnip, String rnop) throws Exception {
 		this(rdURI, rdmip, rsip, rnip, rnop, true);
 	}
-	
-	public RequestDispatcher(String rdURI, String rdmip, String rsip, String rnip, String rnop, boolean verbose) throws Exception {
+
+	public RequestDispatcher(String rdURI, String rdmip, String rsip, String rnip, String rnop, boolean verbose)
+			throws Exception {
 		super(1, 1);
 
 		/**
@@ -63,21 +65,21 @@ public class RequestDispatcher extends AbstractComponent
 		assert rsip != null;
 		assert rnip != null;
 		assert rnop != null;
-		
+
 		this.verbose = verbose;
 		this.rdURI = rdURI;
 
 		this.submissionPorts = new HashMap<String, RequestSubmissionOutboundPort>();
-		
+
 		// CREATE PORT TO THE COMPONENT
-		/** 
+		/**
 		 * A PORT TO MANGE REQUEST DISPATCHER
 		 */
 		this.addOfferedInterface(RequestDispatcherManagementI.class);
 		this.requestDispatcherManagementInboundPort = new RequestDispatcherManagementInboundPort(rdmip, this);
 		this.addPort(this.requestDispatcherManagementInboundPort);
 		this.requestDispatcherManagementInboundPort.publishPort();
-		
+
 		/**
 		 * A PORT TO RECEIVE REQUESTS FROM THE RequestGenerator O--
 		 */
@@ -85,7 +87,7 @@ public class RequestDispatcher extends AbstractComponent
 		this.requestSubmissionInboundPort = new RequestSubmissionInboundPort(rsip, this);
 		this.addPort(this.requestSubmissionInboundPort);
 		this.requestSubmissionInboundPort.publishPort();
-		
+
 		/**
 		 * A PORT TO RECEIVE NOTIFICATION FROM THE RequestGenerator --C
 		 */
@@ -93,7 +95,7 @@ public class RequestDispatcher extends AbstractComponent
 		this.requestNotificationInboundPort = new RequestNotificationInboundPort(rnip, this);
 		this.addPort(requestNotificationInboundPort);
 		this.requestNotificationInboundPort.publishPort();
-		
+
 		/**
 		 * A PORT TO NOTIFY THE RequestGenerator --C
 		 */
@@ -105,7 +107,11 @@ public class RequestDispatcher extends AbstractComponent
 
 	@Override
 	public void acceptRequestTerminationNotification(RequestI r) throws Exception {
-		System.out.println("RD : TERMINATION REQUEST " + r.getRequestURI());
+		System.out.println("RD :== TERMINATION REQUEST " + r.getRequestURI());
+		requestNotificationOutboundPort.notifyRequestTermination(r);
+		System.out.println("RD connected : " + requestNotificationOutboundPort.connected());
+		System.out.println("RD connected to " + requestNotificationOutboundPort.getClientPortURI());
+		System.out.println("RD port uri " + requestNotificationOutboundPort.getPortURI());
 	}
 
 	@Override
@@ -117,21 +123,20 @@ public class RequestDispatcher extends AbstractComponent
 	public void acceptRequestSubmissionAndNotify(RequestI r) throws Exception {
 		acceptRequestSubmissionAndNotify(r, verbose);
 	}
-	
+
 	public void acceptRequestSubmissionAndNotify(RequestI r, boolean verbose) throws Exception {
 
 		// submissionPorts : associate avm uri with request dispatcher request
 		// submission outbound port
 		ArrayList<RequestSubmissionOutboundPort> vmRequestSubmissionPorts = new ArrayList<RequestSubmissionOutboundPort>(
 				this.submissionPorts.values());
-		ArrayList<String> vmRequestSubmissionURIs = new ArrayList<String>(
-				this.submissionPorts.keySet());
+		ArrayList<String> vmRequestSubmissionURIs = new ArrayList<String>(this.submissionPorts.keySet());
 
 		// GET ONE OF THE AVM PORTS (RequestSumissionOutboundPort)
 		RequestSubmissionOutboundPort rsopAVM = vmRequestSubmissionPorts.get(coin);
 		rsopAVM.submitRequestAndNotify(r);
-		System.out.println(String.format("DISPATCHER <%s>: Request <%s> sent to AVM no.%d <%s>", 
-				rdURI, r.getRequestURI(), coin, vmRequestSubmissionURIs.get(coin)));
+		System.out.println(String.format("DISPATCHER <%s>: Request <%s> sent to AVM no.%d <%s>", rdURI,
+				r.getRequestURI(), coin, vmRequestSubmissionURIs.get(coin)));
 
 		// SWITCH THE PORT
 		coin = (coin + 1) % vmRequestSubmissionPorts.size();
@@ -139,8 +144,7 @@ public class RequestDispatcher extends AbstractComponent
 	}
 
 	@Override
-	public void connectAVM(String avmURI, String vmRequestSubmissionInboundPortURI,
-			String vmRequestNotificationOutboundPortUri) throws Exception {
+	public void connectAVM(String avmURI, String vmRequestSubmissionInboundPortURI) throws Exception {
 
 		// SEND REQUESTS TO THE AVM USING THE PORT OF RequestDispatcher
 		// (RequestSubmissionOutboundPort)
@@ -155,7 +159,14 @@ public class RequestDispatcher extends AbstractComponent
 		// ADD THE <KEY VALUE> TO THE COLLECTION OF PORTS <avmURI,
 		// RequestSubmissionOutboundPort>
 		this.submissionPorts.put(avmURI, rsop);
-		
+
+	}
+
+	@Override
+	public void connectNotificationOutboundPort(String notficationInboundPort) throws Exception {
+		System.out.println("try to connect notification outbound port with port " + notficationInboundPort);
+		this.requestNotificationOutboundPort.doConnection(notficationInboundPort,
+				RequestNotificationConnector.class.getCanonicalName());
 	}
 
 }

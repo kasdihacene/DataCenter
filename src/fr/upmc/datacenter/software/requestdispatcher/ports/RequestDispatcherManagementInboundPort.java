@@ -24,13 +24,24 @@ public class RequestDispatcherManagementInboundPort extends AbstractInboundPort
 	}
 
 	@Override
-	public void connectAVM(String avmUri, String avmRequestSubmissionInboundPortURI,
-			String avmRequestNotificationOutboundPortUri) throws Exception {
+	public void connectAVM(String avmUri, String avmRequestSubmissionInboundPortURI) throws Exception {
 		RequestDispatcherManagementI rd = (RequestDispatcherManagementI) this.owner;
 		this.owner.handleRequestSync(new ComponentI.ComponentService<Void>() {
 			@Override
 			public Void call() throws Exception {
-				rd.connectAVM(avmUri, avmRequestSubmissionInboundPortURI, avmRequestNotificationOutboundPortUri);
+				rd.connectAVM(avmUri, avmRequestSubmissionInboundPortURI);
+				return null;
+			}
+		});
+	}
+	
+	@Override
+	public void connectNotificationOutboundPort(String notficationInboundPort) throws Exception {
+		RequestDispatcherManagementI rd = (RequestDispatcherManagementI) this.owner;
+		this.owner.handleRequestSync(new ComponentI.ComponentService<Void>() {
+			@Override
+			public Void call() throws Exception {
+				rd.connectNotificationOutboundPort(notficationInboundPort);
 				return null;
 			}
 		});

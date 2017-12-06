@@ -18,9 +18,6 @@ public interface AdmissionI extends Serializable {
 	public String getApplicationURI();
 	public void setApplicationURI(String uriApp);
 	
-	public int getAVMNumber();
-	public void setAVMNumber(int avmNumber);
-	
 	public String getAdmissionNotificationInboundPortURI();
 	public void setAdmissionNotificationInboundPortURI(String anipURI);
 	

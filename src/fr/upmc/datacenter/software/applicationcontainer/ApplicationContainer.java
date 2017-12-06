@@ -96,6 +96,7 @@ public class ApplicationContainer extends AbstractComponent implements Admission
 				6000000000L, // mean number of instructions in requests
 				APP_URI + RequestGeneratorManagementInboundPortURI, APP_URI + RequestSubmissionOutboundPortURI,
 				APP_URI + RequestNotificationInboundPortURI);
+		this.rg.DEBUG_LEVEL = 2;
 		this.cvm.addDeployedComponent(this.rg);
 		// admission.getAbstractCVM().addDeployedComponent(rg) ;
 		// admission.setRequestSubmissionInboundPortRD(RequestSubmissionInboundPortURI);

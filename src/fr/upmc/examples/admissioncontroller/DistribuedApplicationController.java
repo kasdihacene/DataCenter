@@ -25,7 +25,7 @@ import fr.upmc.datacenter.software.admissioncontroller.AdmissionController;
  * 1-st argument : jvm name
  * 2-nd argument : number of <code>Computer</code> components
  * 3-th argument : number of <code>AllocatedCore</code> for each <code>ApplicationVM</code> created
- * @author jaunecitron
+ * @author Hacene Kasdi & Marc Ren
  *
  */
 

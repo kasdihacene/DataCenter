@@ -321,10 +321,10 @@ public class TestRequestDispatcher extends AbstractCVM {
 		System.out.println(
 				"CONNECTION : AVM 1 notification outbound port connected to Request Dispatcher notification inbound port");
 
-		this.rd.connectAVM(avmURI0, RequestSubmissionInboundPortURI0, RequestNotificationOutboundPortURI0);
+		this.rd.connectAVM(avmURI0, RequestSubmissionInboundPortURI0);
 		System.out.println("CONNECTION : AVM0 connected to Request Dispatcher");
 
-		this.rd.connectAVM(avmURI1, RequestSubmissionInboundPortURI1, RequestNotificationOutboundPortURI1);
+		this.rd.connectAVM(avmURI1, RequestSubmissionInboundPortURI1);
 		System.out.println("CONNECTION : AVM1 connected to Request Dispatcher");
 		/**
 		 * -----------------------------------------------------------------

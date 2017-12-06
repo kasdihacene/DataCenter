@@ -18,8 +18,6 @@ public class Admission implements AdmissionI{
 	private boolean isAllow;
 	// URI of the ApplicationContainer
 	private String applicationURI;
-	// Number of AVM requested
-	private int avmNumber = 2;
 	// URI of the admission notification port 
 	private String admissionNotificationInboundPortURI;
 	// URI of the admission controller port
@@ -66,16 +64,6 @@ public class Admission implements AdmissionI{
 	@Override
 	public void setApplicationURI(String uriApp){
 		this.applicationURI=uriApp;
-	}
-	
-	@Override
-	public int getAVMNumber() {
-		return avmNumber;
-	}
-
-	@Override
-	public void setAVMNumber(int avmNumber) {
-		this.avmNumber = avmNumber;
 	}
 	
 	@Override
