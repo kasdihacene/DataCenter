@@ -92,7 +92,11 @@ public class AdmissionController extends AbstractComponent implements AdmissionR
 	protected Map<String, RequestDispatcherManagementOutboundPort> dispatchers = new HashMap<String, RequestDispatcherManagementOutboundPort>();
 	protected Map<String, String> applicationDispatcher = new HashMap<String, String>();
 
-	public AdmissionController(String acURI, AbstractCVM cvm, String asipURI, String anopURI) throws Exception {
+	public AdmissionController(
+			String acURI, 
+			AbstractCVM cvm, 
+			String asipURI, 
+			String anopURI) throws Exception {
 
 		super(1, 1);
 

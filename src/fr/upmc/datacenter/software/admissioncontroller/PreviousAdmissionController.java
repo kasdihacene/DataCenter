@@ -29,7 +29,7 @@ import javassist.CtClass;
 	 * 
 	 * 
 	 * @author Hacene Kasdi & Marc REN
-	 * @version 2012.10.20.HK
+	 * @version 2017.10.20.HK
 	 */
 	
 	public class PreviousAdmissionController 
