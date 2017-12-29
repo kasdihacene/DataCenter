@@ -109,6 +109,24 @@ public class ComputerInfo {
 		this.coreState = coreState;
 	}
 	/**
+	 * Update the state of the Cores on the Computer
+	 * @param allocatedCores
+	 * @param NBCORES
+	 */
+	public void updateCoresState(boolean allocatedCores[][], int NBCORES) {
+		int nbCoresToAllocate=0;
+		for (int i = 0; i < allocatedCores.length; i++) {
+			for (int j = 0; j < allocatedCores.length; j++) {
+				// Allocate juste NBCORES
+				if(nbCoresToAllocate<NBCORES) {
+					if(!allocatedCores[i][j])
+					{allocatedCores[i][j] = true; nbCoresToAllocate++;}
+				}
+			}
+		}
+		this.setCoreState(allocatedCores);
+	}
+	/**
 	 * 
 	 * @return number of available cores
 	 */

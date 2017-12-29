@@ -10,6 +10,7 @@ import fr.upmc.datacenter.dataprovider.ports.DataDispatcherOutboundPort;
 import fr.upmc.datacenter.dataprovider.ports.DataProviderOutboundPort;
 import fr.upmc.datacenter.hardware.computers.interfaces.ComputerServicesI;
 import fr.upmc.datacenter.hardware.computers.ports.ComputerServicesOutboundPort;
+import fr.upmc.datacenter.software.admissioncontroller.interfaces.AdmissionI;
 import fr.upmc.datacenter.software.informations.computers.ComputerInfo;
 import fr.upmc.datacenter.software.step2.requestresourcevm.interfaces.RequestResourceVMI;
 import fr.upmc.datacenter.software.step2.requestresourcevm.ports.RequestResourceVMOutboundPort;
@@ -87,10 +88,10 @@ public class ResourceInspector extends AbstractComponent {
 	 * @return URI of the available Computer
 	 * @throws Exception
 	 */
-	public String getAvailableResource() throws Exception {
+	public String getAvailableResource(AdmissionI admissionI) throws Exception {
 		LinkedList<String> computerListURI = dataProviderOutboundPort.getComputerListURIs();
+
 		for (String uri : computerListURI) {
-			
 			ComputerInfo computerInfo=dataProviderOutboundPort.getComputerInfos(uri);
 			Integer sharedResource = computerInfo.getSharedResource();
 			int nbCoresAvailable;
@@ -100,18 +101,27 @@ public class ResourceInspector extends AbstractComponent {
 			// look at the synchronisation barriere if there is ay available 
 			// information about this computer, else wait()
 			synchronized (sharedResource) {
-				if(sharedResource==0)
-				wait();
+				if(sharedResource==0) {
+					System.out.println(admissionI.getApplicationURI()+" waiting for : "+uri);
+					wait();
+				}
 			}
 			
 			synchronized (computerInfo) {
 				// get number of available core of this computer
+				allocatedCores=computerInfo.getCoreState();
 				nbCoresAvailable = computerInfo.getNbCoreAvailable();
 				// check if nbCoresAvailable >= NBCORES than set these cores as allocated
-				allocatedCores=computerInfo.getCoreState();
-				System.out.println("Computer =="+computerInfo.getComputerURI()+" Cores availables == "+nbCoresAvailable);
+				if(nbCoresAvailable>= NBCORES) {
+					computerInfo.updateCoresState(allocatedCores, NBCORES);
+					return uri;
+				}
+				System.out.println("cores available in "+computerInfo.getComputerURI()+" == "+nbCoresAvailable+" for : "+admissionI.getApplicationURI());
+				
 			}
 		}
+
+		System.out.println("No core found by ResourceInspector : "+riURI+" for : "+admissionI.getApplicationURI());
 		return null;
 	}
 	/**

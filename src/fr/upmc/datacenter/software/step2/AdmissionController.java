@@ -62,7 +62,8 @@ public class AdmissionController 	extends ResourceInspector
 
 	@Override
 	public void inspectResourcesAndNotifiy(AdmissionI admission) throws Exception {
-				String availableComputerURI = getAvailableResource();
+				String availableComputerURI = getAvailableResource(admission);
+				System.out.println("computer available for : "+admission.getApplicationURI()+" == "+availableComputerURI);
 	}
 
 }

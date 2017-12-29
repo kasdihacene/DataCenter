@@ -125,7 +125,7 @@ public class DataProvider extends 	AbstractComponent
 	@Override
 	public void acceptComputerDynamicData(String computerURI, ComputerDynamicStateI currentDynamicState)
 			throws Exception {
-		System.out.println("PUSHED FROM COMPUTER DYNAMIC"+computerURI+"  "+currentDynamicState.getCurrentCoreReservations()[0][0]);
+		System.out.println("PUSHED FROM COMPUTER DYNAMIC "+computerURI+"  "+currentDynamicState.getCurrentCoreReservations()[0][0]);
 		// get the state of the barriere
 		Integer sharedResource = mapComputerInfo.get(computerURI).getSharedResource();
 		synchronized (sharedResource) {
@@ -134,10 +134,12 @@ public class DataProvider extends 	AbstractComponent
 			boolean [][] allocatedCores = currentDynamicState.getCurrentCoreReservations();
 			computerInfo.setCoreState(allocatedCores);
 			// set free the resource shared and put it to 1
-			if(sharedResource==0)
+			if(sharedResource==0) {
 				sharedResource.notifyAll();
-			sharedResource=1;
+			// set the resource as available
+			sharedResource=1;}
 			mapComputerInfo.get(computerURI).setSharedResource(sharedResource);
+			System.out.println("SHARED RESOURCE UPDATED => "+computerURI+" set to "+sharedResource);
 		}
 		
 	}
