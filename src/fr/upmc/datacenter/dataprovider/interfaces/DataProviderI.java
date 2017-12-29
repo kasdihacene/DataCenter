@@ -1,6 +1,6 @@
 package fr.upmc.datacenter.dataprovider.interfaces;
 
-import java.util.Set;
+import java.util.LinkedList;
 
 import fr.upmc.datacenter.software.informations.computers.ComputerInfo;
 
@@ -16,7 +16,7 @@ public interface DataProviderI {
 	 * @return a set of Computer URIs
 	 * @throws Exception
 	 */
-	public Set<String> getComputerListURIs() throws Exception;
+	public LinkedList<String> getComputerListURIs() throws Exception;
 	
 	/**
 	 * 

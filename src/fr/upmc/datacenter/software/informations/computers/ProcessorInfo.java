@@ -1,7 +1,12 @@
 package fr.upmc.datacenter.software.informations.computers;
 
 import java.util.Set;
-
+/**
+ * 
+ * @author Hacene KASDI
+ * @version 21.12.17.HK
+ *
+ */
 public class ProcessorInfo {
 
 	private String processorURI;
@@ -26,28 +31,23 @@ public class ProcessorInfo {
 		for (int i = 0; i < coreInfos.length; i++) {
 			coreInfos[i]=new CoreInfo(i, defaultFrequency);
 		}
-
 	}
 	
-	
-	
+	public CoreInfo[] getCoreInfos() {
+		return coreInfos;
+	}
+
 	public String getProcessorURI() {
 		return processorURI;
 	}
-
-
 
 	public int getProcessorNumber() {
 		return processorNumber;
 	}
 
-
-
 	public int getNumberOfCores() {
 		return numberOfCores;
 	}
-
-
 
 	public int getMaxFrequencyGap() {
 		return maxFrequencyGap;

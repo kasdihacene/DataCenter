@@ -1,6 +1,6 @@
 package fr.upmc.datacenter.dataprovider.ports;
 
-import java.util.Set;
+import java.util.LinkedList;
 
 import fr.upmc.components.ComponentI;
 import fr.upmc.components.ports.AbstractOutboundPort;
@@ -18,7 +18,7 @@ public class DataProviderOutboundPort extends AbstractOutboundPort implements Da
 	}
 
 	@Override
-	public Set<String> getComputerListURIs() throws Exception {
+	public LinkedList<String> getComputerListURIs() throws Exception {
 		return ((DataProviderI)this.connector).getComputerListURIs();
 	}
 

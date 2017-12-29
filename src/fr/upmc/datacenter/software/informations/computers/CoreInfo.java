@@ -10,6 +10,7 @@ public class CoreInfo {
 	private int coreURI;
 	private int frequency;
 	private boolean reserved;
+	
 	public CoreInfo(int coreURI, int frequency) {
 		this.coreURI=coreURI;
 		this.frequency=frequency;

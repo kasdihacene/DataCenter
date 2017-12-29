@@ -62,7 +62,7 @@ public class AdmissionController 	extends ResourceInspector
 
 	@Override
 	public void inspectResourcesAndNotifiy(AdmissionI admission) throws Exception {
-				
+				String availableComputerURI = getAvailableResource();
 	}
 
 }

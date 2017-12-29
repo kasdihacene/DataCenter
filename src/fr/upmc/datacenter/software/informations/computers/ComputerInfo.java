@@ -10,7 +10,8 @@ import fr.upmc.datacenter.hardware.computers.Computer.AllocatedCore;
  * it stocks performances and tuninigs 
  * of <code>Computer</code>
  * 
- * @author Hacene
+ * @author Hacene KASDI
+ * @version 21.12.17.HK
  *
  */
 public class ComputerInfo {
@@ -77,6 +78,11 @@ public class ComputerInfo {
 	}
 	
 		
+	public ProcessorInfo[] getProcessorInfos() {
+		return processorInfos;
+	}
+
+
 	public int getMaxFrequencyGap() {
 		return maxFrequencyGap;
 	}
@@ -88,6 +94,12 @@ public class ComputerInfo {
 	public Integer getSharedResource() {
 		return sharedResource;
 	}
+	
+
+	public void setSharedResource(Integer sharedResource) {
+		this.sharedResource = sharedResource;
+	}
+
 
 	public boolean[][] getCoreState() {
 		return coreState;
@@ -95,6 +107,20 @@ public class ComputerInfo {
 
 	public void setCoreState(boolean[][] coreState) {
 		this.coreState = coreState;
+	}
+	/**
+	 * 
+	 * @return number of available cores
+	 */
+	public int getNbCoreAvailable() {
+		int nbCores = 0;
+		for (int i = 0; i < coreState.length; i++) {
+			for (int j = 0; j < coreState.length; j++) {
+				if(!coreState[i][j])
+					nbCores++;
+			}
+		}
+		return nbCores;
 	}
 
 	/**
