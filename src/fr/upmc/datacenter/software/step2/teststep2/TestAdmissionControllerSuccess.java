@@ -43,7 +43,7 @@ public class TestAdmissionControllerSuccess extends fr.upmc.components.cvm.Abstr
 	/**
 	* All URIs and ports for first computer
 	*/
-	protected final static int COMPUTER_NUMBER = 2;
+	protected final static int COMPUTER_NUMBER = 3;
 	protected final static String COMPUTER_URI = "computer";
 	protected final static String COMPUTER_MONITOR_URI = "monitor";
 	protected final static String COMPUTER_SERVICE_INBOUND_PORT_SUFFIX = "csip";

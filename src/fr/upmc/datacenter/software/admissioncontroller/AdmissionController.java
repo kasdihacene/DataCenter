@@ -48,7 +48,7 @@ import fr.upmc.datacenter.software.requestdispatcher.ports.RequestDispatcherMana
  * 
  * 
  * @author Hacene Kasdi & Marc REN
- * @version 2012.10.20.HK
+ * @version 2017.10.20.HK
  */
 
 public class AdmissionController extends AbstractComponent implements AdmissionRequestHandlerI {
@@ -407,7 +407,7 @@ public class AdmissionController extends AbstractComponent implements AdmissionR
 	/**
 	 * 
 	 * @param admission
-	 *            : <code>AdmissionI</code> that describe requested
+	 *            : <code>AdmissionI</code> that describe requests
 	 *            <code>AdmissionI</code>
 	 * @return URI of the <code>RequestSubmissionOutboundPort</code> allocated
 	 *         <code>RequestDispatcher</code>

@@ -8,6 +8,10 @@ import fr.upmc.datacenter.software.admissioncontroller.interfaces.AdmissionReque
 import fr.upmc.datacenter.software.admissioncontroller.ports.AdmissionRequestInboundPort;
 import fr.upmc.datacenter.software.applicationcontainer.interfaces.AdmissionNotificationI;
 import fr.upmc.datacenter.software.applicationcontainer.ports.AdmissionNotificationOutboundPort;
+import fr.upmc.datacenter.software.applicationvm.ApplicationVM;
+import fr.upmc.datacenter.software.informations.applicationvm.ApplicationVMInfo;
+import fr.upmc.datacenter.software.informations.requestdispatcher.RequestDispatcherComponent;
+import fr.upmc.datacenter.software.informations.requestdispatcher.RequestDispatcherInfo;
 
 public class AdmissionController 	extends ResourceInspector 
 									implements AdmissionRequestHandlerI {
@@ -63,7 +67,35 @@ public class AdmissionController 	extends ResourceInspector
 	@Override
 	public void inspectResourcesAndNotifiy(AdmissionI admission) throws Exception {
 				String availableComputerURI = getAvailableResource(admission);
+				if(availableComputerURI!=null) {
 				System.out.println("computer available for : "+admission.getApplicationURI()+" == "+availableComputerURI);
+				// Allow hosting Application
+				allowHostingApplication(admission, availableComputerURI);
+				}else {
+				System.out.println("No available resource for : "+admission.getApplicationURI());	
+				}
 	}
-
+	/**
+	 * Allow reserving resources for the given application and create AVM, RequestDispatcher
+	 * @param admissionI
+	 * @param computerURI
+	 * @throws Exception 
+	 */
+	protected void allowHostingApplication(AdmissionI admissionI, String computerURI) throws Exception {
+		// Create the RequestDispatcher
+		RequestDispatcherComponent RD = createRequestDispatcher(admissionI);
+		// Create an ApplicationVM
+		ApplicationVM avm = createApplicationVM(admissionI.getApplicationURI(), computerURI);
+		// Deploy two components
+		acvm.addDeployedComponent(RD);
+		acvm.addDeployedComponent(avm);
+		// Update AdmissionI informations
+		RequestDispatcherInfo rdInfos= dataProviderOutboundPort.getApplicationInfos(admissionI.getApplicationURI());
+		int nbCreated	 = rdInfos.getNbVMCreated();
+		System.out.println("Nb VM created for "+admissionI.getApplicationURI()+" : "+nbCreated);
+		// Connect the current RequestDispatcher with the ApplicationContainer
+		// 
+		
+	}
+	
 }

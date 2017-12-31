@@ -12,13 +12,13 @@ import fr.upmc.datacenter.dataprovider.interfaces.DataProviderDispatcherI;
 import fr.upmc.datacenter.dataprovider.interfaces.DataProviderI;
 import fr.upmc.datacenter.dataprovider.ports.DataDispatcherInboundPort;
 import fr.upmc.datacenter.dataprovider.ports.DataProviderInboundPort;
-import fr.upmc.datacenter.hardware.computers.Computer.AllocatedCore;
 import fr.upmc.datacenter.hardware.computers.interfaces.ComputerDynamicStateI;
 import fr.upmc.datacenter.hardware.computers.interfaces.ComputerStateDataConsumerI;
 import fr.upmc.datacenter.hardware.computers.interfaces.ComputerStaticStateI;
 import fr.upmc.datacenter.hardware.computers.ports.ComputerDynamicStateDataOutboundPort;
 import fr.upmc.datacenter.interfaces.ControlledDataRequiredI;
 import fr.upmc.datacenter.software.informations.computers.ComputerInfo;
+import fr.upmc.datacenter.software.informations.requestdispatcher.RequestDispatcherInfo;
 /**
  * 
  * @author Hacene KASDI
@@ -34,16 +34,19 @@ public class DataProvider extends 	AbstractComponent
 	protected String providerURI;
 	protected HashMap<String, ComputerDynamicStateDataOutboundPort> mapComputerDynamicSOP;
 	protected HashMap<String, ComputerInfo> mapComputerInfo;
+	protected HashMap<String, RequestDispatcherInfo> mapApplicationDispatcher;
 	
 	protected DataProviderInboundPort 		dataProviderInboundPort;
 	protected DataDispatcherInboundPort 	dataDispatcherInboundPort;
 	
 	@SuppressWarnings("deprecation")
 	public DataProvider(String providerURI) throws Exception {
+		
 		this.providerURI=providerURI;
 		mapComputerInfo			=new HashMap<String,ComputerInfo>();
 		mapComputerDynamicSOP	=new HashMap<String,ComputerDynamicStateDataOutboundPort>();
-	
+		mapApplicationDispatcher=new HashMap<String,RequestDispatcherInfo>();
+		
 		this.addRequiredInterface(ControlledDataRequiredI.ControlledPullI.class) ;
 		this.addOfferedInterface(DataRequiredI.PushI.class) ;
 		this.addRequiredInterface(DataRequiredI.PullI.class) ;
@@ -146,14 +149,29 @@ public class DataProvider extends 	AbstractComponent
 
 	@Override
 	public void addApplicationContainer(String applicationURI, String dispatcherURI) throws Exception {
-		// TODO Auto-generated method stub
-		
+		if(mapApplicationDispatcher.containsKey(applicationURI)) {
+			throw new Exception("Application has already a Request dispatcher");
+		}
+		mapApplicationDispatcher.put(applicationURI, new RequestDispatcherInfo(dispatcherURI));
 	}
 
 	@Override
 	public void removeApplicationContainer(String applicationURI) throws Exception {
+		if(!mapApplicationDispatcher.containsKey(applicationURI)) {
+			throw new Exception("Application not found to remove !");
+		}
+		mapApplicationDispatcher.remove(applicationURI);
+	}
+
+	@Override
+	public RequestDispatcherInfo getApplicationInfos(String appURI) throws Exception {
+		return mapApplicationDispatcher.get(appURI);
+	}
+
+	@Override
+	public LinkedList<String> getApplicationInfosList() throws Exception {
 		// TODO Auto-generated method stub
-		
+		return null;
 	}
 
 }

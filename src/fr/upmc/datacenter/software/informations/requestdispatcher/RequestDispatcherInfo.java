@@ -45,6 +45,7 @@ public class RequestDispatcherInfo {
 				applicationVMInfo.addManyCores(allocatedCores);
 				vmInformations.put(vmURI, applicationVMInfo);
 				nbVM++;
+				System.out.println("********* NBVM CREATED ******** "+vmURI+" : "+nbVM);
 	}
 	/**
 	 * remove an ApplicationVM

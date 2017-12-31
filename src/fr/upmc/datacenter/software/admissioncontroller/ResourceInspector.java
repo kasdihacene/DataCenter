@@ -3,15 +3,24 @@ package fr.upmc.datacenter.software.admissioncontroller;
 import java.util.LinkedList;
 
 import fr.upmc.components.AbstractComponent;
+import fr.upmc.components.cvm.pre.dcc.DynamicComponentCreator;
 import fr.upmc.datacenter.dataprovider.connectors.DataProviderConnector;
+import fr.upmc.datacenter.dataprovider.connectors.DataProviderDispatcherConnector;
 import fr.upmc.datacenter.dataprovider.interfaces.DataProviderDispatcherI;
 import fr.upmc.datacenter.dataprovider.interfaces.DataProviderI;
 import fr.upmc.datacenter.dataprovider.ports.DataDispatcherOutboundPort;
 import fr.upmc.datacenter.dataprovider.ports.DataProviderOutboundPort;
+import fr.upmc.datacenter.hardware.computers.Computer.AllocatedCore;
+import fr.upmc.datacenter.hardware.computers.connectors.ComputerServicesConnector;
 import fr.upmc.datacenter.hardware.computers.interfaces.ComputerServicesI;
 import fr.upmc.datacenter.hardware.computers.ports.ComputerServicesOutboundPort;
 import fr.upmc.datacenter.software.admissioncontroller.interfaces.AdmissionI;
+import fr.upmc.datacenter.software.applicationvm.ApplicationVM;
+import fr.upmc.datacenter.software.applicationvm.connectors.ApplicationVMManagementConnector;
+import fr.upmc.datacenter.software.applicationvm.ports.ApplicationVMManagementOutboundPort;
 import fr.upmc.datacenter.software.informations.computers.ComputerInfo;
+import fr.upmc.datacenter.software.informations.requestdispatcher.RequestDispatcherComponent;
+import fr.upmc.datacenter.software.informations.requestdispatcher.RequestDispatcherInfo;
 import fr.upmc.datacenter.software.step2.requestresourcevm.interfaces.RequestResourceVMI;
 import fr.upmc.datacenter.software.step2.requestresourcevm.ports.RequestResourceVMOutboundPort;
 
@@ -31,6 +40,8 @@ public class ResourceInspector extends AbstractComponent {
 	protected String riURI;
 	protected String providerURI;
 	private static final int NBCORES = 4;
+	
+	public DynamicComponentCreator dynamicComponentCreator;
 	
 	protected DataProviderOutboundPort 			dataProviderOutboundPort;
 	protected ComputerServicesOutboundPort 		computerServicesOutboundPort;
@@ -55,7 +66,7 @@ public class ResourceInspector extends AbstractComponent {
 		this.dataProviderOutboundPort 		= new DataProviderOutboundPort			(riURI+"_DPOP", this);
 		this.computerServicesOutboundPort	= new ComputerServicesOutboundPort		(riURI+"_CSOP", this);
 		this.dataDispatcherOutboundPort		= new DataDispatcherOutboundPort		(riURI+"_DDOP", this);
-		this.requestResourceVMOutboundPort	= new RequestResourceVMOutboundPort		(riURI+"_RVMI", this);
+		this.requestResourceVMOutboundPort	= new RequestResourceVMOutboundPort		(riURI+"_RVMOP", this);
 		
 		this.addPort(dataProviderOutboundPort);
 		this.addPort(computerServicesOutboundPort);
@@ -77,7 +88,8 @@ public class ResourceInspector extends AbstractComponent {
 		System.out.println("RessourceInspector try to connect with "+providerURI);
 		this.providerURI=providerURI;
 		// DataProviderOutboundPort (resourceInspector) --C O-- DataProviderInboundPort (DataProvider)
-		this.dataProviderOutboundPort.doConnection(providerURI+"_DPIP", DataProviderConnector.class.getCanonicalName());
+		this.dataProviderOutboundPort	.doConnection(providerURI+"_DPIP", DataProviderConnector.class.getCanonicalName());
+		this.dataDispatcherOutboundPort	.doConnection(providerURI+"_DDIP", DataProviderDispatcherConnector.class.getCanonicalName());
 		System.out.println("RessourceInspector connected with "+providerURI);
 	}
 	
@@ -120,12 +132,58 @@ public class ResourceInspector extends AbstractComponent {
 				
 			}
 		}
-
-		System.out.println("No core found by ResourceInspector : "+riURI+" for : "+admissionI.getApplicationURI());
 		return null;
 	}
 	/**
-	 * Reserve resources for an ApplicationVM
+	 * allocate resources for an ApplicationVM
+	 * @throws Exception 
 	 */
-	
+	public ApplicationVM createApplicationVM(String applicationContainerURI, String computerURI) throws Exception {
+		String avmURI=null;
+		// Allocate cores for the ApplicationVM
+		this.computerServicesOutboundPort.doConnection(computerURI+"_CSIP",
+						 ComputerServicesConnector.class.getCanonicalName());
+		AllocatedCore[] cores = computerServicesOutboundPort.allocateCores(NBCORES);
+		this.computerServicesOutboundPort.doDisconnection();
+		
+		// Store informations about the RequestDispatcher
+		RequestDispatcherInfo dispatcherInfo = dataProviderOutboundPort.getApplicationInfos(applicationContainerURI);
+		
+		// Add the ApplicationVM information to the RequestDispatcher
+		synchronized (dispatcherInfo) {
+			avmURI=applicationContainerURI+"AVM_"+dispatcherInfo.getNbVMCreated();
+			dispatcherInfo.addApplicationVM(avmURI, computerURI, cores);
+		}
+
+		// Create and deloy the AppplicationVM
+		String RSIP_URI=avmURI+"_RSIP";
+		String RNOP_URI=avmURI+"_RNOP";
+		ApplicationVM avm= new ApplicationVM(	avmURI, 
+												avmURI+"_AVMMIP", 
+												RSIP_URI, 
+												RNOP_URI);
+
+		// Create an ApplicationVMMangement
+		ApplicationVMManagementOutboundPort avmMop= new ApplicationVMManagementOutboundPort(riURI+"_AVMMOP", new AbstractComponent(1,1){});
+		avmMop.publishPort();
+		avmMop.doConnection(avmURI+"_AVMMIP", ApplicationVMManagementConnector.class.getCanonicalName());
+
+		// allocate cores for the ApplicationVM
+		avmMop.allocateCores(cores);
+		// return avm it will be deployed by the AdmissionController
+		return avm;
+	}
+	/**
+	 * Create a Request dispatcher
+	 * @param applicationContainerURI
+	 * @param computerURI
+	 * @return a RequestDispatcher Component
+	 * @throws Exception 
+	 */
+	public RequestDispatcherComponent createRequestDispatcher(AdmissionI admissionI) throws Exception {
+		String applicationContainerURI = admissionI.getApplicationURI();
+		RequestDispatcherComponent RDC = new RequestDispatcherComponent(applicationContainerURI+"_RD");
+		dataDispatcherOutboundPort.addApplicationContainer(applicationContainerURI, applicationContainerURI+"_RD");
+		return RDC;
+	} 
 }
