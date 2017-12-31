@@ -182,8 +182,9 @@ public class ResourceInspector extends AbstractComponent {
 	 */
 	public RequestDispatcherComponent createRequestDispatcher(AdmissionI admissionI) throws Exception {
 		String applicationContainerURI = admissionI.getApplicationURI();
-		RequestDispatcherComponent RDC = new RequestDispatcherComponent(applicationContainerURI+"_RD");
+		RequestDispatcherComponent RDC = new RequestDispatcherComponent(applicationContainerURI+"RD");
 		dataDispatcherOutboundPort.addApplicationContainer(applicationContainerURI, applicationContainerURI+"_RD");
+		System.out.println("======== RD "+applicationContainerURI+"RD created =====");
 		return RDC;
 	} 
 }

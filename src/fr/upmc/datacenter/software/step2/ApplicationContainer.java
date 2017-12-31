@@ -56,14 +56,6 @@ public class ApplicationContainer
 	 */
 	protected RequestGeneratorManagementOutboundPort rgmop;
 
-	// PREDIFINED URI OF PORTS
-	public static final String RequestSubmissionInboundPortURI = "rsibp";
-	public static final String RequestSubmissionOutboundPortURI = "rsobp";
-	public static final String RequestNotificationInboundPortURI = "rnibp";
-	public static final String RequestNotificationOutboundPortURI = "rnobp";
-	public static final String RequestGeneratorManagementInboundPortURI = "rgmip";
-	public static final String RequestGeneratorManagementOutboundPortURI = "rgmop";
-
 	public ApplicationContainer(String uri, AbstractCVM cvm, AdmissionI admission,
 			String admissionNotificationInboundPortURI, String admissionControllerOutboundPortURI) throws Exception {
 		super(1, 1);
@@ -93,17 +85,17 @@ public class ApplicationContainer
 		this.addPort(this.admissionRequestOutboundPort);
 		this.admissionRequestOutboundPort.publishPort();
 
-		this.rg = new RequestGenerator(APP_URI + "rg", // generator component URI
+		this.rg = new RequestGenerator(APP_URI + "RG", // generator component URI
 				500.0, // mean time between two requests
 				6000000000L, // mean number of instructions in requests
-				APP_URI + RequestGeneratorManagementInboundPortURI, APP_URI + RequestSubmissionOutboundPortURI,
-				APP_URI + RequestNotificationInboundPortURI);
+				APP_URI+"RGMIP",
+				APP_URI+"RSOP",
+				APP_URI+"RNIP");
 		this.rg.DEBUG_LEVEL = 2;
 		this.cvm.addDeployedComponent(this.rg);
-		// admission.getAbstractCVM().addDeployedComponent(rg) ;
-		// admission.setRequestSubmissionInboundPortRD(RequestSubmissionInboundPortURI);
 
-		System.out.println("\n PORT CREATED ON THE APPLICATION CONTAINER " + APP_URI + "\n");
+		System.out.println();
+		System.out.println("PORT CREATED ON THE APPLICATION CONTAINER " + APP_URI);
 
 	}
 
@@ -188,25 +180,25 @@ public class ApplicationContainer
 		 * COMPONENT CONNECTIONS -----------------------------------------
 		 */
 
-		getRequestGenerator().doPortConnection(APP_URI + RequestSubmissionOutboundPortURI,
+		getRequestGenerator().doPortConnection(APP_URI+"RSOP",
 				this.admission.getRequestSubmissionInboundPortRD(),
 				RequestSubmissionConnector.class.getCanonicalName());
 
-		this.rgmop = new RequestGeneratorManagementOutboundPort(APP_URI + RequestGeneratorManagementOutboundPortURI,
+		this.rgmop = new RequestGeneratorManagementOutboundPort(APP_URI+"RGMOP",
 				new AbstractComponent(0, 0) {
 				});
 		this.rgmop.publishPort();
-		this.rgmop.doConnection(APP_URI + RequestGeneratorManagementInboundPortURI,
+		this.rgmop.doConnection(APP_URI+"RGMIP",
 				RequestGeneratorManagementConnector.class.getCanonicalName());
 
-		System.out.println("\n REQUEST GENERATOR CREATED ! \n");
+		System.out.println("REQUEST GENERATOR CREATED ! \n");
 
-		System.out.println("\n STARTING APPLICATION ....\n");
+		System.out.println("STARTING APPLICATION ....\n");
 		rg.startGeneration();
 		Thread.sleep(10000L);
 		rg.stopGeneration();
 		rgmop.doDisconnection();
-		rg.doPortDisconnection(APP_URI + RequestSubmissionOutboundPortURI);
+		rg.doPortDisconnection(APP_URI+"RSOP");
 		System.out.println("APPLICATION " + admission.getApplicationURI() + " STOPPED !");
 	}
 }
