@@ -149,7 +149,7 @@ public class ResourceInspector extends AbstractComponent {
 		// Store informations about the RequestDispatcher
 		RequestDispatcherInfo dispatcherInfo = dataProviderOutboundPort.getApplicationInfos(applicationContainerURI);
 		
-		// Add the ApplicationVM information to the RequestDispatcher
+		// Add the ApplicationVM information to the RequestDispatcherInformation
 		synchronized (dispatcherInfo) {
 			avmURI=applicationContainerURI+"AVM_"+dispatcherInfo.getNbVMCreated();
 			dispatcherInfo.addApplicationVM(avmURI, computerURI, cores);
@@ -183,7 +183,7 @@ public class ResourceInspector extends AbstractComponent {
 	public RequestDispatcherComponent createRequestDispatcher(AdmissionI admissionI) throws Exception {
 		String applicationContainerURI = admissionI.getApplicationURI();
 		RequestDispatcherComponent RDC = new RequestDispatcherComponent(applicationContainerURI+"RD");
-		dataDispatcherOutboundPort.addApplicationContainer(applicationContainerURI, applicationContainerURI+"_RD");
+		dataDispatcherOutboundPort.addApplicationContainer(applicationContainerURI, applicationContainerURI+"RD");
 		System.out.println("======== RD "+applicationContainerURI+"RD created =====");
 		return RDC;
 	} 

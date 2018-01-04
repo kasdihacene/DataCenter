@@ -13,10 +13,14 @@ import fr.upmc.datacenter.software.applicationcontainer.connectors.AdmissionNoti
 import fr.upmc.datacenter.software.applicationcontainer.interfaces.AdmissionNotificationI;
 import fr.upmc.datacenter.software.applicationcontainer.ports.AdmissionNotificationOutboundPort;
 import fr.upmc.datacenter.software.applicationvm.ApplicationVM;
+import fr.upmc.datacenter.software.connectors.RequestNotificationConnector;
 import fr.upmc.datacenter.software.connectors.RequestSubmissionConnector;
 import fr.upmc.datacenter.software.informations.applicationvm.ApplicationVMInfo;
 import fr.upmc.datacenter.software.informations.requestdispatcher.RequestDispatcherComponent;
 import fr.upmc.datacenter.software.informations.requestdispatcher.RequestDispatcherInfo;
+import fr.upmc.datacenter.software.interfaces.RequestNotificationI;
+import fr.upmc.datacenter.software.step2.requestresourcevm.RequestVM;
+import fr.upmc.datacenter.software.step2.requestresourcevm.connector.RequestResourceVMConnector;
 
 public class AdmissionController 	extends ResourceInspector 
 									implements AdmissionRequestHandlerI {
@@ -95,19 +99,45 @@ public class AdmissionController 	extends ResourceInspector
 	 * @throws Exception 
 	 */
 	protected void allowHostingApplication(AdmissionI admissionI, String computerURI) throws Exception {
+		
 		// Create the RequestDispatcher
 		RequestDispatcherComponent RD = createRequestDispatcher(admissionI);
+		
 		// Create an ApplicationVM
 		ApplicationVM avm = createApplicationVM(admissionI.getApplicationURI(), computerURI);
+		
 		// Deploy two components
 		acvm.addDeployedComponent(RD);
 		acvm.addDeployedComponent(avm);
+		
+		// Get the ApplicationVM URI
+		RequestDispatcherInfo dispatcherInfo = dataProviderOutboundPort.getApplicationInfos(admissionI.getApplicationURI());
+		String avmURIrecentlyAdded = dispatcherInfo.getAVMRecentlyAdded().getVmURI();
+		
+		
+
+		// CONNECT APPLICATION VM WITH REQUEST DISPATCHER TO NOTIFY 
+		String [] PORTS_AVM_RNOP= avm.findOutboundPortURIsFromInterface(RequestNotificationI.class);
+		// TODO we have to make a loop for PORTS_AVM_RNOP and connect a number of AVMs with the RequestDispatcher RD_RNIP
+		System.out.println("+++++++++++++++"+PORTS_AVM_RNOP[0]+"  "+avmURIrecentlyAdded+"++++++++++++++");
+		avm.doPortConnection(
+							PORTS_AVM_RNOP[0],
+							admissionI.getApplicationURI()+"RD_RNIP", 
+							RequestNotificationConnector.class.getCanonicalName());
+		
+		// Add AVM URI on the list of AVMs of the RequestDispatcher
+		requestResourceVMOutboundPort.doConnection(
+							admissionI.getApplicationURI()+"RD_RVMIP",
+							RequestResourceVMConnector.class.getCanonicalName());
+		RequestVM requestVMI = new RequestVM(avmURIrecentlyAdded, admissionI.getApplicationURI());
+		requestResourceVMOutboundPort.requestAddVM(requestVMI);
+		
 		// Update AdmissionI informations
 		RequestDispatcherInfo rdInfos= dataProviderOutboundPort.getApplicationInfos(admissionI.getApplicationURI());
 		int nbCreated	 = rdInfos.getNbVMCreated();
 		System.out.println("Nb VM created for "+admissionI.getApplicationURI()+" : "+nbCreated);
-		// Connect the current RequestDispatcher with the ApplicationContainer
 		
+		// Connect the current RequestDispatcher with the ApplicationContainer
 		LinkedHashMap<String,ApplicationVMInfo> avmInfos= rdInfos.getAllVmInformation();
 		for (Map.Entry<String, ApplicationVMInfo> entry : avmInfos.entrySet()) {
 		    String key = entry.getKey();

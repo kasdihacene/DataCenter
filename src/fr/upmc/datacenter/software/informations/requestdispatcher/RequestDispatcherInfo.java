@@ -1,5 +1,6 @@
 package fr.upmc.datacenter.software.informations.requestdispatcher;
 
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 
 import fr.upmc.datacenter.hardware.computers.Computer.AllocatedCore;
@@ -46,6 +47,18 @@ public class RequestDispatcherInfo {
 				vmInformations.put(vmURI, applicationVMInfo);
 				nbVM++;
 				System.out.println("********* NBVM CREATED ******** "+vmURI+" : "+nbVM);
+	}
+	/**
+	 * Get the last AVMinformations recently added
+	 * @return ApplicationVM information recently connected to the RequestDispatcher
+	 */
+	public ApplicationVMInfo getAVMRecentlyAdded() {
+		Iterator<java.util.Map.Entry<String, ApplicationVMInfo>> iterator = vmInformations.entrySet().iterator();
+		ApplicationVMInfo applicationVMinfo=null;
+		while (iterator.hasNext()) {
+			applicationVMinfo = iterator.next().getValue();
+		}
+		return applicationVMinfo;
 	}
 	/**
 	 * remove an ApplicationVM

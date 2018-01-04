@@ -129,7 +129,7 @@ public class DataProvider extends 	AbstractComponent
 	public void acceptComputerDynamicData(String computerURI, ComputerDynamicStateI currentDynamicState)
 			throws Exception {
 		System.out.println("PUSHED FROM COMPUTER DYNAMIC "+computerURI+"  "+currentDynamicState.getCurrentCoreReservations()[0][0]);
-		// get the state of the barriere
+		// get the state of the bariere
 		Integer sharedResource = mapComputerInfo.get(computerURI).getSharedResource();
 		synchronized (sharedResource) {
 			ComputerInfo computerInfo = mapComputerInfo.get(computerURI);
