@@ -77,10 +77,10 @@ public class RequestDispatcherComponent 	extends 	AbstractComponent
 
 	@Override
 	public void addVMApplication(RequestVMI requestVMI) throws Exception {
-		this.rsop.doConnection(requestVMI.getURIVM(), RequestSubmissionConnector.class.getCanonicalName());
-		System.out.println("=== ADD VM APPLICATION");
 		// Add the AVM URI to the list
 		applicationVMList.add(requestVMI.getURIVM());
+		
+		
 	}
 
 	@Override
@@ -94,7 +94,7 @@ public class RequestDispatcherComponent 	extends 	AbstractComponent
 	 */
 	@Override
 	public void acceptRequestTerminationNotification(RequestI r) throws Exception {
-		System.out.println("******* REQUEST TERMINATION : "+r.getRequestURI());
+		System.out.println("REQUEST TERMINATION : "+r.getRequestURI());
 		
 	}
 
@@ -102,30 +102,59 @@ public class RequestDispatcherComponent 	extends 	AbstractComponent
 	public void acceptRequestSubmission(RequestI r) throws Exception {
 		
 	}
-
+	/**
+	 * RoundRobin policy for dispatching request to the ApplicationVM
+	 * @param AVMlistURIs
+	 * @return the next AVM uri that weh should execute the request
+	 */
+	public String roundRobinAVM(ArrayList<String> AVMlistURIs) {
+		AVMlistURIs.add(AVMlistURIs.remove(0));
+		return AVMlistURIs.get(0);
+	}
 	/**
 	 * Received from the RequestGenerator, asking the execution of the RequestI
 	 */
 	@Override
 	public void acceptRequestSubmissionAndNotify(RequestI r) throws Exception {
-		System.out.println("****** REQUEST : "+r.getRequestURI()+" ARRIVED AND SUBMITED TO ******* "+applicationVMList.get(0));
-		rsop.doConnection(applicationVMList.get(0)+"_RSIP",RequestSubmissionConnector.class.getCanonicalName());
-		rsop.submitRequestAndNotify(r);
+		System.out.println("********* REQUEST : "+r.getRequestURI()+" ARRIVED AND SUBMITED TO ******* "+applicationVMList.get(0));
 		
+		// Connect the ApplicationVM added to the RequestDispatcher using RoundRobin policy
+		String avmNextURI = roundRobinAVM(applicationVMList);
+		rsop.doConnection(avmNextURI+"_RSIP",RequestSubmissionConnector.class.getCanonicalName());
+		rsop.submitRequestAndNotify(r);
+		rsop.doDisconnection();
 	}
 
+	/**
+	 * start the pushing of data and force the pushing to be done each
+	 * <code>interval</code> period of time. 
+	 * @param interval		delay between pushes (in milliseconds).
+	 * @throws Exception
+	 */
 	@Override
 	public void startUnlimitedPushing(int interval) throws Exception {
 		System.out.println("=== START UNLIMITED PUSHING");
 		
 	}
 
+	/**
+	 * start <code>n>/code> pushing of data and force the pushing to be done
+	 * each <code>interval</code> period of time. 
+	 * @param interval		delay between pushes (in milliseconds).
+	 * @param n				total number of pushes to be done, unless stopped.
+	 * @throws Exception
+	 */
 	@Override
 	public void startLimitedPushing(int interval, int n) throws Exception {
 		System.out.println("=== START LIMITED PUSHING ");
 		
 	}
 
+
+	/**
+	 * stop the pushing of data.
+	 * @throws Exception
+	 */
 	@Override
 	public void stopPushing() throws Exception {
 		System.out.println("=== STOP PUSHING ");

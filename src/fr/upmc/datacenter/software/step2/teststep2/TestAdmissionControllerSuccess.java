@@ -18,6 +18,7 @@ import fr.upmc.datacenter.hardware.tests.ComputerMonitor;
 import fr.upmc.datacenter.software.admissioncontroller.Admission;
 import fr.upmc.datacenter.software.step2.AdmissionController;
 import fr.upmc.datacenter.software.step2.ApplicationContainer;
+import fr.upmc.datacenter.software.step2.tools.DelployTools;
 
 /**
  * This class shows a test of one hosting two <code>ApplicationContainer</code>
@@ -38,12 +39,14 @@ public class TestAdmissionControllerSuccess extends fr.upmc.components.cvm.Abstr
 
 	public TestAdmissionControllerSuccess() throws Exception {
 		super();
+		// Set the AbstractCVM to deploy components
+		DelployTools.setAcvm(this);
 	}
 	
 	/**
 	* All URIs and ports for first computer
 	*/
-	protected final static int COMPUTER_NUMBER = 3;
+	protected final static int COMPUTER_NUMBER = 5;
 	protected final static String COMPUTER_URI = "computer";
 	protected final static String COMPUTER_MONITOR_URI = "monitor";
 	protected final static String COMPUTER_SERVICE_INBOUND_PORT_SUFFIX = "csip";
@@ -126,7 +129,8 @@ public class TestAdmissionControllerSuccess extends fr.upmc.components.cvm.Abstr
 			String cddopURI = computerURI + "_CDSDOP";
 			Computer computer = new Computer(computerURI, admissibleFrequencies, processingPower, 1500, 1500,
 					numberOfProcessors, numberOfCores, csipURI, csdipURI, cddipURI);
-
+			this.addDeployedComponent(computer);
+			
 			ComputerServicesOutboundPort csPort = new ComputerServicesOutboundPort(csopURI,
 					new AbstractComponent(0, 0) {
 					});

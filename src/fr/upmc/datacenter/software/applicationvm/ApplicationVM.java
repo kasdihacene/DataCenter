@@ -331,7 +331,6 @@ implements	ProcessorServicesNotificationConsumerI,
 	@Override
 	public void			acceptNotifyEndOfTask(TaskI t) throws Exception
 	{
-		System.out.println("\n END OF THE TASK "+t.getRequest().getRequestURI()+"\n");
 		this.endTask(t) ;
 	}
 

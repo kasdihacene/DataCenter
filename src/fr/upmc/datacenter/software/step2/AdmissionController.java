@@ -1,7 +1,6 @@
 package fr.upmc.datacenter.software.step2;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.LinkedList;
 
 import fr.upmc.components.cvm.AbstractCVM;
 import fr.upmc.datacenter.software.admissioncontroller.ResourceInspector;
@@ -15,18 +14,20 @@ import fr.upmc.datacenter.software.applicationcontainer.ports.AdmissionNotificat
 import fr.upmc.datacenter.software.applicationvm.ApplicationVM;
 import fr.upmc.datacenter.software.connectors.RequestNotificationConnector;
 import fr.upmc.datacenter.software.connectors.RequestSubmissionConnector;
-import fr.upmc.datacenter.software.informations.applicationvm.ApplicationVMInfo;
 import fr.upmc.datacenter.software.informations.requestdispatcher.RequestDispatcherComponent;
 import fr.upmc.datacenter.software.informations.requestdispatcher.RequestDispatcherInfo;
-import fr.upmc.datacenter.software.interfaces.RequestNotificationI;
 import fr.upmc.datacenter.software.step2.requestresourcevm.RequestVM;
 import fr.upmc.datacenter.software.step2.requestresourcevm.connector.RequestResourceVMConnector;
 
+/**
+ * 
+ * 
+ * @author Hacene KASDI
+ * @version 2017.12.10.HK
+ *
+ */
 public class AdmissionController 	extends ResourceInspector 
 									implements AdmissionRequestHandlerI {
-
-	private AbstractCVM acvm;
-	private String acURI;
 	
 	/** OUTBOUND PORT SENDING THE NOTIFICATIONS     */
 	protected AdmissionNotificationOutboundPort anop;
@@ -46,8 +47,6 @@ public class AdmissionController 	extends ResourceInspector
 	public AdmissionController(
 			String acURI,AbstractCVM acvm) throws Exception {
 		super(acURI);
-		this.acURI=acURI;
-		this.acvm=acvm;
 		
 				//CREATE OFFRED AND REQUIRED INTERFACES
 				this.addOfferedInterface(AdmissionRequestI.class);
@@ -75,7 +74,8 @@ public class AdmissionController 	extends ResourceInspector
 
 	@Override
 	public void inspectResourcesAndNotifiy(AdmissionI admission) throws Exception {
-				String availableComputerURI = getAvailableResource(admission);
+		// Get available resources for 2 AVM
+				LinkedList<String> availableComputerURI = getAvailableResource(admission);
 		if(availableComputerURI!=null) {
 				System.out.println("computer available for : "+admission.getApplicationURI()+" == "+availableComputerURI);
 				// Allow hosting Application
@@ -98,30 +98,22 @@ public class AdmissionController 	extends ResourceInspector
 	 * @param computerURI
 	 * @throws Exception 
 	 */
-	protected void allowHostingApplication(AdmissionI admissionI, String computerURI) throws Exception {
+	protected void allowHostingApplication(AdmissionI admissionI, LinkedList<String> computerURIs) throws Exception {
 		
 		// Create the RequestDispatcher
 		RequestDispatcherComponent RD = createRequestDispatcher(admissionI);
 		
+		for(String computerURI : computerURIs) {
 		// Create an ApplicationVM
 		ApplicationVM avm = createApplicationVM(admissionI.getApplicationURI(), computerURI);
-		
-		// Deploy two components
-		acvm.addDeployedComponent(RD);
-		acvm.addDeployedComponent(avm);
 		
 		// Get the ApplicationVM URI
 		RequestDispatcherInfo dispatcherInfo = dataProviderOutboundPort.getApplicationInfos(admissionI.getApplicationURI());
 		String avmURIrecentlyAdded = dispatcherInfo.getAVMRecentlyAdded().getVmURI();
 		
-		
-
-		// CONNECT APPLICATION VM WITH REQUEST DISPATCHER TO NOTIFY 
-		String [] PORTS_AVM_RNOP= avm.findOutboundPortURIsFromInterface(RequestNotificationI.class);
-		// TODO we have to make a loop for PORTS_AVM_RNOP and connect a number of AVMs with the RequestDispatcher RD_RNIP
-		System.out.println("+++++++++++++++"+PORTS_AVM_RNOP[0]+"  "+avmURIrecentlyAdded+"++++++++++++++");
+		// Connect the AVM to Request Dispatcher for sending Notifications
 		avm.doPortConnection(
-							PORTS_AVM_RNOP[0],
+							avmURIrecentlyAdded+"_RNOP",
 							admissionI.getApplicationURI()+"RD_RNIP", 
 							RequestNotificationConnector.class.getCanonicalName());
 		
@@ -137,18 +129,14 @@ public class AdmissionController 	extends ResourceInspector
 		int nbCreated	 = rdInfos.getNbVMCreated();
 		System.out.println("Nb VM created for "+admissionI.getApplicationURI()+" : "+nbCreated);
 		
-		// Connect the current RequestDispatcher with the ApplicationContainer
-		LinkedHashMap<String,ApplicationVMInfo> avmInfos= rdInfos.getAllVmInformation();
-		for (Map.Entry<String, ApplicationVMInfo> entry : avmInfos.entrySet()) {
-		    String key = entry.getKey();
-		    ApplicationVMInfo value = entry.getValue();
-		    
+		// Connect the current RequestDispatcher with the ApplicationVM (APPx_AMV_x_RSIP)
 		    RD.doPortConnection(admissionI.getApplicationURI()+"RD_RSOP", 
-		    					key+"_RSIP", 
+		    					avmURIrecentlyAdded+"_RSIP", 
 		    					RequestSubmissionConnector.class.getCanonicalName());
 		    
-		    System.out.println("===== KEY : "+key+" ===== COMPUTER : "+value.getComputerURI());   
+		 
 		}
+		// set the RD URI on the AdmissionI response to send to the ApplicationContainer
 		admissionI.setRequestSubmissionInboundPortRD(admissionI.getApplicationURI()+"RD_RSIP");
 		
 	}

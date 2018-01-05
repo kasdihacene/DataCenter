@@ -23,6 +23,7 @@ import fr.upmc.datacenter.software.informations.requestdispatcher.RequestDispatc
 import fr.upmc.datacenter.software.informations.requestdispatcher.RequestDispatcherInfo;
 import fr.upmc.datacenter.software.step2.requestresourcevm.interfaces.RequestResourceVMI;
 import fr.upmc.datacenter.software.step2.requestresourcevm.ports.RequestResourceVMOutboundPort;
+import fr.upmc.datacenter.software.step2.tools.DelployTools;
 
 /**
  * <p><strong>Description</string></p>
@@ -97,12 +98,18 @@ public class ResourceInspector extends AbstractComponent {
 	 * Check for resources availability if there is any available Processor 
 	 * (Core) in the list of Computers
 	 * 
-	 * @return URI of the available Computer
+	 * @return List URIs of the available Computers for 2 AVM
 	 * @throws Exception
 	 */
-	public String getAvailableResource(AdmissionI admissionI) throws Exception {
+	public LinkedList<String> getAvailableResource(AdmissionI admissionI) throws Exception {
+		// TODO we have to receive number of AVM to create on the request provided from the Client
+		// int NBAVM_TO_CREATE = admissionI.getNBAVMToCreate();
+		final int NBAVM_TO_CREATE = 2;
+		
+		// Get all caomputer URIs
 		LinkedList<String> computerListURI = dataProviderOutboundPort.getComputerListURIs();
-
+		// List of 2 URIs of available computers
+		LinkedList<String> computerURIfor2AVM=new LinkedList<String>();
 		for (String uri : computerListURI) {
 			ComputerInfo computerInfo=dataProviderOutboundPort.getComputerInfos(uri);
 			Integer sharedResource = computerInfo.getSharedResource();
@@ -126,7 +133,9 @@ public class ResourceInspector extends AbstractComponent {
 				// check if nbCoresAvailable >= NBCORES than set these cores as allocated
 				if(nbCoresAvailable>= NBCORES) {
 					computerInfo.updateCoresState(allocatedCores, NBCORES);
-					return uri;
+					computerURIfor2AVM.add(uri);
+					if(computerURIfor2AVM.size()==NBAVM_TO_CREATE) {
+					return computerURIfor2AVM;}
 				}
 				System.out.println("cores available in "+computerInfo.getComputerURI()+" == "+nbCoresAvailable+" for : "+admissionI.getApplicationURI());
 				
@@ -170,6 +179,10 @@ public class ResourceInspector extends AbstractComponent {
 
 		// allocate cores for the ApplicationVM
 		avmMop.allocateCores(cores);
+		
+		// deploy the component
+		DelployTools.deployComponent(avm);
+		
 		// return avm it will be deployed by the AdmissionController
 		return avm;
 	}
@@ -181,9 +194,17 @@ public class ResourceInspector extends AbstractComponent {
 	 * @throws Exception 
 	 */
 	public RequestDispatcherComponent createRequestDispatcher(AdmissionI admissionI) throws Exception {
+		
+		// Get the URI of the ApplicationContainer
 		String applicationContainerURI = admissionI.getApplicationURI();
+		
+		// Create and Deploy the Request Dispatcher 
 		RequestDispatcherComponent RDC = new RequestDispatcherComponent(applicationContainerURI+"RD");
+		DelployTools.deployComponent(RDC);
+		
+		// Store the informations related to the Request Dispatcher
 		dataDispatcherOutboundPort.addApplicationContainer(applicationContainerURI, applicationContainerURI+"RD");
+		
 		System.out.println("======== RD "+applicationContainerURI+"RD created =====");
 		return RDC;
 	} 
