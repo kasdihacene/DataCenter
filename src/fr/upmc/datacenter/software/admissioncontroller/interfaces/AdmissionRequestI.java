@@ -27,6 +27,11 @@ public interface AdmissionRequestI
 	 * @throws Exception
 	 */
 	public void askForHostAndWaitResponse( AdmissionI admission) throws Exception;
+	/**
+	 * 
+	 * @throws Exception
+	 */
+	public void shutdownApplicationServices(String URI) throws Exception;
 
 	
 }

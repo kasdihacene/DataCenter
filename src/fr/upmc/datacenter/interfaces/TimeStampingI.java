@@ -79,6 +79,7 @@ public interface		TimeStampingI
 	 * </pre>
 	 *
 	 * @return	the IP address of the host.
+	 * @throws Exception 
 	 */
-	public String			getTimeStamperId() ;
+	public String			getTimeStamperId() throws Exception ;
 }

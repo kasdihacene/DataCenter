@@ -837,5 +837,7 @@ implements	PushModeControllingI
 		}
 
 		this.cores[coreNo].setFrequency(frequency) ;
+		
+		System.err.println("Frequency changed successfuly on Processor : "+processorURI+" | core : "+coreNo);
 	}
 }

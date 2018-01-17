@@ -100,7 +100,7 @@ public class DataProvider extends 	AbstractComponent
 				ControlledDataConnector.class.getCanonicalName()) ;
 		
 		//Start pushing and receiving answers from a Computer #acceptComputerDynamicData
-		cdsPort.startLimitedPushing(1,1);
+		cdsPort.startLimitedPushing(2,2);
 		cdsPort.startUnlimitedPushing(10000);
 		
 		mapComputerDynamicSOP.put(computerURI, cdsPort);
@@ -128,7 +128,19 @@ public class DataProvider extends 	AbstractComponent
 	@Override
 	public void acceptComputerDynamicData(String computerURI, ComputerDynamicStateI currentDynamicState)
 			throws Exception {
-		System.out.println("PUSHED FROM COMPUTER DYNAMIC "+computerURI+"  "+currentDynamicState.getCurrentCoreReservations()[0][0]);
+		StringBuffer stringBuffer = new StringBuffer();
+		for (int i = 0; i < currentDynamicState.getCurrentCoreReservations().length; i++) {
+			for (int j = 0; j < currentDynamicState.getCurrentCoreReservations()[i].length; j++) {
+				if(currentDynamicState.getCurrentCoreReservations()[i][j]) {
+					stringBuffer.append("|T");
+				}else {
+					stringBuffer.append("|F");
+				}
+			}
+		}
+		
+		System.out.println("DYNAMIC DATA PUSHED FROM COMPUTER "+computerURI+" RESERVATION CORES : "+stringBuffer+"|");
+
 		// get the state of the bariere
 		Integer sharedResource = mapComputerInfo.get(computerURI).getSharedResource();
 		synchronized (sharedResource) {
@@ -138,11 +150,11 @@ public class DataProvider extends 	AbstractComponent
 			computerInfo.setCoreState(allocatedCores);
 			// set free the resource shared and put it to 1
 			if(sharedResource==0) {
-				sharedResource.notifyAll();
+			sharedResource.notifyAll();
 			// set the resource as available
-			sharedResource=1;}
+			sharedResource=1;
 			mapComputerInfo.get(computerURI).setSharedResource(sharedResource);
-			System.out.println("SHARED RESOURCE UPDATED => "+computerURI+" set to "+sharedResource);
+			}
 		}
 		
 	}
@@ -163,6 +175,9 @@ public class DataProvider extends 	AbstractComponent
 		mapApplicationDispatcher.remove(applicationURI);
 	}
 
+/**
+ * Get the Request Dispatcher Informations
+ */
 	@Override
 	public RequestDispatcherInfo getApplicationInfos(String appURI) throws Exception {
 		return mapApplicationDispatcher.get(appURI);
@@ -170,7 +185,6 @@ public class DataProvider extends 	AbstractComponent
 
 	@Override
 	public LinkedList<String> getApplicationInfosList() throws Exception {
-		// TODO Auto-generated method stub
 		return null;
 	}
 

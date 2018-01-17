@@ -25,4 +25,9 @@ public interface AdmissionRequestHandlerI {
 	 * @throws Exception
 	 */
 	public void inspectResourcesAndNotifiy(AdmissionI admission) throws Exception;
+	/**
+	 * 
+	 * @throws Exception
+	 */
+	public void shutdownServices(String URI) throws Exception;
 }

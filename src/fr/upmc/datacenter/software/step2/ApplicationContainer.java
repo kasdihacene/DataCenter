@@ -86,17 +86,13 @@ public class ApplicationContainer
 		this.admissionRequestOutboundPort.publishPort();
 
 		this.rg = new RequestGenerator(APP_URI + "RG", // generator component URI
-				500.0, // mean time between two requests
-				6000000000L, // mean number of instructions in requests
+				500.0, 			// mean time between two requests
+				3000000000L, 	// mean number of instructions in requests
 				APP_URI+"RGMIP",
 				APP_URI+"RSOP",
 				APP_URI+"RNIP");
-		this.rg.DEBUG_LEVEL = 2;
+//		this.rg.DEBUG_LEVEL = 2;
 		this.cvm.addDeployedComponent(this.rg);
-
-		System.out.println();
-		System.out.println("PORT CREATED ON THE APPLICATION CONTAINER " + APP_URI);
-
 	}
 
 	public RequestGenerator getRequestGenerator() {
@@ -109,8 +105,6 @@ public class ApplicationContainer
 	 * @throws Exception
 	 */
 	public void askForHostingApllication() throws Exception {
-		System.out.println("ASK FOR HOSTIN OF THE APPLICATION ...");
-
 		admission.setApplicationURI(APP_URI);
 		this.admissionRequestOutboundPort.askForHost(this.admission);
 		System.out.println("====================");
@@ -155,9 +149,9 @@ public class ApplicationContainer
 	 * 
 	 * @throws Exception
 	 */
-	public void startSync() throws Exception {
+	public void startAsync() throws Exception {
 		final ApplicationContainer application = this;
-		this.handleRequestSync(new ComponentService<Void>() {
+		this.handleRequestAsync(new ComponentService<Void>() {
 			@Override
 			public Void call() throws Exception {
 				application.askForHostingApllication();
@@ -194,11 +188,12 @@ public class ApplicationContainer
 		System.out.println("REQUEST GENERATOR CREATED ! \n");
 
 		System.out.println("STARTING APPLICATION ....\n");
-		rg.startGeneration();
-		Thread.sleep(10000L);
-		rg.stopGeneration();
+		rgmop.startGeneration();
+		Thread.sleep(200000L);
+		rgmop.stopGeneration();
 		rgmop.doDisconnection();
 		rg.doPortDisconnection(APP_URI+"RSOP");
 		System.out.println("APPLICATION " + admission.getApplicationURI() + " STOPPED !");
+		admissionRequestOutboundPort.shutdownApplicationServices(admission.getApplicationURI());
 	}
 }

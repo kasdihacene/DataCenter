@@ -200,4 +200,7 @@ public class ComputerInfo {
 		return this.possibleFrequencies.contains(frequency);
 	}
 	
+	public Set<Integer> getAdmissibleFrequencies() {
+		return possibleFrequencies;
+	}
 }

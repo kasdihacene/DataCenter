@@ -302,6 +302,7 @@ implements	ProcessorServicesNotificationConsumerI,
 	public void			acceptRequestSubmission(final RequestI r)
 	throws Exception
 	{
+
 		this.taskQueue.add(new Task(r)) ;
 		this.startTask() ;
 	}
@@ -319,6 +320,7 @@ implements	ProcessorServicesNotificationConsumerI,
 							"ApplicationVM>>acceptRequestSubmissionAndNotify") ;
 		}
 		this.logMessage(this.vmURI + " queues request " + r.getRequestURI());
+
 		Task t = new Task(r) ;
 		this.taskQueue.add(t) ;
 		this.tasksToNotify.add(t.taskURI) ;
@@ -357,6 +359,7 @@ implements	ProcessorServicesNotificationConsumerI,
 
 		AllocatedCore ac = this.findIdleCore() ;
 		if (ac != null) {
+
 			this.allocatedCoresIdleStatus.remove(ac) ;
 			this.allocatedCoresIdleStatus.put(ac, false) ;
 			TaskI t = this.taskQueue.remove() ;
@@ -632,6 +635,7 @@ implements	ProcessorServicesNotificationConsumerI,
 	public void			allocateCores(AllocatedCore[] allocatedCores)
 	throws Exception
 	{
+		
 		assert	allocatedCores != null && allocatedCores.length != 0 ;
 
 		for(int i = 0 ; i < allocatedCores.length ; i++) {
@@ -662,6 +666,8 @@ implements	ProcessorServicesNotificationConsumerI,
 									put(allocatedCores[i].processorURI, np) ;
 			}
 		}
+		
+		System.err.println("CORE ADDED ON "+vmURI+" | core : "+allocatedCores[0].processorNo+""+allocatedCores[0].coreNo);
 	}
 
 	/**

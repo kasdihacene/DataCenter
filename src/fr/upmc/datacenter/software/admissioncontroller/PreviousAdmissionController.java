@@ -280,5 +280,11 @@ import javassist.CtClass;
 			}
 			return index;
 		}
+
+		@Override
+		public void shutdownServices(String URI) throws Exception {
+			// TODO Auto-generated method stub
+			
+		}
 		
 	}

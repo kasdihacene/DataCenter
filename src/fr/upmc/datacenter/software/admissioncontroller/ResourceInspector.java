@@ -15,12 +15,12 @@ import fr.upmc.datacenter.hardware.computers.connectors.ComputerServicesConnecto
 import fr.upmc.datacenter.hardware.computers.interfaces.ComputerServicesI;
 import fr.upmc.datacenter.hardware.computers.ports.ComputerServicesOutboundPort;
 import fr.upmc.datacenter.software.admissioncontroller.interfaces.AdmissionI;
-import fr.upmc.datacenter.software.applicationvm.ApplicationVM;
 import fr.upmc.datacenter.software.applicationvm.connectors.ApplicationVMManagementConnector;
 import fr.upmc.datacenter.software.applicationvm.ports.ApplicationVMManagementOutboundPort;
 import fr.upmc.datacenter.software.informations.computers.ComputerInfo;
 import fr.upmc.datacenter.software.informations.requestdispatcher.RequestDispatcherComponent;
 import fr.upmc.datacenter.software.informations.requestdispatcher.RequestDispatcherInfo;
+import fr.upmc.datacenter.software.step2.adaptableproperty.ApplicationVMAdaptable;
 import fr.upmc.datacenter.software.step2.requestresourcevm.interfaces.RequestResourceVMI;
 import fr.upmc.datacenter.software.step2.requestresourcevm.ports.RequestResourceVMOutboundPort;
 import fr.upmc.datacenter.software.step2.tools.DelployTools;
@@ -30,7 +30,7 @@ import fr.upmc.datacenter.software.step2.tools.DelployTools;
  * 
  * this component <code>ResourceInspector</code> interacts with the 
  * <code>DataProvider</code> to request availability of resources in 
- * the DataCenter, he can inspects the abstract values of performences stored 
+ * the DataCenter, he can inspects the abstract values of performances stored 
  * 
  * @author Hacene KASDI
  * @version 2017.12.10.HK
@@ -40,7 +40,7 @@ public class ResourceInspector extends AbstractComponent {
 
 	protected String riURI;
 	protected String providerURI;
-	private static final int NBCORES = 4;
+	private static final int NBCORES = 2;
 	
 	public DynamicComponentCreator dynamicComponentCreator;
 	
@@ -52,7 +52,6 @@ public class ResourceInspector extends AbstractComponent {
 	public ResourceInspector(String riURI) throws Exception {
 		super(1, 1);
 		this.riURI=riURI;
-		
 		//Used to ask for informations about Computer, processor and Core
 		this.addRequiredInterface(DataProviderI.class);
 		//Used to ask for informations about Computers of the DataCenter
@@ -86,12 +85,10 @@ public class ResourceInspector extends AbstractComponent {
 	 * @throws Exception
 	 */
 	public void connectWithDataProvider(String providerURI) throws Exception {
-		System.out.println("RessourceInspector try to connect with "+providerURI);
 		this.providerURI=providerURI;
 		// DataProviderOutboundPort (resourceInspector) --C O-- DataProviderInboundPort (DataProvider)
 		this.dataProviderOutboundPort	.doConnection(providerURI+"_DPIP", DataProviderConnector.class.getCanonicalName());
 		this.dataDispatcherOutboundPort	.doConnection(providerURI+"_DDIP", DataProviderDispatcherConnector.class.getCanonicalName());
-		System.out.println("RessourceInspector connected with "+providerURI);
 	}
 	
 	/**
@@ -101,27 +98,34 @@ public class ResourceInspector extends AbstractComponent {
 	 * @return List URIs of the available Computers for 2 AVM
 	 * @throws Exception
 	 */
-	public LinkedList<String> getAvailableResource(AdmissionI admissionI) throws Exception {
+	public LinkedList<String> getAvailableResource(String applicationURI) throws Exception {
 		// TODO we have to receive number of AVM to create on the request provided from the Client
 		// int NBAVM_TO_CREATE = admissionI.getNBAVMToCreate();
 		final int NBAVM_TO_CREATE = 2;
-		
+
 		// Get all caomputer URIs
-		LinkedList<String> computerListURI = dataProviderOutboundPort.getComputerListURIs();
+		LinkedList<String> computerListURI = new LinkedList<String>();
+		computerListURI = dataProviderOutboundPort.getComputerListURIs();
+		
+		for (String uri : computerListURI) {
+			ComputerInfo computerInfo=dataProviderOutboundPort.getComputerInfos(uri);
+			System.out.println("OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO "+computerInfo.getComputerURI()+" : "+computerInfo.getNbCoreAvailable());
+		}
+		
+		
 		// List of 2 URIs of available computers
 		LinkedList<String> computerURIfor2AVM=new LinkedList<String>();
 		for (String uri : computerListURI) {
 			ComputerInfo computerInfo=dataProviderOutboundPort.getComputerInfos(uri);
+			int nbAvailableCores=0;
 			Integer sharedResource = computerInfo.getSharedResource();
-			int nbCoresAvailable;
 			boolean[][] allocatedCores;
-			
 			
 			// look at the synchronisation barriere if there is ay available 
 			// information about this computer, else wait()
 			synchronized (sharedResource) {
 				if(sharedResource==0) {
-					System.out.println(admissionI.getApplicationURI()+" waiting for : "+uri);
+					System.out.println(applicationURI+" waiting for : "+uri);
 					wait();
 				}
 			}
@@ -129,16 +133,20 @@ public class ResourceInspector extends AbstractComponent {
 			synchronized (computerInfo) {
 				// get number of available core of this computer
 				allocatedCores=computerInfo.getCoreState();
-				nbCoresAvailable = computerInfo.getNbCoreAvailable();
+				for (int i = 0; i < allocatedCores.length; i++) {
+					for (int j = 0; j < allocatedCores[i].length; j++) {
+						if(!allocatedCores[i][j]) nbAvailableCores++;
+					}
+				}
 				// check if nbCoresAvailable >= NBCORES than set these cores as allocated
-				if(nbCoresAvailable>= NBCORES) {
+				if(nbAvailableCores >= NBCORES) {
 					computerInfo.updateCoresState(allocatedCores, NBCORES);
 					computerURIfor2AVM.add(uri);
 					if(computerURIfor2AVM.size()==NBAVM_TO_CREATE) {
-					return computerURIfor2AVM;}
+					return computerURIfor2AVM;
+					}
 				}
-				System.out.println("cores available in "+computerInfo.getComputerURI()+" == "+nbCoresAvailable+" for : "+admissionI.getApplicationURI());
-				
+				System.out.println("cores available in "+computerInfo.getComputerURI()+" == "+nbAvailableCores+" for : "+applicationURI);
 			}
 		}
 		return null;
@@ -147,7 +155,8 @@ public class ResourceInspector extends AbstractComponent {
 	 * allocate resources for an ApplicationVM
 	 * @throws Exception 
 	 */
-	public ApplicationVM createApplicationVM(String applicationContainerURI, String computerURI) throws Exception {
+	public ApplicationVMAdaptable createApplicationVM(String applicationContainerURI, String computerURI) throws Exception {
+
 		String avmURI=null;
 		// Allocate cores for the ApplicationVM
 		this.computerServicesOutboundPort.doConnection(computerURI+"_CSIP",
@@ -167,10 +176,10 @@ public class ResourceInspector extends AbstractComponent {
 		// Create and deloy the AppplicationVM
 		String RSIP_URI=avmURI+"_RSIP";
 		String RNOP_URI=avmURI+"_RNOP";
-		ApplicationVM avm= new ApplicationVM(	avmURI, 
-												avmURI+"_AVMMIP", 
-												RSIP_URI, 
-												RNOP_URI);
+		ApplicationVMAdaptable avm= new ApplicationVMAdaptable(	avmURI, 
+																avmURI+"_AVMMIP", 
+																RSIP_URI, 
+																RNOP_URI);
 
 		// Create an ApplicationVMMangement
 		ApplicationVMManagementOutboundPort avmMop= new ApplicationVMManagementOutboundPort(riURI+"_AVMMOP", new AbstractComponent(1,1){});
@@ -204,8 +213,6 @@ public class ResourceInspector extends AbstractComponent {
 		
 		// Store the informations related to the Request Dispatcher
 		dataDispatcherOutboundPort.addApplicationContainer(applicationContainerURI, applicationContainerURI+"RD");
-		
-		System.out.println("======== RD "+applicationContainerURI+"RD created =====");
 		return RDC;
 	} 
 }

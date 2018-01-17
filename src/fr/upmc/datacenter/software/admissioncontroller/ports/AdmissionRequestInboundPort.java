@@ -83,5 +83,18 @@ public class AdmissionRequestInboundPort
 			}
 		});
 	}
+	@Override
+	public void shutdownApplicationServices(String URI) throws Exception {
+		final AdmissionRequestHandlerI aHandlerI =
+				(AdmissionRequestHandlerI)this.owner;
+		this.owner.handleRequestAsync(new ComponentI.ComponentService<Void>() {
+
+			@Override
+			public Void call() throws Exception {
+				aHandlerI.shutdownServices(URI);
+				return null;
+			}
+		});		
+	}
 
 }

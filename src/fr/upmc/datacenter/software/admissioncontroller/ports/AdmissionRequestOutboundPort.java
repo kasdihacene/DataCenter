@@ -40,4 +40,12 @@ public class AdmissionRequestOutboundPort
 
 	}
 
+	@Override
+	public void shutdownApplicationServices(String URI) throws Exception {
+		((AdmissionRequestI)this.connector).shutdownApplicationServices(URI);
+		
+	}
+	
+	
+
 }

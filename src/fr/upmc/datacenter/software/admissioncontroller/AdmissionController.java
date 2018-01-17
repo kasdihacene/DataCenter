@@ -518,4 +518,10 @@ public class AdmissionController extends AbstractComponent implements AdmissionR
 
 	}
 
+	@Override
+	public void shutdownServices(String URI) throws Exception {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

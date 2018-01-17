@@ -11,13 +11,15 @@ import fr.upmc.datacenter.software.admissioncontroller.ports.AdmissionRequestInb
 import fr.upmc.datacenter.software.applicationcontainer.connectors.AdmissionNotificationConnector;
 import fr.upmc.datacenter.software.applicationcontainer.interfaces.AdmissionNotificationI;
 import fr.upmc.datacenter.software.applicationcontainer.ports.AdmissionNotificationOutboundPort;
-import fr.upmc.datacenter.software.applicationvm.ApplicationVM;
 import fr.upmc.datacenter.software.connectors.RequestNotificationConnector;
 import fr.upmc.datacenter.software.connectors.RequestSubmissionConnector;
 import fr.upmc.datacenter.software.informations.requestdispatcher.RequestDispatcherComponent;
 import fr.upmc.datacenter.software.informations.requestdispatcher.RequestDispatcherInfo;
+import fr.upmc.datacenter.software.step2.adaptableproperty.ApplicationVMAdaptable;
+import fr.upmc.datacenter.software.step2.adapter.AdapterRequestDispatcher;
 import fr.upmc.datacenter.software.step2.requestresourcevm.RequestVM;
 import fr.upmc.datacenter.software.step2.requestresourcevm.connector.RequestResourceVMConnector;
+import fr.upmc.datacenter.software.step2.tools.DelployTools;
 
 /**
  * 
@@ -48,48 +50,52 @@ public class AdmissionController 	extends ResourceInspector
 			String acURI,AbstractCVM acvm) throws Exception {
 		super(acURI);
 		
-				//CREATE OFFRED AND REQUIRED INTERFACES
-				this.addOfferedInterface(AdmissionRequestI.class);
-				this.addRequiredInterface(AdmissionNotificationI.class);
-				
-
-				//CREATE THE INBOUND AND OUTBOUN PORT
-				this.anop = new AdmissionNotificationOutboundPort(acURI+"_ANOP",this);
-				this.arip = new AdmissionRequestInboundPort(acURI+"_ACIP",this);
-				
-				this.addPort(anop);
-				this.addPort(arip);
+			//CREATE OFFRED AND REQUIRED INTERFACES
+			this.addOfferedInterface(AdmissionRequestI.class);
+			this.addRequiredInterface(AdmissionNotificationI.class);
 			
-				this.anop.publishPort();
-				this.arip.publishPort();
+			//CREATE THE INBOUND AND OUTBOUN PORT
+			this.anop = new AdmissionNotificationOutboundPort	(acURI+"_ANOP",this);
+			this.arip = new AdmissionRequestInboundPort			(acURI+"_ACIP",this);
+			
+			this.addPort(anop);
+			this.addPort(arip);
+		
+			this.anop.publishPort();
+			this.arip.publishPort();
 	
 	}
 
 	@Override
 	public void inspectResources(AdmissionI admission) throws Exception {
-		System.out.println("REQUEST ARRIVED FROM APPLICATION - "+admission.getApplicationURI());
+		System.out.println("Request hosting of - "+admission.getApplicationURI());
 		inspectResourcesAndNotifiy(admission);
-
 	}
 
 	@Override
 	public void inspectResourcesAndNotifiy(AdmissionI admission) throws Exception {
 		// Get available resources for 2 AVM
-				LinkedList<String> availableComputerURI = getAvailableResource(admission);
+				LinkedList<String> availableComputerURI = getAvailableResource(admission.getApplicationURI());
+		
 		if(availableComputerURI!=null) {
-				System.out.println("computer available for : "+admission.getApplicationURI()+" == "+availableComputerURI);
+				
+				System.err.println("Computers available for : "+admission.getApplicationURI()+" == "+availableComputerURI);
 				// Allow hosting Application
 				allowHostingApplication(admission, availableComputerURI);
 				// Send a response to the ApplicationContainer
 				admission.setAllowed(true);
-				System.out.println(admission.getAdmissionNotificationInboundPortURI());
 				anop.doConnection(
 						admission.getAdmissionNotificationInboundPortURI(), 
 						AdmissionNotificationConnector.class.getCanonicalName());
 				anop.notifyAdmissionNotification(admission);
 				anop.doDisconnection();
 		}else {
-				System.out.println("No available resource for : "+admission.getApplicationURI());	
+			admission.setAllowed(false);
+			anop.doConnection(
+			admission.getAdmissionNotificationInboundPortURI(), 
+			AdmissionNotificationConnector.class.getCanonicalName());
+			anop.notifyAdmissionNotification(admission);
+			anop.doDisconnection();	
 		}
 	}
 	/**
@@ -104,8 +110,9 @@ public class AdmissionController 	extends ResourceInspector
 		RequestDispatcherComponent RD = createRequestDispatcher(admissionI);
 		
 		for(String computerURI : computerURIs) {
+
 		// Create an ApplicationVM
-		ApplicationVM avm = createApplicationVM(admissionI.getApplicationURI(), computerURI);
+		ApplicationVMAdaptable avm = createApplicationVM(admissionI.getApplicationURI(), computerURI);
 		
 		// Get the ApplicationVM URI
 		RequestDispatcherInfo dispatcherInfo = dataProviderOutboundPort.getApplicationInfos(admissionI.getApplicationURI());
@@ -128,16 +135,30 @@ public class AdmissionController 	extends ResourceInspector
 		RequestDispatcherInfo rdInfos= dataProviderOutboundPort.getApplicationInfos(admissionI.getApplicationURI());
 		int nbCreated	 = rdInfos.getNbVMCreated();
 		System.out.println("Nb VM created for "+admissionI.getApplicationURI()+" : "+nbCreated);
-		
-		// Connect the current RequestDispatcher with the ApplicationVM (APPx_AMV_x_RSIP)
-		    RD.doPortConnection(admissionI.getApplicationURI()+"RD_RSOP", 
-		    					avmURIrecentlyAdded+"_RSIP", 
-		    					RequestSubmissionConnector.class.getCanonicalName());
-		    
-		 
+	
 		}
 		// set the RD URI on the AdmissionI response to send to the ApplicationContainer
 		admissionI.setRequestSubmissionInboundPortRD(admissionI.getApplicationURI()+"RD_RSIP");
+		
+		// Create the Adapter Component and launch it
+		AdapterRequestDispatcher adapterRequestDispatcher = new AdapterRequestDispatcher(
+																			admissionI.getApplicationURI()+"RD",
+																			admissionI.getApplicationURI());
+		DelployTools.deployComponent(adapterRequestDispatcher);
+
+		// connect to DataProvider to get available resources
+		adapterRequestDispatcher.connectWithDataProvider(providerURI);
+		adapterRequestDispatcher.connectAdapterWithProvider(providerURI);
+		// Create a SensorDispatcherOutboundPort and launch pushing
+		adapterRequestDispatcher.connectWithRequestDispatcher(admissionI.getApplicationURI());
+		adapterRequestDispatcher.launchAdaptionEveryInterval();
+	}
+
+	@Override
+	public void shutdownServices(String URI) throws Exception {
+		System.out.println();
+		System.err.println("========================STOPPING APPLICATION : "+URI);
+		System.out.println();
 		
 	}
 	

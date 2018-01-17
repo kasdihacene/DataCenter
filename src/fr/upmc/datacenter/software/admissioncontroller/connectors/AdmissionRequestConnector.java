@@ -20,4 +20,10 @@ public class AdmissionRequestConnector
 
 	}
 
+	@Override
+	public void shutdownApplicationServices(String URI) throws Exception {
+		((AdmissionRequestI)this.offering).shutdownApplicationServices(URI);
+		
+	}
+
 }
