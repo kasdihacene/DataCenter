@@ -1,6 +1,6 @@
 averageThreshold 1000
 freaquenceCoefficient 1.2
-coreCoefficient 1.8
+coreCoefficient 1.4
 VMCoefficient 2.5
-NBCONSECUTIVEAVERAGE 10
+NBCONSECUTIVEAVERAGE 4
 interavalAdaption 500

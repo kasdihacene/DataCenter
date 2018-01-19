@@ -25,6 +25,7 @@ import fr.upmc.datacenter.software.admissioncontroller.ResourceInspector;
 import fr.upmc.datacenter.software.connectors.RequestNotificationConnector;
 import fr.upmc.datacenter.software.informations.applicationvm.ApplicationVMInfo;
 import fr.upmc.datacenter.software.informations.computers.ComputerInfo;
+import fr.upmc.datacenter.software.informations.computers.ComputerInfo.Frequency_gap;
 import fr.upmc.datacenter.software.informations.requestdispatcher.RequestDispatcherInfo;
 import fr.upmc.datacenter.software.step2.adaptableproperty.ApplicationVMAdaptable;
 import fr.upmc.datacenter.software.step2.adaptableproperty.connector.AdapterComputerConnector;
@@ -70,6 +71,9 @@ public class AdapterRequestDispatcher 	extends 	ResourceInspector
 	private AdapterVMOutboundPort avmiop;
 	
 	private Double lastAverageIdentified = 0.;
+	private Double avmAverageThreshold;
+	private Double coreAverageThreshold;
+	private Double frequencyAverageThreshold;
 	
 	public AdapterRequestDispatcher(String riURI, String applicationURI) throws Exception {
 		super(riURI);
@@ -152,6 +156,9 @@ public class AdapterRequestDispatcher 	extends 	ResourceInspector
 			ControllerSetting.NBCONSECUTIVEAVERAGE 		= Integer.valueOf(reglages.get("NBCONSECUTIVEAVERAGE"));
 			ControllerSetting.interavalAdaption 		= Integer.valueOf(reglages.get("interavalAdaption"));
 			
+			avmAverageThreshold 		= ControllerSetting.averageThreshold * ControllerSetting.VMCoefficient;
+			coreAverageThreshold 		= ControllerSetting.averageThreshold * ControllerSetting.coreCoefficient;
+			frequencyAverageThreshold	= ControllerSetting.averageThreshold * ControllerSetting.freaquenceCoefficient;
 		} catch (Exception e) {
 			System.err.println("Please verify your configuration file <tuningsThreshold> !");
 			DelployTools.getAcvm().shutdownNow();
@@ -183,9 +190,27 @@ public class AdapterRequestDispatcher 	extends 	ResourceInspector
 	public String getAVMlessEfficient() {
 		String avmURI="";
 		synchronized (requestResponsesInfo) {
-			double avmAverage=0;
+			double avmAverage=requestResponsesInfo.getFirst().calculateAverage();
 		for (InfoRequestResponse infoRequestResponse : requestResponsesInfo) {
-			if(avmAverage <= infoRequestResponse.calculateAverage()) {
+			if(avmAverage < infoRequestResponse.calculateAverage()) {
+			avmAverage = infoRequestResponse.calculateAverage();
+			avmURI = infoRequestResponse.getAvmURI();
+			}
+		}
+			return avmURI;
+		}
+	}
+	
+	/**
+	 * 
+	 * @return URI of the more efficient AVM
+	 */
+	public String getAVMmoreEfficient() {
+		String avmURI="";
+		synchronized (requestResponsesInfo) {
+			double avmAverage=requestResponsesInfo.getFirst().calculateAverage();
+		for (InfoRequestResponse infoRequestResponse : requestResponsesInfo) {
+			if(avmAverage >= infoRequestResponse.calculateAverage()) {
 			avmAverage = infoRequestResponse.calculateAverage();
 			avmURI = infoRequestResponse.getAvmURI();
 			}
@@ -195,7 +220,7 @@ public class AdapterRequestDispatcher 	extends 	ResourceInspector
 	}
 	
 	public void launchAdaption() throws Exception {
-		// We can take measures only if we have 4 samples of averages on our list
+		// We can take measures only if we have 10 samples of averages on our list
 		if(rollingAverage.size()==ControllerSetting.NBCONSECUTIVEAVERAGE) {
 //			System.err.println("COLLECTED LIST OF "+getAppURI()+" : -----> "+rollingAverage);
 			
@@ -205,26 +230,49 @@ public class AdapterRequestDispatcher 	extends 	ResourceInspector
 
 		synchronized (CurrentRollingAverage) {
 			if(!CurrentRollingAverage.isNaN()) {
-				//If rolling-average >
-				if(CurrentRollingAverage > (ControllerSetting.averageThreshold * ControllerSetting.VMCoefficient)) {
+				//If rolling-average > 1200
+				if(CurrentRollingAverage > avmAverageThreshold) {
+					if(CurrentRollingAverage > lastAverageIdentified) {
+						lastAverageIdentified = CurrentRollingAverage;
 					System.err.println("============ ADD AVM FOR : "+getAppURI());
 					allocateNewAVM(getAppURI());
 					// Reset calculation
 					rollingAverage.clear();
 				}else {
-					// If rolling-average > 
-					if (CurrentRollingAverage > (ControllerSetting.averageThreshold * ControllerSetting.coreCoefficient)) {
+					System.err.println("************ WE HAVE TO DECREASE AVM ********");
+				}
+				}else {
+					// If rolling-average > 1800
+					if (CurrentRollingAverage > coreAverageThreshold) {
+						if(CurrentRollingAverage > lastAverageIdentified) {
+							lastAverageIdentified = CurrentRollingAverage;
 						System.err.println("============ ADD CORE FOR : "+getAppURI());
 						addCoreToLessEfficientAVM();
 						// Reset calculation
 						rollingAverage.clear();
 					}else {
-						// If rolling-average > 
-						if(CurrentRollingAverage > (ControllerSetting.averageThreshold * ControllerSetting.freaquenceCoefficient)){
+						lastAverageIdentified = CurrentRollingAverage;
+						System.err.println("============ REMOVE CORE FOR : "+getAppURI());
+						removeCoreFromAVM();
+						// Reset calculation
+						rollingAverage.clear();
+					}
+					}else {
+						// If rolling-average > 2500
+						if(CurrentRollingAverage > frequencyAverageThreshold){
+							if(CurrentRollingAverage > lastAverageIdentified) {
+								lastAverageIdentified = CurrentRollingAverage;
 							System.err.println("============  INCREASE FREQUENCY FOR : "+getAppURI());
-							updateCoreFrequency(getAppURI(), 3000);
+//							updateCoreFrequency(getAppURI(), Frequency_gap.INCREASE);
 							// Reset calculation
 							rollingAverage.clear();
+							}else {
+								lastAverageIdentified = CurrentRollingAverage;
+								System.err.println("============  DECREASE FREQUENCY FOR : "+getAppURI());
+//								updateCoreFrequency(getAppURI(), Frequency_gap.DECREASE);
+								// Reset calculation
+								rollingAverage.clear();
+							}
 						}
 					}
 				}
@@ -305,7 +353,7 @@ public class AdapterRequestDispatcher 	extends 	ResourceInspector
 	 * @param frequency
 	 * @throws Exception
 	 */
-	public void updateCoreFrequency(String applURI, Integer frequency) throws Exception {
+	public void updateCoreFrequency(String applURI, Frequency_gap frequency_gap) throws Exception {
 		// Get information about Request Dispatcher Component who sends the Data to current Adapter
 		RequestDispatcherInfo requestDispatcherInfo = dataProviderOutboundPort.getApplicationInfos(applURI);
 		// Get All AVM used by the Request Dispatcher
@@ -320,9 +368,10 @@ public class AdapterRequestDispatcher 	extends 	ResourceInspector
 
 			for (AllocatedCore core :  applicationVMInfo.getAllocatedCores()) {
 				ComputerInfo computerInfo = dataProviderOutboundPort.getComputerInfos(applicationVMInfo.getComputerURI());
-				
+				int freq = computerInfo.canChangeCurrentFrequency(core, frequency_gap);
+				System.err.println("Frequency changed from : "+computerInfo.getAllocatedCoreFrequency(core)+" to ==> "+freq);
 				// return the first AllocatedCore found
-				if(computerInfo.isFrequencyAdmissible(frequency) && computerInfo.canChangeAllocatedCoreFrequency(core, frequency)) {
+				if(computerInfo.isFrequencyAdmissible(freq) && computerInfo.canChangeAllocatedCoreFrequency(core, freq)) {
 					computerCores.put(core,applicationVMInfo);
 				}
 			}
@@ -333,6 +382,7 @@ public class AdapterRequestDispatcher 	extends 	ResourceInspector
 			for (AllocatedCore core : computerCores.keySet()) {
 			// Update core frequency on the ComputerInfo
 			ComputerInfo computerInfo = dataProviderOutboundPort.getComputerInfos(computerCores.get(core).getComputerURI());
+			int frequency = computerInfo.canChangeCurrentFrequency(core, frequency_gap);
 			computerInfo.changeAllocatedCoreFrequency(core, frequency);
 			//  Update Processor Core frequency concretely
 			acop.doConnection(computerInfo.getComputerURI()+"_ACIP",AdapterComputerConnector.class.getCanonicalName());
@@ -417,7 +467,7 @@ public class AdapterRequestDispatcher 	extends 	ResourceInspector
 	 * 
 	 * @param computerURI
 	 * @param avm
-	 * @return TRUE if the AVM was successefuly adapted
+	 * @return TRUE if the AVM was successfully adapted
 	 * @throws Exception
 	 */
 	public boolean adapteNewComponent(String computerURI, ApplicationVMAdaptable avm) throws Exception {
@@ -454,7 +504,42 @@ public class AdapterRequestDispatcher 	extends 	ResourceInspector
 		
 	}
 	
-	public void removeCore() {
+	public void removeCoreFromAVM() throws Exception {
+		
+		// add the AllocatedCore got from the computer to an ApplicationVM
+		// Get information about Request Dispatcher Component who sends the Data to current Adapter
+		RequestDispatcherInfo requestDispatcherInfo = dataProviderOutboundPort.getApplicationInfos(getAppURI());
+		
+		// Get All AVM used by the Request Dispatcher
+		LinkedHashMap<String,ApplicationVMInfo> listAVMInformation = requestDispatcherInfo.getAllVmInformation();
+
+		// get the AVM more efficient
+		String avmURI = this.getAVMmoreEfficient();
+
+		if(!"".equals(avmURI)) {
+			System.out.println();
+			System.err.println(">>>>>>>>>>>>>>>>>>>>>>>> "+avmURI);	
+			System.err.println(">>>>>>>>>>>>>>>>>>>>>>>> "+listAVMInformation.get(avmURI).getComputerURI());
+			// Connect with the AVM less efficient and add him a Core
+			avmiop.doConnection(avmURI+"_AVMIP",AdapterVMConnector.class.getCanonicalName());
+			
+			AllocatedCore core=listAVMInformation.get(avmURI).getLastCore();
+			
+			// Update ApllicationVm Informations
+			listAVMInformation.get(avmURI).removeCore(core);
+			
+			// remove concretely the AllocatedCore in the <code>ApplicationVM</code> Component
+			avmiop.releaseCore(core);
+			avmiop.doDisconnection();
+		
+			//  remove Processor Core concretely on <code>Processor</code>
+			acop.doConnection(listAVMInformation.get(avmURI).getComputerURI()+"_ACIP",AdapterComputerConnector.class.getCanonicalName());
+			acop.releaseCore(core);
+			acop.doDisconnection();
+		}else {
+			System.err.println("No information about AVMs ! we cannot allocate new Core");
+		}
+		
 		
 	}
 	/**
@@ -495,7 +580,7 @@ public class AdapterRequestDispatcher 	extends 	ResourceInspector
 	
 	//===========================================================================
 	/**
-	 * This calss used to load data from the configuration file and to tune our 
+	 * This class used to load data from the configuration file and to tune our 
 	 * adaption and to launch our mechanism of adaption.
 	 * 
 	 * @author Hacene KASDI

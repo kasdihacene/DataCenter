@@ -87,7 +87,6 @@ public class ProcessorInfo {
 		for (int i = 0; i < coreInfos.length; i++) {
 			if( coreInfos[i].getCoreURI()==coreNumber) {
 				coreInfos[i].updateFrequency(newFrequency);
-				System.err.println("Frequency changed on Processor Information");
 				return;
 			}
 		}

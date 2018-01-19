@@ -52,7 +52,10 @@ public class ApplicationVMAdaptable extends ApplicationVM implements AdapterVMI 
 	 */
 	@Override
 	public void releaseCore(AllocatedCore ac) throws Exception {
-
+		/** status core allocated to this VM */
+		System.err.println("BEFOR :::: core in use == "+ac.processorNo+""+ac.coreNo+" : "+this.allocatedCoresIdleStatus.size());
+		this.allocatedCoresIdleStatus.remove(ac);
+		System.err.println("AFTER :::: core in use == "+ac.processorNo+""+ac.coreNo+" : "+this.allocatedCoresIdleStatus.size());
 	}
 
 	/**

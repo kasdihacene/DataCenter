@@ -40,7 +40,7 @@ public class ResourceInspector extends AbstractComponent {
 
 	protected String riURI;
 	protected String providerURI;
-	private static final int NBCORES = 2;
+	private static final int NBCORES = 3;
 	
 	public DynamicComponentCreator dynamicComponentCreator;
 	

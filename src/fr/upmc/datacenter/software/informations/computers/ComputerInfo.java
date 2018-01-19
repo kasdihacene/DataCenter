@@ -1,5 +1,7 @@
 package fr.upmc.datacenter.software.informations.computers;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
@@ -22,6 +24,11 @@ public class ComputerInfo {
 	private Integer sharedResource;
 	private ProcessorInfo[] processorInfos;
 	private boolean [][] coreState;
+	
+	public enum Frequency_gap{
+		INCREASE,
+		DECREASE
+	}
 	
 	
 	public ComputerInfo(String computerURI,
@@ -117,7 +124,7 @@ public class ComputerInfo {
 		int nbCoresToAllocate=0;
 		for (int i = 0; i < allocatedCores.length; i++) {
 			for (int j = 0; j < allocatedCores.length; j++) {
-				// Allocate juste NBCORES
+				// Allocate just NBCORES
 				if(nbCoresToAllocate<NBCORES) {
 					if(!allocatedCores[i][j])
 					{allocatedCores[i][j] = true; nbCoresToAllocate++;}
@@ -200,6 +207,38 @@ public class ComputerInfo {
 		return this.possibleFrequencies.contains(frequency);
 	}
 	
+	/**
+	 * 
+	 * @param ac
+	 * @return
+	 */
+	public int canChangeCurrentFrequency(AllocatedCore ac, Frequency_gap frequency_gap) {
+		ArrayList<Integer> possibleFrequenciesArray = new ArrayList<>();
+		for (int f : possibleFrequencies) {
+			possibleFrequenciesArray.add(f);
+		}
+		Collections.sort(possibleFrequenciesArray);
+		int frequency = processorInfos[ac.processorNo].getCoreInfo(ac.coreNo).getFrequency();
+		
+		if(frequency_gap == Frequency_gap.DECREASE) {
+		for (int freq : possibleFrequencies ) {
+			if(freq < frequency)
+				return freq;
+		}
+		}
+		
+		if(frequency_gap == Frequency_gap.INCREASE) {
+			for (int freq : possibleFrequencies ) {
+				if(freq > frequency)
+					return freq;
+		}
+		}
+		return frequency;
+	}
+	/**
+	 * 
+	 * @return Set of admissible Frequencies
+	 */
 	public Set<Integer> getAdmissibleFrequencies() {
 		return possibleFrequencies;
 	}
