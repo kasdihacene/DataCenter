@@ -37,4 +37,10 @@ public class AdapterVMOutboundPort extends AbstractOutboundPort implements Adapt
 
 	}
 
+	@Override
+	public Integer sizeTaskQueue() throws Exception {
+		return 	((AdapterVMI)this.connector).sizeTaskQueue();
+
+	}
+
 }

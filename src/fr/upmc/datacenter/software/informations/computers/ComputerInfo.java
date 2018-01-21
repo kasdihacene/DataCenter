@@ -30,6 +30,11 @@ public class ComputerInfo {
 		DECREASE
 	}
 	
+	public enum State_change{
+		ADD,
+		REMOVE
+	}
+	
 	
 	public ComputerInfo(String computerURI,
 			Set<Integer> possibleFrequencies,
@@ -120,7 +125,8 @@ public class ComputerInfo {
 	 * @param allocatedCores
 	 * @param NBCORES
 	 */
-	public void updateCoresState(boolean allocatedCores[][], int NBCORES) {
+	public void updateCoresState(boolean allocatedCores[][], int NBCORES,State_change state) {
+		if(state == State_change.ADD) {
 		int nbCoresToAllocate=0;
 		for (int i = 0; i < allocatedCores.length; i++) {
 			for (int j = 0; j < allocatedCores.length; j++) {
@@ -128,6 +134,18 @@ public class ComputerInfo {
 				if(nbCoresToAllocate<NBCORES) {
 					if(!allocatedCores[i][j])
 					{allocatedCores[i][j] = true; nbCoresToAllocate++;}
+				}
+			}
+		}
+		}else {
+			int nbCoresToAllocate=0;
+			for (int i = 0; i < allocatedCores.length; i++) {
+				for (int j = 0; j < allocatedCores.length; j++) {
+					// Release just NBCORES used 
+					if(nbCoresToAllocate<NBCORES) {
+						if(!allocatedCores[i][j])
+						{allocatedCores[i][j] = false; nbCoresToAllocate++;}
+					}
 				}
 			}
 		}

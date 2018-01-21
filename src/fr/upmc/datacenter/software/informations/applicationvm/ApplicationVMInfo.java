@@ -98,6 +98,12 @@ public class ApplicationVMInfo {
 	public void removeCore(AllocatedCore core) {
 				allocatedCores.remove(core);
 	}
+	/**
+	 * Remove all cores of the AVM
+	 */
+	public void removeAllCores() {
+		allocatedCores.clear();
+}
 	//================================================
 	
 	public String getVmURI() {

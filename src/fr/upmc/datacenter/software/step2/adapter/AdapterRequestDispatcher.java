@@ -26,6 +26,7 @@ import fr.upmc.datacenter.software.connectors.RequestNotificationConnector;
 import fr.upmc.datacenter.software.informations.applicationvm.ApplicationVMInfo;
 import fr.upmc.datacenter.software.informations.computers.ComputerInfo;
 import fr.upmc.datacenter.software.informations.computers.ComputerInfo.Frequency_gap;
+import fr.upmc.datacenter.software.informations.computers.ComputerInfo.State_change;
 import fr.upmc.datacenter.software.informations.requestdispatcher.RequestDispatcherInfo;
 import fr.upmc.datacenter.software.step2.adaptableproperty.ApplicationVMAdaptable;
 import fr.upmc.datacenter.software.step2.adaptableproperty.connector.AdapterComputerConnector;
@@ -59,7 +60,7 @@ public class AdapterRequestDispatcher 	extends 	ResourceInspector
 
 	private String appURI;
 	/** future of the task scheduled to start adaption					*/
-	protected ScheduledFuture<?>			pushingFuture ;
+	protected ScheduledFuture<?>			pushingFuture, pushingFutureTasks ;
 	private SensorDispatcherOutboundPort sdop;
 	private LinkedList<InfoRequestResponse> requestResponsesInfo;
 	private LinkedList<Double> rollingAverage;
@@ -71,7 +72,8 @@ public class AdapterRequestDispatcher 	extends 	ResourceInspector
 	private AdapterVMOutboundPort avmiop;
 	
 	private Double lastAverageIdentified = 0.;
-	private Double avmAverageThreshold;
+	private Double avmAverageThreshold ;
+	private Integer sizeQueue;
 	private Double coreAverageThreshold;
 	private Double frequencyAverageThreshold;
 	
@@ -156,7 +158,7 @@ public class AdapterRequestDispatcher 	extends 	ResourceInspector
 			ControllerSetting.NBCONSECUTIVEAVERAGE 		= Integer.valueOf(reglages.get("NBCONSECUTIVEAVERAGE"));
 			ControllerSetting.interavalAdaption 		= Integer.valueOf(reglages.get("interavalAdaption"));
 			
-			avmAverageThreshold 		= ControllerSetting.averageThreshold * ControllerSetting.VMCoefficient;
+			setAvmAverageThreshold(ControllerSetting.averageThreshold * ControllerSetting.VMCoefficient);
 			coreAverageThreshold 		= ControllerSetting.averageThreshold * ControllerSetting.coreCoefficient;
 			frequencyAverageThreshold	= ControllerSetting.averageThreshold * ControllerSetting.freaquenceCoefficient;
 		} catch (Exception e) {
@@ -183,22 +185,23 @@ public class AdapterRequestDispatcher 	extends 	ResourceInspector
 
 	}
 	
+	
 	/**
 	 * 
 	 * @return URI of the less efficient AVM
+	 * @throws Exception 
 	 */
-	public String getAVMlessEfficient() {
+	public String getAVMlessEfficient() throws Exception {
+		LinkedList<InfoRequestResponse> requestResponses = this.requestResponsesInfo;
 		String avmURI="";
-		synchronized (requestResponsesInfo) {
-			double avmAverage=requestResponsesInfo.getFirst().calculateAverage();
-		for (InfoRequestResponse infoRequestResponse : requestResponsesInfo) {
+			double avmAverage=requestResponses.getFirst().calculateAverage();
+		for (InfoRequestResponse infoRequestResponse : requestResponses) {
 			if(avmAverage < infoRequestResponse.calculateAverage()) {
 			avmAverage = infoRequestResponse.calculateAverage();
 			avmURI = infoRequestResponse.getAvmURI();
 			}
 		}
 			return avmURI;
-		}
 	}
 	
 	/**
@@ -206,23 +209,23 @@ public class AdapterRequestDispatcher 	extends 	ResourceInspector
 	 * @return URI of the more efficient AVM
 	 */
 	public String getAVMmoreEfficient() {
+		LinkedList<InfoRequestResponse> requestResponses = this.requestResponsesInfo;
 		String avmURI="";
-		synchronized (requestResponsesInfo) {
-			double avmAverage=requestResponsesInfo.getFirst().calculateAverage();
-		for (InfoRequestResponse infoRequestResponse : requestResponsesInfo) {
+			double avmAverage=requestResponses.getFirst().calculateAverage();
+		for (InfoRequestResponse infoRequestResponse : requestResponses) {
 			if(avmAverage >= infoRequestResponse.calculateAverage()) {
 			avmAverage = infoRequestResponse.calculateAverage();
 			avmURI = infoRequestResponse.getAvmURI();
 			}
 		}
 			return avmURI;
-		}
 	}
 	
 	public void launchAdaption() throws Exception {
+		System.err.println("COLLECTED LIST OF "+getAppURI()+" : -----> "+rollingAverage);
+
 		// We can take measures only if we have 10 samples of averages on our list
 		if(rollingAverage.size()==ControllerSetting.NBCONSECUTIVEAVERAGE) {
-//			System.err.println("COLLECTED LIST OF "+getAppURI()+" : -----> "+rollingAverage);
 			
 		// Get the current rolling average that is collected
 		Double CurrentRollingAverage = getRollingAverage();
@@ -231,7 +234,7 @@ public class AdapterRequestDispatcher 	extends 	ResourceInspector
 		synchronized (CurrentRollingAverage) {
 			if(!CurrentRollingAverage.isNaN()) {
 				//If rolling-average > 1200
-				if(CurrentRollingAverage > avmAverageThreshold) {
+				if(CurrentRollingAverage > 1000) {
 					if(CurrentRollingAverage > lastAverageIdentified) {
 						lastAverageIdentified = CurrentRollingAverage;
 					System.err.println("============ ADD AVM FOR : "+getAppURI());
@@ -239,7 +242,11 @@ public class AdapterRequestDispatcher 	extends 	ResourceInspector
 					// Reset calculation
 					rollingAverage.clear();
 				}else {
+					lastAverageIdentified = CurrentRollingAverage;
 					System.err.println("************ WE HAVE TO DECREASE AVM ********");
+					removeAVM();
+					rollingAverage.clear();
+					System.out.println("++++++++++++++++++++++ AVM REMOVED");
 				}
 				}else {
 					// If rolling-average > 1800
@@ -247,7 +254,7 @@ public class AdapterRequestDispatcher 	extends 	ResourceInspector
 						if(CurrentRollingAverage > lastAverageIdentified) {
 							lastAverageIdentified = CurrentRollingAverage;
 						System.err.println("============ ADD CORE FOR : "+getAppURI());
-						addCoreToLessEfficientAVM();
+//						addCoreToLessEfficientAVM();
 						// Reset calculation
 						rollingAverage.clear();
 					}else {
@@ -269,7 +276,7 @@ public class AdapterRequestDispatcher 	extends 	ResourceInspector
 							}else {
 								lastAverageIdentified = CurrentRollingAverage;
 								System.err.println("============  DECREASE FREQUENCY FOR : "+getAppURI());
-//								updateCoreFrequency(getAppURI(), Frequency_gap.DECREASE);
+								updateCoreFrequency(getAppURI(), Frequency_gap.DECREASE);
 								// Reset calculation
 								rollingAverage.clear();
 							}
@@ -478,7 +485,7 @@ public class AdapterRequestDispatcher 	extends 	ResourceInspector
 			
 			// Update Cores state on Data Provider 
 			ComputerInfo computerInfo = dpop.getComputerInfos(computerURI);
-			computerInfo.updateCoresState(computerInfo.getCoreState(), 4);
+			computerInfo.updateCoresState(computerInfo.getCoreState(), 4, State_change.ADD);
 			
 			// Connect the AVM to Request Dispatcher for sending Notifications
 			avm.doPortConnection(
@@ -499,11 +506,154 @@ public class AdapterRequestDispatcher 	extends 	ResourceInspector
 			return true;
 	}
 	
-	
-	public void removeAVM() {
-		
+	/**
+	 * This method allows removing AVM from the DataCenter especially
+	 * @throws Exception 
+	 */
+	public void removeAVM() throws Exception {
+		// Get the AVM less efficient
+		String avmURI = getAVMlessEfficient();
+		// if the avm is in use we can remove the 
+		// information about this AVM in the RequestDispatherInformation
+		if(this.dispatcherContainsAVM(avmURI)) {
+			System.err.println("====== AVM TO DELETE == "+avmURI);
+			// Remove this URI from List AVM URIs used by the current RequestDispatcher
+			requestResourceVMOutboundPort.doConnection(
+					getAppURI()+"RD_RVMIP",
+					RequestResourceVMConnector.class.getCanonicalName());
+			RequestVM requestVMI = new RequestVM(avmURI, getAppURI());
+			requestResourceVMOutboundPort.requestRemoveVM(requestVMI);
+			// Stop receiving requests on this AVM
+			avmiop.doConnection(avmURI+"_AVMIP",AdapterVMConnector.class.getCanonicalName());
+			sizeQueue = avmiop.sizeTaskQueue();
+			avmiop.doDisconnection();
+			synchronized (sizeQueue) {
+				if(sizeQueue > 0 ) {
+					System.err.println(" ************** WAIT ********");
+					this.seekForStateTaskAVM(avmURI);
+				}else {
+					removeAfterNotify(avmURI);
+			}
+			}
+						
+		}
 	}
 	
+	/**
+	 * 
+	 * @param avmURI
+	 * @return true if the avmURI ( ApplicationVM ) used by the RequestDispatcher
+	 * @throws Exception
+	 */
+	private boolean dispatcherContainsAVM(String avmURI) throws Exception {
+		RequestDispatcherInfo dispatcherInfo = dataProviderOutboundPort.getApplicationInfos(getAppURI());
+		LinkedHashMap<String, ApplicationVMInfo> aHashMap = dispatcherInfo.getAllVmInformation();
+		return aHashMap.containsKey(avmURI);
+	}
+	
+	/**
+	 * After waiting the termination of the requests in the AVM Queue
+	 * we can proceed to remove the the Informations about the AVM 
+	 * and to deallocate  cores used by the AVM
+	 * 
+	 * @param avmURI
+	 * @throws Exception
+	 */
+	private void removeAfterNotify(String avmURI) throws Exception {
+		// After waiting termination of the execution of all requests in the Queue
+		RequestDispatcherInfo dispatcherInfo = dataProviderOutboundPort.getApplicationInfos(getAppURI());
+		
+		// update the state cores in the Computer Informations
+		ApplicationVMInfo applicationVMInfo = dispatcherInfo.getApplicationVMInformation(avmURI);
+		String computerURI = applicationVMInfo.getComputerURI();
+		ComputerInfo computerInfo = dpop.getComputerInfos(computerURI);
+		
+		// resources allocated by the ApplicationVM
+		LinkedList<AllocatedCore> allocatedCores = applicationVMInfo.getAllocatedCores();
+		int nbCoresUsed = allocatedCores.size();
+		synchronized (computerInfo) {
+			computerInfo.updateCoresState(computerInfo.getCoreState(), nbCoresUsed, State_change.REMOVE);
+		}
+		
+		for (int i = 0; i < nbCoresUsed; i++) {
+			
+			// Connect with the AVM less efficient and add him a Core
+			avmiop.doConnection(avmURI+"_AVMIP",AdapterVMConnector.class.getCanonicalName());
+						
+			// get the last core of the ApplicationVM
+			AllocatedCore core=applicationVMInfo.getLastCore();
+			
+			// Update ApllicationVm Informations
+			applicationVMInfo.removeCore(core);
+			
+			// remove concretely the AllocatedCore in the <code>ApplicationVM</code> Component
+			avmiop.releaseCore(core);
+			avmiop.doDisconnection();
+		
+			//  remove Processor Core concretely on <code>Processor</code>
+			acop.doConnection(computerURI+"_ACIP",AdapterComputerConnector.class.getCanonicalName());
+			acop.releaseCore(core);
+			acop.doDisconnection();
+		}	
+		
+		// Remove the information about this AVM in the RequestDispatcher Informations
+		dispatcherInfo.removeApplicationVM(avmURI);
+	}
+	
+	/**
+	 * 
+	 * @param avmURI
+	 * @return the number of remaining tasks in the ApplicationVM
+	 * @throws Exception
+	 */
+	private Integer getsizeTasks(String avmURI) throws Exception {
+		avmiop.doConnection(avmURI+"_AVMIP",AdapterVMConnector.class.getCanonicalName());
+		synchronized (sizeQueue) {
+			sizeQueue = avmiop.sizeTaskQueue();
+			if(sizeQueue == 0 ) {
+				System.err.println(" getsizeTasks FOR == "+avmURI+"   NOTIFY");
+				removeAfterNotify(avmURI);
+			}else {
+				System.err.println(" getsizeTasks FOR == "+avmURI+"   NOT YET");
+			}
+			
+		}
+		avmiop.doDisconnection();
+		return sizeQueue;
+	}
+	
+	/**
+	 * Periodic task used to check the state of the Queue then at the
+	 * end we can remove the Cores used by the <code>ApplicationVM</code>
+	 * @param avmURI
+	 * @throws Exception
+	 */
+	private void seekForStateTaskAVM(String avmURI) throws Exception
+	{
+	final AdapterRequestDispatcher AdapterRequestDispatcher = this ;
+	this.pushingFutureTasks =
+			this.scheduleTask(
+					new ComponentI.ComponentTask() {
+						@Override
+						public void run() {
+							try {
+								Integer size = AdapterRequestDispatcher.getsizeTasks(avmURI);
+								if(size > 0 )
+									AdapterRequestDispatcher.seekForStateTaskAVM(avmURI);
+							} catch (Exception e) {
+								throw new RuntimeException(e) ;
+							}
+						}
+					},
+					TimeManagement.acceleratedDelay(ControllerSetting.interavalAdaption),
+					TimeUnit.MILLISECONDS) ;
+	}
+	
+	
+	/**
+	 * Removes a Core from the less efficient AVM
+	 * @throws Exception
+	 */
 	public void removeCoreFromAVM() throws Exception {
 		
 		// add the AllocatedCore got from the computer to an ApplicationVM
@@ -518,8 +668,7 @@ public class AdapterRequestDispatcher 	extends 	ResourceInspector
 
 		if(!"".equals(avmURI)) {
 			System.out.println();
-			System.err.println(">>>>>>>>>>>>>>>>>>>>>>>> "+avmURI);	
-			System.err.println(">>>>>>>>>>>>>>>>>>>>>>>> "+listAVMInformation.get(avmURI).getComputerURI());
+			System.err.println(">>>>>>>>>>>>>>>>>>>>>>>> AVM AND COMPUTER USED ==> "+avmURI+"  "+listAVMInformation.get(avmURI).getComputerURI());	
 			// Connect with the AVM less efficient and add him a Core
 			avmiop.doConnection(avmURI+"_AVMIP",AdapterVMConnector.class.getCanonicalName());
 			
@@ -578,6 +727,14 @@ public class AdapterRequestDispatcher 	extends 	ResourceInspector
 		return (rollinAverage/rollingAverage.size());
 	}
 	
+	public Double getAvmAverageThreshold() {
+		return avmAverageThreshold;
+	}
+
+	public void setAvmAverageThreshold(Double avmAverageThreshold) {
+		this.avmAverageThreshold = avmAverageThreshold;
+	}
+
 	//===========================================================================
 	/**
 	 * This class used to load data from the configuration file and to tune our 

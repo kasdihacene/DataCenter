@@ -34,11 +34,11 @@ import fr.upmc.datacenter.software.step2.sensor.ports.SensorDispatcherInboundPor
  * @author Hacene KASDI
  * @version 28.12.17.HK
  * 
- * The <code>RequestDispatcherComponent</code> refernces of a new AVM refernce affected 
+ * The <code>RequestDispatcherComponent</code> references of a new AVM reference affected 
  * to him, receives request providing from <code>RequestGenerator</code> and dispatch 
  * the request using a round-robin policy to current list of <code>ApplicationVMAdaptable</code>
  * 
- * This component is subscibed to a Push service witch allows to send <code>DataI</code>
+ * This component is subscribed to a Push service witch allows to send <code>DataI</code>
  * to all clients, in our case the data will be received by <code>AdapterRequestDispatcher</code>
  * start the pushing of data and force the pushing to be done each <code>interval</code> period of time.
  *
@@ -112,9 +112,10 @@ public class RequestDispatcherComponent 	extends 	AbstractComponent
 
 	@Override
 	public void addVMApplication(RequestVMI requestVMI) throws Exception {
+		synchronized (applicationVMList) {
 		// Add the AVM URI to the list
 		applicationVMList.add(requestVMI.getURIVM());
-		
+		}
 		// We have to create a new object InfoRequestResponse to store all stats
 		// about the request submitted to the given ApplicationVM and to calculate
 		// the average execution of queries and the number queries, these informations
@@ -132,7 +133,11 @@ public class RequestDispatcherComponent 	extends 	AbstractComponent
 
 	@Override
 	public void removeVMAppication(RequestVMI requestVMI) throws Exception {
-		
+		synchronized (applicationVMList) {
+			System.err.println("SIZE LIST AVM BEFORE == "+applicationVMList.size()+"  "+applicationVMList);
+			applicationVMList.remove(requestVMI.getURIVM());
+			System.err.println("SIZE LIST AVM AFTER == "+applicationVMList.size()+"  "+applicationVMList);
+		}
 	}
 
 	/**
@@ -166,23 +171,19 @@ public class RequestDispatcherComponent 	extends 	AbstractComponent
 	@Override
 	public void acceptRequestSubmissionAndNotify(RequestI r) throws Exception {
 
-		// Connect the ApplicationVM added to the RequestDispatcher using RoundRobin policy
-		String avmNextURI = roundRobinAVM(applicationVMList);
-		System.out.println("******************** REQUEST : "+r.getRequestURI()+" SUBMITED TO ******* "+avmNextURI);
-		
-		// Store the arrived request from the Request Generator
-		nbRequests++;
-		infoStatsAVM.get(avmNextURI).addArrivedRequest(r.getRequestURI());
-		listRequests.put(r.getRequestURI(), avmNextURI);
-		listExecRequests.put(r.getRequestURI(), System.currentTimeMillis());
-		
-		rsop.doConnection(avmNextURI+"_RSIP",RequestSubmissionConnector.class.getCanonicalName());
-		rsop.submitRequestAndNotify(r);
-		rsop.doDisconnection();
-		
-	
-								
-				
+			// Connect the ApplicationVM added to the RequestDispatcher using RoundRobin policy
+			String avmNextURI = roundRobinAVM(applicationVMList);
+			System.out.println("******************** REQUEST : "+r.getRequestURI()+" SUBMITED TO ******* "+avmNextURI);
+			
+			// Store the arrived request from the Request Generator
+			nbRequests++;
+			infoStatsAVM.get(avmNextURI).addArrivedRequest(r.getRequestURI());
+			listRequests.put(r.getRequestURI(), avmNextURI);
+			listExecRequests.put(r.getRequestURI(), System.currentTimeMillis());
+			
+			rsop.doConnection(avmNextURI+"_RSIP",RequestSubmissionConnector.class.getCanonicalName());
+			rsop.submitRequestAndNotify(r);
+			rsop.doDisconnection();
 	}
 
 	public DataPushDispatcher prepareCollectedData() {

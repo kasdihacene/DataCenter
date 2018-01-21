@@ -7,6 +7,7 @@ import java.util.Map;
 import fr.upmc.components.AbstractComponent;
 import fr.upmc.datacenter.software.connectors.RequestNotificationConnector;
 import fr.upmc.datacenter.software.connectors.RequestSubmissionConnector;
+import fr.upmc.datacenter.software.informations.requestdispatcher.RequestDispatcherComponent;
 import fr.upmc.datacenter.software.interfaces.RequestI;
 import fr.upmc.datacenter.software.interfaces.RequestNotificationHandlerI;
 import fr.upmc.datacenter.software.interfaces.RequestNotificationI;
@@ -18,7 +19,13 @@ import fr.upmc.datacenter.software.ports.RequestSubmissionInboundPort;
 import fr.upmc.datacenter.software.ports.RequestSubmissionOutboundPort;
 import fr.upmc.datacenter.software.requestdispatcher.interfaces.RequestDispatcherManagementI;
 import fr.upmc.datacenter.software.requestdispatcher.ports.RequestDispatcherManagementInboundPort;
-
+/**
+ * LAST VERSION OF THE COMPONENT USED ON STEP 1 OF THE PROJECT 
+ * @see {@link RequestDispatcherComponent} the new version used for step 2 and step 3
+ * 
+ * @author Hacene KASDI 
+ *
+ */
 public class RequestDispatcher extends AbstractComponent
 		implements RequestSubmissionHandlerI, RequestNotificationHandlerI, RequestDispatcherManagementI {
 

@@ -28,4 +28,10 @@ public class AdapterVMConnector extends AbstractConnector implements AdapterVMI 
 		((AdapterVMI)this.offering).releaseAllCores();
 	}
 
+	@Override
+	public Integer sizeTaskQueue() throws Exception {
+		return ((AdapterVMI)this.offering).sizeTaskQueue();
+		
+	}
+
 }

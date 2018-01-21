@@ -37,6 +37,7 @@ public class ApplicationVMAdaptable extends ApplicationVM implements AdapterVMI 
 	}
 
 	/**
+	 * @see fr.upmc.datacenter.software.step2.adaptableproperty.interfaces.AdapterVMI#allocateCore(AllocatedCore)
 	 * Allocate core found on the Available resources (available computer)
 	 */
 	@Override
@@ -48,6 +49,7 @@ public class ApplicationVMAdaptable extends ApplicationVM implements AdapterVMI 
 	}
 
 	/**
+	 * @see fr.upmc.datacenter.software.step2.adaptableproperty.interfaces.AdapterVMI#releaseCore(AllocatedCore)
 	 * release a core
 	 */
 	@Override
@@ -59,11 +61,22 @@ public class ApplicationVMAdaptable extends ApplicationVM implements AdapterVMI 
 	}
 
 	/**
-	 * release all cores
+	 * @see fr.upmc.datacenter.software.step2.adaptableproperty.interfaces.AdapterVMI#releaseAllCores()
 	 */
 	@Override
 	public void releaseAllCores() throws Exception {
 
+	}
+
+	/**
+	 * @see fr.upmc.datacenter.software.step2.adaptableproperty.interfaces.AdapterVMI#sizeTaskQueue()
+	 *
+	 */
+	@Override
+	public Integer sizeTaskQueue() throws Exception {
+		System.err.println("=============================== AVM : "+vmURI+" | TASKS IN QUEUE == ["+taskQueue.size()+"]");
+		return taskQueue.size();
+		
 	}
 
 }

@@ -359,7 +359,6 @@ implements	ProcessorServicesNotificationConsumerI,
 
 		AllocatedCore ac = this.findIdleCore() ;
 		if (ac != null) {
-
 			this.allocatedCoresIdleStatus.remove(ac) ;
 			this.allocatedCoresIdleStatus.put(ac, false) ;
 			TaskI t = this.taskQueue.remove() ;

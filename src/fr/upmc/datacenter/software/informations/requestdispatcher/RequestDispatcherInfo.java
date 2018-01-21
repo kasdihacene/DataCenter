@@ -22,14 +22,11 @@ public class RequestDispatcherInfo {
 	private String requestDispatcherURI;
 	/** MAP of vmURI and ApplicationVMInfo 		*/
 	private LinkedHashMap<String, ApplicationVMInfo>  vmInformations;
-	/** Number of ApplicationVMInfo created 	*/
-	private int nbVM;
 	
 	public RequestDispatcherInfo(String requestDispatcherURI) {
 		super();
 		this.requestDispatcherURI = requestDispatcherURI;
 		this.vmInformations = new LinkedHashMap<String, ApplicationVMInfo>();
-		this.nbVM = 0;
 	}
 
 	//=====================================================
@@ -45,7 +42,6 @@ public class RequestDispatcherInfo {
 				ApplicationVMInfo applicationVMInfo = new ApplicationVMInfo(vmURI, computerURI);
 				applicationVMInfo.addManyCores(allocatedCores);
 				vmInformations.put(vmURI, applicationVMInfo);
-				nbVM++;
 	}
 	/**
 	 * Get the last AVMinformations recently added
@@ -141,16 +137,7 @@ public class RequestDispatcherInfo {
 	}
 
 	public int getNbVMCreated() {
-		return nbVM;
+		return vmInformations.size();
 	}
-
-	public void setNbVM(int nbVM) {
-		this.nbVM = nbVM;
-	}
-	
-	
-	
-	
-	
 
 }

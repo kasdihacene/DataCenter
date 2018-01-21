@@ -65,4 +65,17 @@ public class AdapterVMInboundPort extends AbstractInboundPort implements Adapter
 
 	}
 
+	@Override
+	public Integer sizeTaskQueue() throws Exception {
+		final AdapterVMI adapterVMI = (AdapterVMI) this.owner;
+		return owner.handleRequestSync(
+				new ComponentI.ComponentService<Integer>() {
+					@Override
+					public Integer call() throws Exception {
+						return adapterVMI.sizeTaskQueue();
+					}
+				});
+	}
+
+
 }

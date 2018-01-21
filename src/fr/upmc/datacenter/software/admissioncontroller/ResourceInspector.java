@@ -18,6 +18,7 @@ import fr.upmc.datacenter.software.admissioncontroller.interfaces.AdmissionI;
 import fr.upmc.datacenter.software.applicationvm.connectors.ApplicationVMManagementConnector;
 import fr.upmc.datacenter.software.applicationvm.ports.ApplicationVMManagementOutboundPort;
 import fr.upmc.datacenter.software.informations.computers.ComputerInfo;
+import fr.upmc.datacenter.software.informations.computers.ComputerInfo.State_change;
 import fr.upmc.datacenter.software.informations.requestdispatcher.RequestDispatcherComponent;
 import fr.upmc.datacenter.software.informations.requestdispatcher.RequestDispatcherInfo;
 import fr.upmc.datacenter.software.step2.adaptableproperty.ApplicationVMAdaptable;
@@ -121,7 +122,7 @@ public class ResourceInspector extends AbstractComponent {
 			Integer sharedResource = computerInfo.getSharedResource();
 			boolean[][] allocatedCores;
 			
-			// look at the synchronisation barriere if there is ay available 
+			// look at the synchronization barrier if there is an available 
 			// information about this computer, else wait()
 			synchronized (sharedResource) {
 				if(sharedResource==0) {
@@ -140,7 +141,7 @@ public class ResourceInspector extends AbstractComponent {
 				}
 				// check if nbCoresAvailable >= NBCORES than set these cores as allocated
 				if(nbAvailableCores >= NBCORES) {
-					computerInfo.updateCoresState(allocatedCores, NBCORES);
+					computerInfo.updateCoresState(allocatedCores, NBCORES,State_change.ADD);
 					computerURIfor2AVM.add(uri);
 					if(computerURIfor2AVM.size()==NBAVM_TO_CREATE) {
 					return computerURIfor2AVM;

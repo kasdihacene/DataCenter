@@ -13,21 +13,26 @@ import fr.upmc.datacenter.hardware.computers.Computer.AllocatedCore;
 public interface AdapterVMI {
 
 	/**
-	 * 
+	 * Allocate Core for the AVM
 	 * @param ac
 	 * @throws Exception
 	 */
 	public void allocateCore(AllocatedCore ac) throws Exception;
 	/**
-	 * 
-	 * @param ac
+	 * release Core from the AVM
+	 * @param ac 
 	 * @throws Exception
 	 */
 	public void releaseCore(AllocatedCore ac) throws Exception;
 	/**
-	 * 
+	 * remove all cores
 	 * @throws Exception
 	 */
 	public void releaseAllCores() throws Exception;
+	/**
+	 * get the Queue size in order to allow sending the avmURI on the network. 
+	 * @throws Exception
+	 */
+	public Integer sizeTaskQueue() throws Exception;
 	
 }
