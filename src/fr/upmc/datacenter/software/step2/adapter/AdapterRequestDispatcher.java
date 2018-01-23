@@ -233,8 +233,8 @@ public class AdapterRequestDispatcher 	extends 	ResourceInspector
 
 		synchronized (CurrentRollingAverage) {
 			if(!CurrentRollingAverage.isNaN()) {
-				//If rolling-average > 1200
-				if(CurrentRollingAverage > 1000) {
+				//If rolling-average > 2500
+				if(CurrentRollingAverage > avmAverageThreshold) {
 					if(CurrentRollingAverage > lastAverageIdentified) {
 						lastAverageIdentified = CurrentRollingAverage;
 					System.err.println("============ ADD AVM FOR : "+getAppURI());
@@ -243,10 +243,9 @@ public class AdapterRequestDispatcher 	extends 	ResourceInspector
 					rollingAverage.clear();
 				}else {
 					lastAverageIdentified = CurrentRollingAverage;
-					System.err.println("************ WE HAVE TO DECREASE AVM ********");
+					System.err.println("============ REMOVE AVM FROM : "+getAppURI());
 					removeAVM();
 					rollingAverage.clear();
-					System.out.println("++++++++++++++++++++++ AVM REMOVED");
 				}
 				}else {
 					// If rolling-average > 1800
@@ -254,7 +253,7 @@ public class AdapterRequestDispatcher 	extends 	ResourceInspector
 						if(CurrentRollingAverage > lastAverageIdentified) {
 							lastAverageIdentified = CurrentRollingAverage;
 						System.err.println("============ ADD CORE FOR : "+getAppURI());
-//						addCoreToLessEfficientAVM();
+						addCoreToLessEfficientAVM();
 						// Reset calculation
 						rollingAverage.clear();
 					}else {
@@ -265,12 +264,12 @@ public class AdapterRequestDispatcher 	extends 	ResourceInspector
 						rollingAverage.clear();
 					}
 					}else {
-						// If rolling-average > 2500
+						// If rolling-average > 1200
 						if(CurrentRollingAverage > frequencyAverageThreshold){
 							if(CurrentRollingAverage > lastAverageIdentified) {
 								lastAverageIdentified = CurrentRollingAverage;
 							System.err.println("============  INCREASE FREQUENCY FOR : "+getAppURI());
-//							updateCoreFrequency(getAppURI(), Frequency_gap.INCREASE);
+							updateCoreFrequency(getAppURI(), Frequency_gap.INCREASE);
 							// Reset calculation
 							rollingAverage.clear();
 							}else {
@@ -428,7 +427,7 @@ public class AdapterRequestDispatcher 	extends 	ResourceInspector
 					}
 				}
 				// check if nbCoresAvailable >= NBCORES than set these cores as allocated
-				if(nbAvailableCores >= 4) {
+				if(nbAvailableCores >= NBCORES) {
 					availableComputers.add(uri);
 				}
 			}

@@ -18,8 +18,10 @@ import fr.upmc.datacenter.software.informations.computers.CoreInfo;
  * Removing <code>Core</code> on the <code>Processor</code> of an <code>ApplicationVM</code>
  */
 public class RequestDispatcherInfo {
+	
 	/** the URI of the RequestDispatcher   		*/
 	private String requestDispatcherURI;
+	
 	/** MAP of vmURI and ApplicationVMInfo 		*/
 	private LinkedHashMap<String, ApplicationVMInfo>  vmInformations;
 	

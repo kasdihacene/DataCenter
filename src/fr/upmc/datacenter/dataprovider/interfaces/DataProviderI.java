@@ -6,8 +6,10 @@ import fr.upmc.datacenter.software.informations.computers.ComputerInfo;
 import fr.upmc.datacenter.software.informations.requestdispatcher.RequestDispatcherInfo;
 
 /**
- * This interface <code>DataProviderI</code> list the signiture of methods to be implemented in the Class 
- * <code>DateProvider</code> which collects the infos about the Computers and Applications on the Datacenter
+ * This interface <code>DataProviderI</code> list the signature of 
+ * methods to be implemented in the Class <code>DateProvider</code> 
+ * which collects the infos about the Computers and Applications on the DataCenter
+ * 
  * @author Hacene KASDI
  *
  */

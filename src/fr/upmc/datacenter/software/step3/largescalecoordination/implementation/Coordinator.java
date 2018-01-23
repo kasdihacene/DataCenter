@@ -24,7 +24,7 @@ public class Coordinator 	extends AdapterRequestDispatcher
 	public Coordinator(String riURI, String applicationURI) throws Exception {
 		super(riURI, applicationURI);
 		
-		/** interfaces used to send information through the topoligy */ 
+		/** interfaces used to send information through the topology */ 
 		this.addOfferedInterface(CoordinationLargeScaleI.class);
 		this.addRequiredInterface(CoordinationLargeScaleI.class);
 		

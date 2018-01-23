@@ -114,9 +114,9 @@ public class TestAdmissionControllerSuccess extends fr.upmc.components.cvm.Abstr
 				"_ANIP1", 
 				"_ACIP1");
 		
-//		Admission admission2 = new Admission(
-//				"_ANIP2", 
-//				"_ACIP2");
+		Admission admission2 = new Admission(
+				"_ANIP2", 
+				"_ACIP2");
 	
 		/**
 		 * CREATE THE APPLICATION
@@ -131,14 +131,14 @@ public class TestAdmissionControllerSuccess extends fr.upmc.components.cvm.Abstr
 		this.addDeployedComponent(applicationContainer);
 		
 		
-//		this.applicationContainer2 =
-//				new ApplicationContainer(
-//						"APP2-",
-//						this,
-//						admission2,
-//						"ANIP2",
-//						"ACOP2");
-//		this.addDeployedComponent(applicationContainer2);
+		this.applicationContainer2 =
+				new ApplicationContainer(
+						"APP2-",
+						this,
+						admission2,
+						"ANIP2",
+						"ACOP2");
+		this.addDeployedComponent(applicationContainer2);
 		
 		/**
 		 * CREATE THE ADMISSION CONTROLLER AND CONNECT IT TO DATA PROVIDER
@@ -154,7 +154,7 @@ public class TestAdmissionControllerSuccess extends fr.upmc.components.cvm.Abstr
 		
 		// ApplicationContainer1 and AdmissionController connections 
 		this.applicationContainer.connectWithAdmissionController("ADM_CONT_ACIP");
-//		this.applicationContainer2.connectWithAdmissionController("ADM_CONT_ACIP");		
+		this.applicationContainer2.connectWithAdmissionController("ADM_CONT_ACIP");		
 
 		super.deploy();
 
@@ -170,7 +170,7 @@ public class TestAdmissionControllerSuccess extends fr.upmc.components.cvm.Abstr
 	{
 	
 		applicationContainer.startAsync();
-//		applicationContainer2.startAsync();
+		applicationContainer2.startAsync();
 
 	}
 	

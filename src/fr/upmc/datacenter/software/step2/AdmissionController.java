@@ -12,7 +12,6 @@ import fr.upmc.datacenter.software.applicationcontainer.connectors.AdmissionNoti
 import fr.upmc.datacenter.software.applicationcontainer.interfaces.AdmissionNotificationI;
 import fr.upmc.datacenter.software.applicationcontainer.ports.AdmissionNotificationOutboundPort;
 import fr.upmc.datacenter.software.connectors.RequestNotificationConnector;
-import fr.upmc.datacenter.software.connectors.RequestSubmissionConnector;
 import fr.upmc.datacenter.software.informations.requestdispatcher.RequestDispatcherComponent;
 import fr.upmc.datacenter.software.informations.requestdispatcher.RequestDispatcherInfo;
 import fr.upmc.datacenter.software.step2.adaptableproperty.ApplicationVMAdaptable;

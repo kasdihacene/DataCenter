@@ -41,7 +41,7 @@ public class ResourceInspector extends AbstractComponent {
 
 	protected String riURI;
 	protected String providerURI;
-	private static final int NBCORES = 3;
+	protected static final int NBCORES = 2;
 	
 	public DynamicComponentCreator dynamicComponentCreator;
 	
@@ -104,7 +104,7 @@ public class ResourceInspector extends AbstractComponent {
 		// int NBAVM_TO_CREATE = admissionI.getNBAVMToCreate();
 		final int NBAVM_TO_CREATE = 2;
 
-		// Get all caomputer URIs
+		// Get all computer URIs
 		LinkedList<String> computerListURI = new LinkedList<String>();
 		computerListURI = dataProviderOutboundPort.getComputerListURIs();
 		
@@ -174,7 +174,7 @@ public class ResourceInspector extends AbstractComponent {
 			dispatcherInfo.addApplicationVM(avmURI, computerURI, cores);
 		}
 
-		// Create and deloy the AppplicationVM
+		// Create and deploy the AppplicationVM
 		String RSIP_URI=avmURI+"_RSIP";
 		String RNOP_URI=avmURI+"_RNOP";
 		ApplicationVMAdaptable avm= new ApplicationVMAdaptable(	avmURI, 
@@ -193,7 +193,6 @@ public class ResourceInspector extends AbstractComponent {
 		// deploy the component
 		DelployTools.deployComponent(avm);
 		
-		// return avm it will be deployed by the AdmissionController
 		return avm;
 	}
 	/**
@@ -212,7 +211,7 @@ public class ResourceInspector extends AbstractComponent {
 		RequestDispatcherComponent RDC = new RequestDispatcherComponent(applicationContainerURI+"RD");
 		DelployTools.deployComponent(RDC);
 		
-		// Store the informations related to the Request Dispatcher
+		// Store the informations related to the Request Dispatcher in the (DataProvider)
 		dataDispatcherOutboundPort.addApplicationContainer(applicationContainerURI, applicationContainerURI+"RD");
 		return RDC;
 	} 
