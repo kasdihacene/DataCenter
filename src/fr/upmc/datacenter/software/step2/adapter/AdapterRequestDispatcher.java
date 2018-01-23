@@ -646,7 +646,7 @@ public class AdapterRequestDispatcher 	extends 	ResourceInspector
 						}
 					},
 					TimeManagement.acceleratedDelay(ControllerSetting.interavalAdaption),
-					TimeUnit.MILLISECONDS) ;
+					TimeUnit.MILLISECONDS);
 	}
 	
 	
