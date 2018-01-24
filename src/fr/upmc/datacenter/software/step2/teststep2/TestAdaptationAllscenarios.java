@@ -29,9 +29,9 @@ import fr.upmc.datacenter.software.step2.tools.DelployTools;
  * @author Hacene & Marc
  *
  */
-public class TestAdmissionControllerSuccess extends fr.upmc.components.cvm.AbstractCVM{
+public class TestAdaptationAllscenarios extends fr.upmc.components.cvm.AbstractCVM{
 
-	public TestAdmissionControllerSuccess() throws Exception {
+	public TestAdaptationAllscenarios() throws Exception {
 		super();
 		// Set the AbstractCVM to deploy components
 		DelployTools.setAcvm(this);
@@ -177,7 +177,7 @@ public class TestAdmissionControllerSuccess extends fr.upmc.components.cvm.Abstr
 	
 	public static void main(String[] args) {
 		try {
-			TestAdmissionControllerSuccess testAdmissionControler = new TestAdmissionControllerSuccess();
+			TestAdaptationAllscenarios testAdmissionControler = new TestAdaptationAllscenarios();
 			// DEPLY THE COMPONENTS
 			System.out.println("DEPLOYING COMPONENTS...");
 			testAdmissionControler.deploy();

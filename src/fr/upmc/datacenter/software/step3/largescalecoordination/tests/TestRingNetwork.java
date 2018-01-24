@@ -9,24 +9,26 @@ import fr.upmc.components.AbstractComponent;
 import fr.upmc.datacenter.dataprovider.DataProvider;
 import fr.upmc.datacenter.hardware.processors.Processor;
 import fr.upmc.datacenter.software.admissioncontroller.Admission;
-import fr.upmc.datacenter.software.step2.AdmissionController;
 import fr.upmc.datacenter.software.step2.ApplicationContainer;
 import fr.upmc.datacenter.software.step2.adaptableproperty.ComputerAdaptable;
 import fr.upmc.datacenter.software.step2.tools.DelployTools;
+import fr.upmc.datacenter.software.step3.largescalecoordination.implementation.admissioncontrollercoordination.AdmissionControllerCoordination;
 
 /**
- * This class shows a test of one hosting two <code>ApplicationContainer</code>
+ * This class shows a test of hosting two <code>ApplicationContainer</code>
  * 
- * In this case we use 2 <code>Computer</code> in our data center means that we can allocate 4 <code>Processor</code>
- * with 2 <code>Cores</code> or we can say that the ApplicationVM reserve 4 cores to execute the received requests.
- * The test will succeed because there are available resources for 2 <code>ApplicationConatiner</code>
+ * In this case we use 2 <code>Computer</code> in our data center means 
+ * that we can allocate 4 <code>Processor</code> with 2 <code>Cores</code> 
+ * or we can say that the ApplicationVM reserve 4 cores to execute the 
+ * received requests. The test will succeed because there are available 
+ * resources for 2 <code>ApplicationConatiner</code>
  * 
  *  Test :  2 Computer 
  *  		2 * 2 Processors
- *  		8 Cores ( 4 cores for each ApplicationVM )
+ *  		8 Cores ( 2 cores for each ApplicationVM )
  *  		2 ApplicationContainer
  * 
- * @author Hacene & Marc
+ * @author Hacene KASDI
  *
  */
 public class TestRingNetwork extends fr.upmc.components.cvm.AbstractCVM{
@@ -47,8 +49,8 @@ public class TestRingNetwork extends fr.upmc.components.cvm.AbstractCVM{
 	//--------------------------------------------------------------------------
 	// ADD THE COMPONENTS
 	//--------------------------------------------------------------------------
-	/**		 Admission Controller component										*/
-	protected AdmissionController admissionController;
+	/**		 Admission Controller coordinator component										*/
+	protected AdmissionControllerCoordination admissionController;
 	/**		Application Container component								*/
 	protected ApplicationContainer applicationContainer, applicationContainer2;
 	
@@ -114,9 +116,9 @@ public class TestRingNetwork extends fr.upmc.components.cvm.AbstractCVM{
 				"_ANIP1", 
 				"_ACIP1");
 		
-//		Admission admission2 = new Admission(
-//				"_ANIP2", 
-//				"_ACIP2");
+		Admission admission2 = new Admission(
+				"_ANIP2", 
+				"_ACIP2");
 	
 		/**
 		 * CREATE THE APPLICATION
@@ -131,22 +133,26 @@ public class TestRingNetwork extends fr.upmc.components.cvm.AbstractCVM{
 		this.addDeployedComponent(applicationContainer);
 		
 		
-//		this.applicationContainer2 =
-//				new ApplicationContainer(
-//						"APP2-",
-//						this,
-//						admission2,
-//						"ANIP2",
-//						"ACOP2");
-//		this.addDeployedComponent(applicationContainer2);
+		this.applicationContainer2 =
+				new ApplicationContainer(
+						"APP2-",
+						this,
+						admission2,
+						"ANIP2",
+						"ACOP2");
+		this.addDeployedComponent(applicationContainer2);
 		
 		/**
 		 * CREATE THE ADMISSION CONTROLLER AND CONNECT IT TO DATA PROVIDER
 		 */
 	
-		this.admissionController = new AdmissionController("ADM_CONT", this);
+		this.admissionController = new AdmissionControllerCoordination("ADM_CONT", this);
 		this.addDeployedComponent(admissionController);
 		this.admissionController.connectWithDataProvider("DATA_PROVIDER");
+		
+		// Here we have to create the ApplicationVMAdaptable using the 
+		// available resources in Computers
+		
 		
 		/**
 		 * CONNEXION OF THE COMPONENTS
@@ -154,7 +160,7 @@ public class TestRingNetwork extends fr.upmc.components.cvm.AbstractCVM{
 		
 		// ApplicationContainer1 and AdmissionController connections 
 		this.applicationContainer.connectWithAdmissionController("ADM_CONT_ACIP");
-//		this.applicationContainer2.connectWithAdmissionController("ADM_CONT_ACIP");		
+		this.applicationContainer2.connectWithAdmissionController("ADM_CONT_ACIP");		
 
 		super.deploy();
 
@@ -170,7 +176,7 @@ public class TestRingNetwork extends fr.upmc.components.cvm.AbstractCVM{
 	{
 	
 		applicationContainer.startAsync();
-//		applicationContainer2.startAsync();
+		applicationContainer2.startAsync();
 
 	}
 	

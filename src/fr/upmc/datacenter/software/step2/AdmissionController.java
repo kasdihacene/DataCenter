@@ -122,7 +122,7 @@ public class AdmissionController 	extends ResourceInspector
 							avmURIrecentlyAdded+"_RNOP",
 							admissionI.getApplicationURI()+"RD_RNIP", 
 							RequestNotificationConnector.class.getCanonicalName());
-		
+
 		// Add AVM URI on the list of AVMs of the RequestDispatcher
 		requestResourceVMOutboundPort.doConnection(
 							admissionI.getApplicationURI()+"RD_RVMIP",

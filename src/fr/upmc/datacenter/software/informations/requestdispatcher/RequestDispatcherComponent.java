@@ -184,6 +184,7 @@ public class RequestDispatcherComponent 	extends 	AbstractComponent
 			rsop.doConnection(avmNextURI+"_RSIP",RequestSubmissionConnector.class.getCanonicalName());
 			rsop.submitRequestAndNotify(r);
 			rsop.doDisconnection();
+	
 	}
 
 	public DataPushDispatcher prepareCollectedData() {
