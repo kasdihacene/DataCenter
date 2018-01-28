@@ -30,4 +30,16 @@ public interface TransitTokenI extends Serializable {
 	 * @throws Exception
 	 */
 	public LinkedList<String> getListURIs() throws Exception;
+	/**
+	 * add an information to transit on the network (AVM uri)
+	 * @param uri
+	 * @throws Exception
+	 */
+	public void addAVM(String uri) throws Exception;
+	/**
+	 * remove the information related to the AVM referenced by this uri 
+	 * @param uri
+	 * @throws Exception
+	 */
+	public void removeAVM(String uri) throws Exception;
 }

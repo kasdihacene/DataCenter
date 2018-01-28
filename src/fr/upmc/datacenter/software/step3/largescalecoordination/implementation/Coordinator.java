@@ -37,7 +37,8 @@ public class Coordinator 	extends AdapterRequestDispatcher
 
 	@Override
 	public void submitChip(TransitTokenI tokenI) throws Exception {
-		
+		// we have to connect this outbound port with the next inbound port component 
+		this.coordinationLargeScaleOutboundPort.submitChip(tokenI);
 		
 	}
 

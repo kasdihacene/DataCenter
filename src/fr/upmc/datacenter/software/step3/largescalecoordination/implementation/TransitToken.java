@@ -45,4 +45,14 @@ public class TransitToken implements TransitTokenI {
 		return avmURIs;
 	}
 
+	@Override
+	public void addAVM(String uri) throws Exception {
+		avmURIs.add(uri);
+	}
+
+	@Override
+	public void removeAVM(String uri) throws Exception {
+		avmURIs.remove(uri);
+	}
+
 }
