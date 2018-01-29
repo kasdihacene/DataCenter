@@ -57,28 +57,30 @@ import fr.upmc.datacenter.software.step2.tools.DelployTools;
  */
 public class AdapterRequestDispatcher 	extends 	ResourceInspector 
 										implements 	DataPushDispatcherReceiverI {
-
-	private String appURI;
+	
+	protected String riURI;
+	protected String appURI;
 	/** future of the task scheduled to start adaption					*/
 	protected ScheduledFuture<?>			pushingFuture, pushingFutureTasks ;
-	private SensorDispatcherOutboundPort sdop;
-	private LinkedList<InfoRequestResponse> requestResponsesInfo;
-	private LinkedList<Double> rollingAverage;
+	protected SensorDispatcherOutboundPort sdop;
+	protected LinkedList<InfoRequestResponse> requestResponsesInfo;
+	protected LinkedList<Double> rollingAverage;
 	
-	private DataProviderOutboundPort 			dpop;
-	private DataDispatcherOutboundPort 			ddop;
+	protected DataProviderOutboundPort 			dpop;
+	protected DataDispatcherOutboundPort 			ddop;
 	
-	private AdapterComputerOutboundPort acop;
-	private AdapterVMOutboundPort avmiop;
+	protected AdapterComputerOutboundPort acop;
+	protected AdapterVMOutboundPort avmiop;
 	
-	private Double lastAverageIdentified = 0.;
-	private Double avmAverageThreshold ;
-	private Integer sizeQueue;
-	private Double coreAverageThreshold;
-	private Double frequencyAverageThreshold;
+	protected Double lastAverageIdentified = 0.;
+	protected Double avmAverageThreshold ;
+	protected Integer sizeQueue;
+	protected Double coreAverageThreshold;
+	protected Double frequencyAverageThreshold;
 	
 	public AdapterRequestDispatcher(String riURI, String applicationURI) throws Exception {
 		super(riURI);
+		this.riURI				= riURI;
 		this.appURI				= applicationURI;
 		requestResponsesInfo	= new LinkedList<InfoRequestResponse>();
 		rollingAverage			= new LinkedList<Double>();
@@ -706,6 +708,7 @@ public class AdapterRequestDispatcher 	extends 	ResourceInspector
 									AdapterRequestDispatcher.launchAdaption();
 									launchAdaptionEveryInterval();
 								} catch (Exception e) {
+									System.err.println(e);
 									throw new RuntimeException(e) ;
 								}
 							}
