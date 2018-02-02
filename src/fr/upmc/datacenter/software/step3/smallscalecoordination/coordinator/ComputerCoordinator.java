@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -17,6 +18,7 @@ import fr.upmc.datacenter.dataprovider.connectors.DataProviderConnector;
 import fr.upmc.datacenter.dataprovider.ports.DataProviderOutboundPort;
 import fr.upmc.datacenter.hardware.computers.Computer.AllocatedCore;
 import fr.upmc.datacenter.software.informations.computers.ComputerInfo;
+import fr.upmc.datacenter.software.informations.computers.CoreInfo;
 import fr.upmc.datacenter.software.step3.smallscalecoordination.connectors.IntentNotificationConnector;
 import fr.upmc.datacenter.software.step3.smallscalecoordination.interfaces.IntentI;
 import fr.upmc.datacenter.software.step3.smallscalecoordination.interfaces.IntentI.Nature;
@@ -28,19 +30,22 @@ import fr.upmc.datacenter.software.step3.smallscalecoordination.ports.IntentNoti
 import fr.upmc.datacenter.software.step3.smallscalecoordination.ports.IntentSubmissionInboundPort;
 
 public class ComputerCoordinator extends AbstractComponent implements IntentSubmissionHandlerI, IntentNotificationI {
-	
+
 	/**
-	 * CORE_POLITIC is a static variable to choose which politic is used for core intents conflict
-	 * Core intents conflict occurs when there are too much cores are asked for the computer capacity
+	 * CORE_POLITIC is a static variable to choose which politic is used for core
+	 * intents conflict Core intents conflict occurs when there are too much cores
+	 * are asked for the computer capacity
 	 */
 	private int CORE_POLITIC = 0;
 	/**
-	 * FREQUENCY is a static variable to choose which politic is used for frequency intents conflict
-	 * Frenquency intents conflict occurs when at least two different frequencies are asked for on core
+	 * FREQUENCY is a static variable to choose which politic is used for frequency
+	 * intents conflict Frenquency intents conflict occurs when at least two
+	 * different frequencies are asked for on core
 	 */
 	private int FREQUENCY_POLITIC = 0;
 	/**
-	 * canCoordinate is a boolean to know if coordinate future must be created or not
+	 * canCoordinate is a boolean to know if coordinate future must be created or
+	 * not
 	 */
 	private boolean canCoordinate = true;
 
@@ -79,19 +84,23 @@ public class ComputerCoordinator extends AbstractComponent implements IntentSubm
 		this.addPort(this.dpop);
 		this.dpop.publishPort();
 	}
-	
+
 	/**
-	 * Connect <code>DataProviderOutboundPort</code> with the <code>DataProvider</code> component
+	 * Connect <code>DataProviderOutboundPort</code> with the
+	 * <code>DataProvider</code> component
+	 * 
 	 * @param providerURI
 	 * @throws Exception
 	 */
 	public void connectWithProvider(String providerURI) throws Exception {
 		this.dpop.doConnection(providerURI + "_DPIP", DataProviderConnector.class.getCanonicalName());
 	}
-	
+
 	/**
-	 * Accept <code>IntentI</code> from <code>AdapterRequestDispatcherCoordinable</code>
-	 * If none coordination is scheduled, schedule one for intervalCoordinate ms later
+	 * Accept <code>IntentI</code> from
+	 * <code>AdapterRequestDispatcherCoordinable</code> If none coordination is
+	 * scheduled, schedule one for intervalCoordinate ms later
+	 * 
 	 * @param intent
 	 * @throws Exception
 	 */
@@ -122,9 +131,11 @@ public class ComputerCoordinator extends AbstractComponent implements IntentSubm
 			}, TimeManagement.acceleratedDelay(this.intervalCoordinate), TimeUnit.MILLISECONDS);
 		}
 	}
-	
+
 	/**
-	 * Coordinate all intents. First, we split intents by nature and we coordinate each nature intents.
+	 * Coordinate all intents. First, we split intents by nature and we coordinate
+	 * each nature intents.
+	 * 
 	 * @throws Exception
 	 */
 	private void coordinate() throws Exception {
@@ -172,35 +183,40 @@ public class ComputerCoordinator extends AbstractComponent implements IntentSubm
 		coordinateFrequencyIntents(coreIntents);
 		coordinateCoreIntents(appIntents);
 	}
-	
+
 	/**
 	 * Return the remain number of idle core for the computer
+	 * 
 	 * @return
 	 * @throws Exception
 	 */
 	private int getRemainCoresNumber() throws Exception {
 		int res = 0;
-		
+
 		ComputerInfo computerInfo = this.dpop.getComputerInfos(computerURI);
 		boolean[][] processorsCoresState = computerInfo.getCoreState();
-		for(boolean[] processor : processorsCoresState) {
-			for(boolean core : processor) {
-				if (!core) res ++;
+		for (boolean[] processor : processorsCoresState) {
+			for (boolean core : processor) {
+				if (!core)
+					res++;
 			}
 		}
 		return res;
 	}
-	
+
 	/**
-	 * Coordinate all core intents. First, we merge all core intents by app.
-	 * Using <code>DataProvider</code>, we check if a conflict will occur. If it occurs, we manage the conflict following to the politic choosed
-	 * @param appIntents : map for each app all core intents
+	 * Coordinate all core intents. First, we merge all core intents by app. Using
+	 * <code>DataProvider</code>, we check if a conflict will occur. Second, if it
+	 * occurs, we manage the conflict following to the politic choosed
+	 * 
+	 * @param appIntents
+	 *            : map for each app all core intents
 	 * @throws Exception
 	 */
 	private void coordinateCoreIntents(Map<String, List<IntentI>> appIntents) throws Exception {
 		System.out.println(String.format("ComputerCoordinator<%s> : try to coordinate %d core nature intent",
 				this.computerURI + SUFFIX, appIntents.size()));
-		
+
 		int remainCoresNumber = getRemainCoresNumber();
 		int coresNumber = getRemainCoresNumber();
 		Map<String, IntentI> previousIntents = new HashMap<>();
@@ -240,14 +256,18 @@ public class ComputerCoordinator extends AbstractComponent implements IntentSubm
 			arbitrateCoreConflict(remainCoresNumber, previousIntents, newIntents);
 		}
 	}
-	
+
 	/**
-	 * Manage core intents conflict following the core politic choosed;
-	 * Default politic is fifo, first app to ask for core will be first to get core
-	 * Another politic is to split equally the remain cores number for each app
-	 * @param remainCoresNumber : remain cores number of the computer
-	 * @param previousIntents : previous intent submitted
-	 * @param newIntents : new intent to manage
+	 * Manage core intents conflict following the core politic choosed; Default
+	 * politic is fifo, first app to ask for core will be first to get core Another
+	 * politic is to split equally the remain cores number for each app
+	 * 
+	 * @param remainCoresNumber
+	 *            : remain cores number of the computer
+	 * @param previousIntents
+	 *            : previous intent submitted
+	 * @param newIntents
+	 *            : new intent to manage
 	 * @throws Exception
 	 */
 	private void arbitrateCoreConflict(int remainCoresNumber, Map<String, IntentI> previousIntents,
@@ -286,19 +306,144 @@ public class ComputerCoordinator extends AbstractComponent implements IntentSubm
 		}
 	}
 
+	/**
+	 * Search between all admissibles frequencies ot the <code>AllocatedCore</code>
+	 * and return the closest possibility for the goal frequency
+	 * 
+	 * @param core
+	 *            : Core which we intent to change the frequency
+	 * @param frequency
+	 *            : Goal frequency
+	 * @return
+	 * @throws Exception
+	 */
+	private int closestAvailableFrequency(AllocatedCore core, int frequency) throws Exception {
+		ComputerInfo computerInfo = this.dpop.getComputerInfos(computerURI);
+		Set<Integer> admissibleFrequencies = computerInfo.getAdmissibleFrequencies();
+		int maxFrenquecyGap = computerInfo.getMaxFrequencyGap();
+		int currentFrequency = computerInfo.getCoreInfo(core).getFrequency();
+		int res = 0;
+		int minGap = Integer.MAX_VALUE;
+
+		for (int admissibleFrequency : admissibleFrequencies) {
+			if (Math.abs(currentFrequency - admissibleFrequency) <= maxFrenquecyGap) {
+				int currentGap = Math.abs(admissibleFrequency - frequency);
+				if (currentGap < minGap) {
+					minGap = currentGap;
+					res = admissibleFrequency;
+				}
+			}
+		}
+		return res;
+	}
+
+	/**
+	 * Coordinate all frequency intents. First, try to merge intents for each core.
+	 * When two differents frequencies are asked for the same core, a conflict
+	 * occurs. Second, when conflict occurs, we manage the conflict following to the
+	 * politic choosed.
+	 * 
+	 * @param coreIntents
+	 * @throws Exception
+	 */
 	private void coordinateFrequencyIntents(Map<AllocatedCore, List<IntentI>> coreIntents) throws Exception {
 		System.out.println(String.format("ComputerCoordinator<%s> : try to coordinate %d frequency nature intent",
 				this.computerURI + SUFFIX, coreIntents.size()));
+
+		Map<AllocatedCore, List<IntentI>> conflictCoreIntents = new HashMap<>();
+		for (AllocatedCore core : coreIntents.keySet()) {
+			List<IntentI> intents = coreIntents.get(core);
+			if (intents.size() == 1) {
+				submitIntentNotification(intents.get(0), intents.get(0));
+			} else {
+				IntentI lastIntent = null;
+				int goalFrequency = intents.get(0).getValue();
+				boolean notInterrupted = true;
+
+				for (int i = 1; i < intents.size() && notInterrupted; i++)
+					notInterrupted = goalFrequency == intents.get(i).getValue();
+				if (notInterrupted)
+					submitIntentNotification(lastIntent, lastIntent);
+				else
+					conflictCoreIntents.put(core, intents);
+			}
+		}
+
+		if (conflictCoreIntents.size() > 0)
+			arbitrateFrequencyConflict(conflictCoreIntents);
 	}
 
-	private void arbitrateFrequencyConflict() {
-
-	}
-	
 	/**
-	 * Notify to the intent sender that his previous intent was processed and what he have to do
-	 * @param previousIntent : previous intent submitted
-	 * @param intent : new intent to be executed by the IntentNotificationHandler
+	 * Manage frequency conflict following the frequency politic choosed. Default
+	 * politic is to always choose the max frequency. Another politic is to always
+	 * choose the lowest frequency. The politic we choose is to process the average
+	 * between all frequencies and find the closest admissible frequency of the
+	 * core.
+	 * 
+	 * @param previousNewIntents
+	 *            : map one of the previous intents in conflict to the new goal
+	 *            frequency
+	 */
+	private void arbitrateFrequencyConflict(Map<AllocatedCore, List<IntentI>> conflictCoreIntents) throws Exception {
+		switch (FREQUENCY_POLITIC) {
+		case 1:
+			for (AllocatedCore core : conflictCoreIntents.keySet()) {
+				List<IntentI> intents = conflictCoreIntents.get(core);
+
+				int minFrequency = Integer.MAX_VALUE;
+				for (IntentI intent : intents)
+					if (intent.getValue() < minFrequency)
+						minFrequency = intent.getValue();
+
+				IntentI previousIntent = intents.get(0);
+				submitIntentNotification(previousIntent,
+						new Intent(previousIntent.getNature(), previousIntent.getType(), minFrequency,
+								previousIntent.getAppURI(), previousIntent.getComputerURI(), previousIntent.getCore(),
+								previousIntent.getIntentNotificationURI()));
+			}
+			break;
+		case 2:
+			for (AllocatedCore core : conflictCoreIntents.keySet()) {
+				List<IntentI> intents = conflictCoreIntents.get(core);
+				int frequencySum = 0;
+
+				for (IntentI intent : intents)
+					frequencySum += intent.getValue();
+				
+				IntentI previousIntent = intents.get(0);
+				int arbitratedFrequency = closestAvailableFrequency(core, frequencySum / intents.size());
+				submitIntentNotification(previousIntent,
+						new Intent(previousIntent.getNature(), previousIntent.getType(), arbitratedFrequency,
+								previousIntent.getAppURI(), previousIntent.getComputerURI(), previousIntent.getCore(),
+								previousIntent.getIntentNotificationURI()));
+			}
+			break;
+		default:
+			for (AllocatedCore core : conflictCoreIntents.keySet()) {
+				List<IntentI> intents = conflictCoreIntents.get(core);
+
+				int maxFrequency = Integer.MIN_VALUE;
+				for (IntentI intent : intents)
+					if (intent.getValue() > maxFrequency)
+						maxFrequency = intent.getValue();
+
+				IntentI previousIntent = intents.get(0);
+				submitIntentNotification(previousIntent,
+						new Intent(previousIntent.getNature(), previousIntent.getType(), maxFrequency,
+								previousIntent.getAppURI(), previousIntent.getComputerURI(), previousIntent.getCore(),
+								previousIntent.getIntentNotificationURI()));
+			}
+		}
+	}
+
+	/**
+	 * Notify to the intent sender that his previous intent was processed and what
+	 * he have to do
+	 * 
+	 * @param previousIntent
+	 *            : previous intent submitted
+	 * @param intent
+	 *            : new intent to be executed by the IntentNotificationHandler
 	 * @throws Exception
 	 */
 	@Override
