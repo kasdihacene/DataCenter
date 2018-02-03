@@ -60,22 +60,22 @@ public class AdapterRequestDispatcher 	extends 	ResourceInspector
 
 	protected String appURI;
 	/** future of the task scheduled to start adaption					*/
-	protected ScheduledFuture<?>			pushingFuture, pushingFutureTasks ;
-	private SensorDispatcherOutboundPort sdop;
-	protected LinkedList<InfoRequestResponse> requestResponsesInfo;
-	protected LinkedList<Double> rollingAverage;
+	protected ScheduledFuture<?>				pushingFuture, pushingFutureTasks ;
+	private SensorDispatcherOutboundPort 		sdop;
+	protected LinkedList<InfoRequestResponse> 	requestResponsesInfo;
+	protected LinkedList<Double> 				rollingAverage;
 	
-	protected DataProviderOutboundPort 			dpop;
+	protected DataProviderOutboundPort 				dpop;
 	protected DataDispatcherOutboundPort 			ddop;
 	
-	protected AdapterComputerOutboundPort acop;
-	protected AdapterVMOutboundPort avmiop;
+	protected AdapterComputerOutboundPort 			acop;
+	protected AdapterVMOutboundPort 				avmiop;
 	
-	protected Double lastAverageIdentified = 0.;
-	protected Double avmAverageThreshold ;
-	protected Integer sizeQueue;
-	protected Double coreAverageThreshold;
-	protected Double frequencyAverageThreshold;
+	protected Double 	lastAverageIdentified = 0.;
+	protected Double 	avmAverageThreshold ;
+	protected Integer 	sizeQueue;
+	protected Double 	coreAverageThreshold;
+	protected Double 	frequencyAverageThreshold;
 	
 	public AdapterRequestDispatcher(String riURI, String applicationURI) throws Exception {
 		super(riURI);
@@ -201,12 +201,11 @@ public class AdapterRequestDispatcher 	extends 	ResourceInspector
 			avmURI = infoRequestResponse.getAvmURI();
 			}
 		}
-		System.err.println("============================================== les efficient == "+requestResponses.size());
 			return avmURI;
 	}
 	
 	/**
-	 * 
+	 * The AVM URI more efficient.
 	 * @return URI of the more efficient AVM
 	 */
 	public String getAVMmoreEfficient() {

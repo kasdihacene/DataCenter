@@ -9,6 +9,7 @@ import fr.upmc.components.cvm.AbstractCVM;
 import fr.upmc.datacenter.hardware.computers.Computer.AllocatedCore;
 import fr.upmc.datacenter.hardware.computers.connectors.ComputerServicesConnector;
 import fr.upmc.datacenter.software.admissioncontroller.interfaces.AdmissionI;
+import fr.upmc.datacenter.software.admissioncontroller.interfaces.AdmissionRequestHandlerI;
 import fr.upmc.datacenter.software.applicationcontainer.connectors.AdmissionNotificationConnector;
 import fr.upmc.datacenter.software.applicationvm.connectors.ApplicationVMManagementConnector;
 import fr.upmc.datacenter.software.applicationvm.ports.ApplicationVMManagementOutboundPort;
@@ -18,6 +19,8 @@ import fr.upmc.datacenter.software.informations.computers.ComputerInfo.State_cha
 import fr.upmc.datacenter.software.informations.requestdispatcher.RequestDispatcherComponent;
 import fr.upmc.datacenter.software.informations.requestdispatcher.RequestDispatcherInfo;
 import fr.upmc.datacenter.software.step2.AdmissionController;
+import fr.upmc.datacenter.software.step2.adaptableproperty.ApplicationVMAdaptable;
+import fr.upmc.datacenter.software.step2.adaptableproperty.ComputerAdaptable;
 import fr.upmc.datacenter.software.step2.adaptableproperty.connector.AdapterComputerConnector;
 import fr.upmc.datacenter.software.step2.adaptableproperty.connector.AdapterVMConnector;
 import fr.upmc.datacenter.software.step2.adaptableproperty.interfaces.AdapterComputerI;
@@ -27,6 +30,7 @@ import fr.upmc.datacenter.software.step2.adaptableproperty.ports.AdapterVMOutbou
 import fr.upmc.datacenter.software.step2.requestresourcevm.RequestVM;
 import fr.upmc.datacenter.software.step2.requestresourcevm.connector.RequestResourceVMConnector;
 import fr.upmc.datacenter.software.step2.tools.DelployTools;
+import fr.upmc.datacenter.software.step3.largescalecoordination.implementation.Coordinator;
 import fr.upmc.datacenter.software.step3.largescalecoordination.implementation.TransitToken;
 import fr.upmc.datacenter.software.step3.largescalecoordination.implementation.applicationvmadaptable.ApplicationVMcoordinate;
 import fr.upmc.datacenter.software.step3.largescalecoordination.implementation.applicationvmadaptable.connectors.ConnectCoordinateAVMConnector;
@@ -36,6 +40,20 @@ import fr.upmc.datacenter.software.step3.largescalecoordination.implementation.i
 import fr.upmc.datacenter.software.step3.largescalecoordination.implementation.ports.CoordinationLargeScaleInboundPort;
 import fr.upmc.datacenter.software.step3.largescalecoordination.implementation.ports.CoordinationLargeScaleOutboundPort;
 
+/**
+ * <h2>Descriptor class</h2>
+ * 
+ * This class represents the controller of the topology and the arbiter of the DataCenter
+ * in the large scale, this class supervise the passage of {@link ApplicationVMcoordinate} 
+ * URIs on the network and decide when should release <code>ApplicationVMcoordinate</code>
+ * 
+ * This component create at the beginning using all available resources <code>ComputerAdaptable</code>
+ * a set of <code>ApplicationVMcoordinate</code> and deploy it, and push their URIs on the network in 
+ * order to be used by the Controller and to do cooperation between Controllers <code>{@link Coordinator}</code>
+ * 
+ * @author Hacene KASDI
+ *
+ */
 public class AdmissionControllerCoordination 
 											extends 		AdmissionController 
 											implements 		CoordinationLargeScaleI{
@@ -47,11 +65,15 @@ public class AdmissionControllerCoordination
 	/** port to send to other autonomic controller a {@link TransitTokenI}*/
 	private CoordinationLargeScaleOutboundPort coordinationLargeScaleOutboundPort;
 	
-	protected AdapterVMOutboundPort avmiop;
-	protected AdapterComputerOutboundPort acop;
-
+	/** Port used to ask {@link ApplicationVMAdaptable} for releasing AVM cores  */
+	protected AdapterVMOutboundPort 			avmiop;
 	
+	/** Port used to ask {@link ComputerAdaptable for releasing cores in this context (Large scale)} */
+	protected AdapterComputerOutboundPort 		acop;
+
+	/** subscribe the controller to the network topology */
 	private static Integer timeToSubscribe = 0;
+	
 	private static Integer AVMCORES = 2;
 	private String acURI;
 	private HashMap<String, Long> mapAVMfrequencyPassage;
@@ -60,6 +82,7 @@ public class AdmissionControllerCoordination
 	
 	
 	public AdmissionControllerCoordination(String acURI, AbstractCVM acvm) throws Exception {
+		
 		super(acURI, acvm);
 		this.acURI=acURI;
 		mapAVMfrequencyPassage		=new HashMap<>();
@@ -111,6 +134,9 @@ public class AdmissionControllerCoordination
 		inspectResourcesAndNotifiy(admission);
 	}
 	
+	/**
+	 * @see {@link AdmissionRequestHandlerI#inspectResourcesAndNotifiy(AdmissionI)}
+	 */
 	public void inspectResourcesAndNotifiy(AdmissionI admission) throws Exception {
 		// GET 2 ApplicationVMcoordinate for the current ApplicationContainer
 			
@@ -196,7 +222,7 @@ public class AdmissionControllerCoordination
 				if(sharedResource==0) {
 					try {
 					System.err.println("APPLICATION WAITING FOR : "+uri);
-						wait();
+					sharedResource.wait();
 					} catch (InterruptedException e) {
 						System.err.println("ERROR : WHEN WAITING FOR RESOURCE");
 						e.printStackTrace();
@@ -229,7 +255,7 @@ public class AdmissionControllerCoordination
 	}
 	
 	/**
-	 * 
+	 * Allocating resources for the {@link ApplicationVMcoordinate}
 	 * @param computerURI
 	 * @return ApplicationVM for coordination
 	 * @throws Exception
@@ -281,9 +307,6 @@ public class AdmissionControllerCoordination
 	 */
 	@Override
 	public void submitChip(TransitTokenI tokenI) throws Exception {
-		// we have to connect this outbound port with the next inbound port component 
-//				System.err.println(acURI+" IN NOTWORK RING === TOKEN FROM : "+tokenI.getSender());
-		        
 		synchronized (mapAVMfrequencyPassage) {
 
 			checkPassageFrequency(tokenI.getListURIs());
@@ -295,6 +318,7 @@ public class AdmissionControllerCoordination
 				String nextNode = dataProviderOutboundPort.getNextNode();
 					// Ignore the case where the next node is Us
 					if(acURI.equals(nextNode))return;
+					// we have to connect this outbound port with the next inbound port component 
 					TransitToken token = new TransitToken(acURI, nextNode, listAPPvmNetRefreched);
 					coordinationLargeScaleOutboundPort.doConnection(nextNode+"COOR_CLSIP", CoordinationLargeScaleConnector.class.getCanonicalName());
 					this.coordinationLargeScaleOutboundPort.submitChip(token);
@@ -321,23 +345,26 @@ public class AdmissionControllerCoordination
 				mapPassageRefreshed.put(appVM.getVmURI(), newVar);
 				if(mapPassageRefreshed.get(appVM.getVmURI()) ==  6000000) {
 					
-					System.err.println("========================================================= 400000 PASSAGE OF "+appVM.getVmURI());
+					System.err.println("====================================== INACTIVITY DETECTED [AVM EXPIRED] : "+appVM.getVmURI());
 					appVMtoDeleteDefinitely.add(appVM);
 					mapPassageRefreshed.put(appVM.getVmURI(), 0L);
 					
-					System.out.println("############################ APPVM ==>"+appVM.getVmURI()+" | SIZE TO DELETE == "+appVMtoDeleteDefinitely.size()+"   AVM in mapAVMfrequencyPassage : "+mapAVMfrequencyPassage);
 					}
 			}
 		}
 		mapAVMfrequencyPassage=mapPassageRefreshed;
 	}
-	
+	/**
+	 * Release AVM from the DataCenter and switch off the resources.
+	 * @param avmURI
+	 * @throws Exception
+	 */
 	protected void releaseAVMresources(String avmURI) throws Exception {
 		ApplicationVMInfo applicationVMInfo = dataProviderOutboundPort.getApplicationVMCoordinate(avmURI);
 		
 		System.err.println("-------------- RELEASE AVM FROM DATACENTER ---------");
-		System.err.println("AVM TO RELEASE == "+applicationVMInfo.getVmURI());
-		System.err.println("COMPUTER TO RELEASE === "+applicationVMInfo.getComputerURI());
+		System.err.println("AVM TO RELEASE 			===> "+applicationVMInfo.getVmURI());
+		System.err.println("COMPUTER TO RELEASE 	===> "+applicationVMInfo.getComputerURI());
 		
 		
 		ComputerInfo computerInfo = dataProviderOutboundPort.getComputerInfos(applicationVMInfo.getComputerURI());
@@ -368,18 +395,16 @@ public class AdmissionControllerCoordination
 			acop.releaseCore(core);
 			acop.doDisconnection();
 		}
-		// remove the AVM information on Network and Data Provider
-
 		System.err.println("----------------------------------------------------");
 		}	
-	
-	private void deleteAVMAfterAlotPassage() throws Exception {
-		System.err.println("appVMtoDeleteDefinitely SIZE ============> "+appVMtoDeleteDefinitely.size());
-		for (ApplicationVMInfo appVM : appVMtoDeleteDefinitely) {
-			System.out.println("1111111111111111111111111111 >>> "+appVM.getVmURI());
 
-		}
-		
+	/**
+	 * Release {@link ApplicationVMcoordinate} after inactivity on the network
+	 * controller will switch off the resources related to this AVM.
+	 * 
+	 * @throws Exception
+	 */
+	private void deleteAVMAfterAlotPassage() throws Exception {
 		appVMtoDeleteDefinitely.forEach(element -> {
 			try {
 				listAPPvmNetRefreched.remove(element);

@@ -23,12 +23,17 @@ import fr.upmc.datacenter.software.informations.computers.ComputerInfo;
 import fr.upmc.datacenter.software.informations.requestdispatcher.RequestDispatcherInfo;
 import fr.upmc.datacenter.software.step3.largescalecoordination.implementation.interfaces.TransitTokenI;
 /**
+ * <h2>Class descriptor</h2>
+ * <code>ComputerStateDataConsumerI</code> defines the consumer side methods used to 
+ * receive state data pushed by a computer, both static and dynamic.
+ * 
+ * This component will store data ( Object java ) related to request dispatcher used on 
+ * the data center provide data to controllers for cooperation, adaptation and informations
+ * about the network leader ( initiator ) and the whole topology hierarchy. 
  * 
  * @author Hacene KASDI
  * @version 24.12.17.HK
  *
- * <code>ComputerStateDataConsumerI</code> defines the consumer side methods used to 
- * receive state data pushed by a computer, both static and dynamic.
  */
 public class DataProvider extends 	AbstractComponent 
 						implements 	ComputerStateDataConsumerI,
@@ -44,9 +49,9 @@ public class DataProvider extends 	AbstractComponent
 	/** list of ApplicationVM information used in cooperation to store informations about every AVM allocated */
 	protected ArrayList<ApplicationVMInfo> listApplicationVMInfo;
 	/** Number of available AplicationVM */
-	protected static int NBVMAVAILABLE = 0;
+	protected static int NBVMAVAILABLE 		= 0;
 	/** the leader of the network only can change this token */
-	protected static Integer setNetLeader = 0;
+	protected static Integer setNetLeader 	= 0;
 	/** list of nodes of the RingNetwork*/
 	protected LinkedList<String> nodesNetwork;
 	
@@ -108,7 +113,7 @@ public class DataProvider extends 	AbstractComponent
 				this,
 				computerURI);
 		
-		//Connection with the computer to ask him for pushing informations 
+		//Connection with the computer to ask him for pushing dynamic|static informations 
 		this.addPort(cdsPort) ;
 		cdsPort.publishPort() ;	
 		cdsPort.
@@ -117,7 +122,7 @@ public class DataProvider extends 	AbstractComponent
 				ControlledDataConnector.class.getCanonicalName()) ;
 		
 		//Start pushing and receiving answers from a Computer #acceptComputerDynamicData
-		cdsPort.startLimitedPushing(4,4);
+		cdsPort.startLimitedPushing(2,2);
 		cdsPort.startUnlimitedPushing(10000);
 		
 		mapComputerDynamicSOP.put(computerURI, cdsPort);
@@ -164,7 +169,7 @@ public class DataProvider extends 	AbstractComponent
 		}
 		
 		
-		System.out.println("DYNAMIC DATA PUSHED FROM COMPUTER "+computerURI+" RESERVATION CORES : "+stringBuffer+"|");
+		System.out.println("DYNAMIC DATA PUSHED FROM "+computerURI+" RESERVATION CORES : "+stringBuffer+"|");
 
 		// get the state of the barrier
 		Integer sharedResource = mapComputerInfo.get(computerURI).getSharedResource();
@@ -173,13 +178,13 @@ public class DataProvider extends 	AbstractComponent
 			// get the cores information pushed by the Computer and update the ComputerInfo Cores
 			boolean [][] allocatedCores = currentDynamicState.getCurrentCoreReservations();
 			computerInfo.setCoreState(allocatedCores);
-			// set free the resource shared and put it to 1
-			if(sharedResource==0) {
-			sharedResource.notifyAll();
-			// set the resource as available
-			sharedResource=1;
-			mapComputerInfo.get(computerURI).setSharedResource(sharedResource);
-			}
+				// set free the resource shared and put it to 1
+				if(sharedResource==0) {
+						sharedResource.notifyAll();
+						// set the resource as available
+						sharedResource=1;
+						mapComputerInfo.get(computerURI).setSharedResource(sharedResource);
+				}
 		}
 		
 	}
@@ -223,7 +228,6 @@ public class DataProvider extends 	AbstractComponent
 
 	@Override
 	public void addApplicationVM(ApplicationVMInfo applicationVMInfo) throws Exception {
-		System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>> ADD AVM : "+applicationVMInfo.getVmURI());
 		listApplicationVMInfo.add(applicationVMInfo);
 		mapInformationAVMcoordinate.put(applicationVMInfo.getVmURI(), applicationVMInfo);
 		NBVMAVAILABLE++;
@@ -232,7 +236,6 @@ public class DataProvider extends 	AbstractComponent
 
 	@Override
 	public void DeleteDefinitelyAVM(ApplicationVMInfo avmINFO) throws Exception {
-		System.out.println("============================> delete difinifly : "+avmINFO.getVmURI());
 		
 		NBVMAVAILABLE--;
 	listApplicationVMInfo.remove(avmINFO);
@@ -288,17 +291,18 @@ public class DataProvider extends 	AbstractComponent
 		
 	}
 	/**
+	 * <h2>Inner Class descriptor</h2>
+	 * 
 	 * This inner class represents information related to the 
 	 * leader of the network topology, which initialize the first 
 	 * transaction by sending the token {@link TransitTokenI}
 	 *  
-	 * @author Hacene
+	 * @author Hacene KASDI
 	 *
 	 */
 	private static class LeaderRingNetwork{
 		
 		private static String leaderURI = "NULL";
-		
 		public static void setLeaderNetwork(String leader) {
 			leaderURI = leader;
 		}

@@ -109,8 +109,8 @@ public class Coordinator extends AdapterRequestDispatcher implements Coordinatio
 		} else {
 			// check if is there any cooperation intention canceled
 			if (canceledCooperation && AVMCooperation != null) {
-				ArrayList<ApplicationVMInfo> newListAVMs = cooperationCanceled(tokenI.getListURIs());
-				System.err.println("################ COOPERATION TO CANCEL ##################");
+					ArrayList<ApplicationVMInfo> newListAVMs = cooperationCanceled(tokenI.getListURIs());
+					System.err.println("################ COOPERATION INTENTION CANCELED ##################");
 
 				TransitToken token = new TransitToken(getAppURI(), nextNode, newListAVMs);
 				coordinationLargeScaleOutboundPort.doConnection(nextNode + "COOR_CLSIP",
@@ -163,18 +163,18 @@ public class Coordinator extends AdapterRequestDispatcher implements Coordinatio
 		ArrayList<ApplicationVMInfo> applicationVM = new ArrayList<>();
 		synchronized (applicationVMInfos) {
 			for (int i = 0; i < applicationVMInfos.size() - 1; i++) {
-				System.err.println("##################### " + applicationVMInfos.get(i).getVmURI());
+				System.err.println("##################### AVAILABLE : " + applicationVMInfos.get(i).getVmURI());
 				applicationVM.add(applicationVMInfos.get(i));
 			}
 		}
 		AVMCooperation = dataProviderOutboundPort.removeApplicationVM();
-		System.err.println("++++++++++++++++++++ COOPERATION ASKED : " + AVMCooperation.getVmURI());
+		System.err.println("##################### AVM TAKEN : " + AVMCooperation.getVmURI());
 		return applicationVM;
 	}
 
 	/**
 	 * When the intention of adaptation is finally canceled by the Coordinator. we
-	 * have to put back the AVM not used to list of AVM which transit in the
+	 * have to put back the AVM unused to list of AVM which transit in the
 	 * network.
 	 * 
 	 * @param applicationVMInfos
@@ -184,12 +184,11 @@ public class Coordinator extends AdapterRequestDispatcher implements Coordinatio
 	 */
 	private ArrayList<ApplicationVMInfo> cooperationCanceled(ArrayList<ApplicationVMInfo> applicationVMs)
 			throws Exception {
-		System.out.println("îîîîîîîîîîîîîîîîîîîîîîîîîîîîîîîîîîî " + applicationVMs.size());
 		applicationVMs.add(AVMCooperation);
 		dataProviderOutboundPort.addApplicationVM(AVMCooperation);
+		System.out.println("---------------------- PUT BACK AVM : " +AVMCooperation.getVmURI());
 		canceledCooperation = false;
 		AVMCooperation = null;
-		System.out.println("îîîîîîîîîîîîîîîîîîîîîîîîîîîîîîîîîîî " + applicationVMs.size());
 		return applicationVMs;
 	}
 
@@ -210,8 +209,12 @@ public class Coordinator extends AdapterRequestDispatcher implements Coordinatio
 	 * @see {@link AdapterRequestDispatcher#launchAdaptionEveryInterval()}
 	 */
 	public void launchAdaptionEveryInterval() throws Exception {
-		System.out.println("AVM created in DP : " + dataProviderOutboundPort.getNBAVMcreated()
-				+ " ===================================== AVM in network " + nbAvMnetwork);
+		System.out.println(
+				"AVM on DataProvider : " 
+				+ dataProviderOutboundPort.getNBAVMcreated()
+				+ " ===================================== "
+				+ "AVM ON NETWORK : " 
+				+ nbAvMnetwork);
 
 		for (ApplicationVMInfo app : appInNet) {
 			System.err.println(app.getVmURI());
@@ -235,70 +238,70 @@ public class Coordinator extends AdapterRequestDispatcher implements Coordinatio
 	 */
 	public void launchAdaption() throws Exception {
 
-		// We start adaption only if we have 10 samples of averages on our list
+		// We start adaption only if we have 10 samples of averages on our rolling average list
 		if (rollingAverage.size() == ControllerSetting.NBCONSECUTIVEAVERAGE) {
 			// Get the current rolling average that is collected
 			Double CurrentRollingAverage = getRollingAverage();
 			System.err.println(getAppURI() + " | AVM less efficient : " + getAVMlessEfficient()
 					+ " | EXECUTION AVERAGE : " + CurrentRollingAverage);
 
-			synchronized (CurrentRollingAverage) {
-				if (!CurrentRollingAverage.isNaN()) {
+		synchronized (CurrentRollingAverage) {
+			if (!CurrentRollingAverage.isNaN()) {
 
-					// If rolling-average between 2000 and 2500 hold and predict need of new
-					// adaptation
-					if (CurrentRollingAverage > (avmAverageThreshold - 500)
-							&& CurrentRollingAverage < (avmAverageThreshold)) {
-						/**
-						 * set static variable <needCooperation> to true when the method submitChip will
-						 * be invoked he will check this variable than it will set the static variable
-						 * <AVMCooperation> to an available AVM URI
-						 */
-						needCooperation = true;
-						lastAmmountIdentified = CurrentRollingAverage;
-					} else {
-						if (needCooperation && lastAmmountIdentified > CurrentRollingAverage) {
-							System.err.println("------------------------------- cooperation canceled *******");
-							canceledCooperation = true;
-							lastAmmountIdentified = 0.;
-						}
+				// If rolling-average between 2000 and 2500 hold and predict need of new
+				// adaptation
+				if (	CurrentRollingAverage > (avmAverageThreshold - 500)
+						&& CurrentRollingAverage < (avmAverageThreshold)) {
+					/**
+					 * set static variable <needCooperation> to true when the method submitChip will
+					 * be invoked he will check this variable than it will set the static variable
+					 * <AVMCooperation> to an available AVM URI
+					 */
+					needCooperation = true;
+					lastAmmountIdentified = CurrentRollingAverage;
+				} else {
+					if (needCooperation && lastAmmountIdentified > CurrentRollingAverage) {
+						System.err.println("------------------------------- CANCEL COOPERTION");
+						canceledCooperation = true;
+						lastAmmountIdentified = 0.;
 					}
+				}
 
 					// If rolling-average > (2500 + 500)
 					if (CurrentRollingAverage > avmAverageThreshold) {
 
 						if (CurrentRollingAverage >= lastAverageIdentified) {
 							// In case of the average didn't decreased we have
-							// to start a new adaption by adding a new AVM
+							// to start a new adaption by sending intention of adding new AVM
 							lastAverageIdentified = CurrentRollingAverage;
-							System.err.println("============ ADD AVM FOR : " + getAppURI());
-
+							System.err.println("------------------------------- ASK FOR ADDING AVM TO : " + getAppURI());
+							
+							
 							if (AVMCooperation != null) {
 								// Reset calculation
 								rollingAverage.clear();
 
-								System.err.println("COOPERATION SUCCEEDED : AVM ADDED == " + AVMCooperation.getVmURI());
+								System.err.println("------------------------------- COOPERATION LAUNCHED : AVM TO ADD : "+AVMCooperation.getVmURI());
 								allocateAVM();
 
 							} else {
-								System.err.println(
-										"SEND AN INTENTION OF COOPERATION [current need == " + needCooperation+"   "+AVMCooperation);
+								System.out.println("------------------------------- SEND INTENTION OF COOPERATION");
 								needCooperation = true;
 							}
 
 						} else {
 							if (CurrentRollingAverage < lastAverageIdentified) {
 								if (needCooperation) {
-									System.err.println(
-											"=================================================== cooperation to cancel");
+									System.err.println("------------------------------- CANCELING COOPERATION... ");
 									needCooperation = false;
 									canceledCooperation = true;
 								} else {
-									RequestDispatcherInfo dispatcherInfo = dataProviderOutboundPort.getApplicationInfos(getAppURI());
+									RequestDispatcherInfo dispatcherInfo = dataProviderOutboundPort
+											.getApplicationInfos(getAppURI());
 									// Allow release only when number AVM used by this Dispatcher > 2
 									if (dispatcherInfo.getNbVMCreated() > 2) {
 										lastAverageIdentified = CurrentRollingAverage;
-										System.err.println("============ REMOVE AVM FROM : " + getAppURI());
+										System.err.println("------------------------------- ASK FOR REMOVING AVM FROM : " + getAppURI());
 										releaseAVM();
 										rollingAverage.clear();
 									}
@@ -371,7 +374,7 @@ public class Coordinator extends AdapterRequestDispatcher implements Coordinatio
 	// Deallocate Application VM resources
 	// ==================================================================================
 	/**
-	 * This method allows removing AVM from the DataCenter especially
+	 * This method allows releasing AVM less efficient.
 	 * 
 	 * @throws Exception
 	 */
@@ -379,10 +382,7 @@ public class Coordinator extends AdapterRequestDispatcher implements Coordinatio
 
 		// Get the AVM less efficient
 		String avmURI = getAVMlessEfficient();
-
-		// if the avm is in use we can remove the
-		// information about this AVM in the RequestDispatherInformation
-		System.err.println("====== AVM TO DELETE == " + avmURI);
+		System.err.println("============== DELETING : [ "+ avmURI+" ] REQUIRED ==============" );
 
 		// Remove this URI from List AVM URIs used by the current RequestDispatcher
 		requestResourceVMOutboundPort.doConnection(getAppURI() + "RD_RVMIP",
@@ -390,13 +390,13 @@ public class Coordinator extends AdapterRequestDispatcher implements Coordinatio
 		RequestVM requestVMI = new RequestVM(avmURI, getAppURI());
 		requestResourceVMOutboundPort.requestRemoveVM(requestVMI);
 
-		// Stop receiving requests on this AVM
+		// Stop receiving requests on this AVM by checking task on its Queue
 		avmiop.doConnection(avmURI + "_AVMIP", AdapterVMConnector.class.getCanonicalName());
 		sizeQueue = avmiop.sizeTaskQueue();
 		avmiop.doDisconnection();
 		synchronized (sizeQueue) {
 			if (sizeQueue > 0) {
-				System.err.println(" ************** WAIT ********");
+				System.err.println("################ WAITING TASKS TERMINATION IN AVM ##################");
 				seekForStateTaskAVM(avmURI);
 			} else {
 				removeWhenEnds(avmURI);
@@ -406,8 +406,8 @@ public class Coordinator extends AdapterRequestDispatcher implements Coordinatio
 
 	/**
 	 * After waiting the termination of the requests in the AVM Queue we can proceed
-	 * to remove the the Informations about the AVM and to deallocate cores used by
-	 * the AVM
+	 * to remove the the Informations about the AVM and notify service who put back
+	 * the AVM URIs on the network again
 	 * 
 	 * @param avmURI
 	 * @throws Exception
@@ -443,7 +443,9 @@ public class Coordinator extends AdapterRequestDispatcher implements Coordinatio
 	}
 
 	/**
-	 * 
+	 * Check the size Queue of the ApplicationVM Tasks before releasing
+	 * its resources.
+	 *  
 	 * @param avmURI
 	 * @return the number of remaining tasks in the ApplicationVM
 	 * @throws Exception
@@ -453,10 +455,10 @@ public class Coordinator extends AdapterRequestDispatcher implements Coordinatio
 		synchronized (sizeQueue) {
 			sizeQueue = avmiop.sizeTaskQueue();
 			if (sizeQueue == 0) {
-				System.err.println(" getsizeTasks FOR == " + avmURI + "   NOTIFY");
+				System.err.println(" NUMBER TASKS FOR == " + avmURI + "   NOTIFY");
 				removeWhenEnds(avmURI);
 			} else {
-				System.err.println(" getsizeTasks FOR == " + avmURI + "   NOT YET");
+				System.err.println(" NUMBER TASKS FOR == " + avmURI + "   NOT YET");
 			}
 
 		}
@@ -466,7 +468,8 @@ public class Coordinator extends AdapterRequestDispatcher implements Coordinatio
 
 	/**
 	 * Periodic task used to check the state of the Queue then at the end we can
-	 * remove the Cores used by the <code>ApplicationVM</code>
+	 * remove the Cores used by the <code>ApplicationVM</code> ans stop all 
+	 * services of the {@link ApplicationVMcoordinate}
 	 * 
 	 * @param avmURI
 	 * @throws Exception
@@ -484,9 +487,15 @@ public class Coordinator extends AdapterRequestDispatcher implements Coordinatio
 					throw new RuntimeException(e);
 				}
 			}
-		}, TimeManagement.acceleratedDelay(2000), TimeUnit.MILLISECONDS);
+		}, 		TimeManagement.acceleratedDelay(2000), 
+				TimeUnit.MILLISECONDS);
 	}
-
+	
+	// ==================================================================================
+	// NETWORK TOPOLOGY AND SUBMITTING TOKENS
+	// ==================================================================================
+		/**
+		
 	/**
 	 * The first in will be the leader and he could initialize the first send of the
 	 * token on the network and he still the leader until he quit the topology.
@@ -504,7 +513,8 @@ public class Coordinator extends AdapterRequestDispatcher implements Coordinatio
 			if (getAppURI().equals(nextNode))
 				return;
 			TransitToken token = new TransitToken(getAppURI(), nextNode, applicationsVM);
-
+			
+			// submit the token on the network
 			coordinationLargeScaleOutboundPort.doConnection(nextNode + "COOR_CLSIP",
 					CoordinationLargeScaleConnector.class.getCanonicalName());
 			this.coordinationLargeScaleOutboundPort.submitChip(token);
