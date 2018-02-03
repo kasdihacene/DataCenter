@@ -1,6 +1,7 @@
 package fr.upmc.datacenter.software.informations.applicationvm;
 
 import java.util.LinkedList;
+import java.util.Vector;
 
 import fr.upmc.datacenter.hardware.computers.Computer.AllocatedCore;
 import fr.upmc.datacenter.software.informations.computers.CoreInfo;
@@ -106,6 +107,16 @@ public class ApplicationVMInfo {
 }
 	//================================================
 	
+	public AllocatedCore [] getAllCoresCoordiantion() {
+		Vector<AllocatedCore> allocated =
+				new Vector<AllocatedCore>(allocatedCores.size());
+		
+		for (int i = 0; i < allocatedCores.size(); i++) {
+			allocated.add(allocatedCores.get(i));
+		}
+		return allocated.toArray(new AllocatedCore[0]);
+	}
+	
 	public String getVmURI() {
 		return vmURI;
 	}
@@ -125,6 +136,16 @@ public class ApplicationVMInfo {
 		this.computerURI = computerURI;
 	}
 	
-	
+	/**
+	 * 
+	 * @return string buffered of the current cores used by this AVM
+	 */
+	public String printCores() {
+		StringBuffer stringBuffer = new StringBuffer();
+		for (int i = 0; i < allocatedCores.size(); i++) {
+			stringBuffer.append("PROC:"+allocatedCores.get(i).processorNo+" "+"CORE:"+allocatedCores.get(i).coreNo+"\n");
+		}
+		return stringBuffer.toString();
+	}
 
 }

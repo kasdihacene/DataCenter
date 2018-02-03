@@ -38,7 +38,7 @@ import fr.upmc.datacenter.software.step2.sensor.ports.SensorDispatcherInboundPor
  * to him, receives request providing from <code>RequestGenerator</code> and dispatch 
  * the request using a round-robin policy to current list of <code>ApplicationVMAdaptable</code>
  * 
- * This component is subscribed to a Push service witch allows to send <code>DataI</code>
+ * This component is subscribed to a Push service which allows to send <code>DataI</code>
  * to all clients, in our case the data will be received by <code>AdapterRequestDispatcher</code>
  * start the pushing of data and force the pushing to be done each <code>interval</code> period of time.
  *
@@ -112,10 +112,12 @@ public class RequestDispatcherComponent 	extends 	AbstractComponent
 
 	@Override
 	public void addVMApplication(RequestVMI requestVMI) throws Exception {
+		
 		synchronized (applicationVMList) {
 		// Add the AVM URI to the list
 		applicationVMList.add(requestVMI.getURIVM());
 		}
+
 		// We have to create a new object InfoRequestResponse to store all stats
 		// about the request submitted to the given ApplicationVM and to calculate
 		// the average execution of queries and the number queries, these informations
@@ -140,6 +142,12 @@ public class RequestDispatcherComponent 	extends 	AbstractComponent
 		}
 	}
 
+	@Override
+	public void removeAVMWhenEnds(RequestVMI requestVMI) throws Exception {
+		infoStatsAVM.remove(requestVMI.getURIVM());
+		System.err.println("AVM REMOVED IN STATISCTICS REGISTER | TASKS == 0 : "+requestVMI.getURIVM());		
+	}
+	
 	/**
 	 * Received from the AVM when the execution of the RequestI was finished
 	 */
@@ -159,7 +167,7 @@ public class RequestDispatcherComponent 	extends 	AbstractComponent
 	/**
 	 * RoundRobin policy for dispatching request to the ApplicationVM
 	 * @param AVMlistURIs
-	 * @return the next AVM uri that we should execute the request
+	 * @return the next AVM uri that we should set to execute the request
 	 */
 	public String roundRobinAVM(ArrayList<String> AVMlistURIs) {
 		AVMlistURIs.add(AVMlistURIs.remove(0));
@@ -173,7 +181,7 @@ public class RequestDispatcherComponent 	extends 	AbstractComponent
 
 			// Connect the ApplicationVM added to the RequestDispatcher using RoundRobin policy
 			String avmNextURI = roundRobinAVM(applicationVMList);
-			System.out.println("******************** REQUEST : "+r.getRequestURI()+" SUBMITED TO ******* "+avmNextURI);
+//			System.out.println("******************** REQUEST : "+r.getRequestURI()+" SUBMITED TO ******* "+avmNextURI);
 			
 			// Store the arrived request from the Request Generator
 			nbRequests++;
@@ -339,4 +347,5 @@ public class RequestDispatcherComponent 	extends 	AbstractComponent
 	public void setApplicationContainerURI(String applicationContainerURI) {
 		this.applicationContainerURI = applicationContainerURI;
 	}
+
 }

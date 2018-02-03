@@ -92,7 +92,7 @@ public class ApplicationContainer extends AbstractComponent implements Admission
 		this.admissionRequestOutboundPort.publishPort();
 
 		this.rg = new RequestGenerator(APP_URI + "rg", // generator component URI
-				500.0, // mean time between two requests
+				400.0, // mean time between two requests
 				6000000000L, // mean number of instructions in requests
 				APP_URI + RequestGeneratorManagementInboundPortURI, APP_URI + RequestSubmissionOutboundPortURI,
 				APP_URI + RequestNotificationInboundPortURI);
@@ -199,7 +199,7 @@ public class ApplicationContainer extends AbstractComponent implements Admission
 
 		System.out.println("\n STARTING APPLICATION ....\n");
 		rg.startGeneration();
-		Thread.sleep(10000L);
+		Thread.sleep(25000L);
 		rg.stopGeneration();
 		rgmop.doDisconnection();
 		rg.doPortDisconnection(APP_URI + RequestSubmissionOutboundPortURI);

@@ -9,7 +9,7 @@ import fr.upmc.components.AbstractComponent;
 import fr.upmc.datacenter.dataprovider.DataProvider;
 import fr.upmc.datacenter.hardware.processors.Processor;
 import fr.upmc.datacenter.software.admissioncontroller.Admission;
-import fr.upmc.datacenter.software.step2.ApplicationContainer;
+import fr.upmc.datacenter.software.step3.largescalecoordination.implementation.admissioncontrollercoordination.*;
 import fr.upmc.datacenter.software.step2.adaptableproperty.ComputerAdaptable;
 import fr.upmc.datacenter.software.step2.tools.DelployTools;
 import fr.upmc.datacenter.software.step3.largescalecoordination.implementation.admissioncontrollercoordination.AdmissionControllerCoordination;
@@ -42,7 +42,6 @@ public class TestRingNetwork extends fr.upmc.components.cvm.AbstractCVM{
 	/**
 	* All URIs and ports for first computer
 	*/
-	protected final static int COMPUTER_NUMBER = 4;
 	protected final static String COMPUTER_URI = "computer";
 	protected final static String COMPUTER_STATIC_DATA_INBOUND_PORT_SUFFIX = "csdip";
 	
@@ -67,7 +66,7 @@ public class TestRingNetwork extends fr.upmc.components.cvm.AbstractCVM{
 		 */
 		
 		int numberOfProcessors = 2;
-		int numberOfCores = 2;
+		int numberOfCores = 3;
 		Set<Integer> admissibleFrequencies = new HashSet<Integer>();
 		admissibleFrequencies.add(1500); // Cores can run at 1,5 GHz
 		admissibleFrequencies.add(3000); // and at 3 GHz
@@ -83,31 +82,48 @@ public class TestRingNetwork extends fr.upmc.components.cvm.AbstractCVM{
 		// Deploy the DataProvider Component
 		this.addDeployedComponent(dataProvider);
 		
-		for (int i = 0; i < COMPUTER_NUMBER; i++) {
-			String computerURI = COMPUTER_URI + i;
-			System.out.println(computerURI);
-			String csipURI = computerURI + "_CSIP";
-			String csdipURI = computerURI + COMPUTER_STATIC_DATA_INBOUND_PORT_SUFFIX;
-			String cddipURI = computerURI + "_CDSDIP";
-			
-			ComputerAdaptable computer = new ComputerAdaptable(computerURI, admissibleFrequencies, processingPower, 1500, 1500,
-					numberOfProcessors, numberOfCores, csipURI, csdipURI, cddipURI);
-			this.addDeployedComponent(computer);
-			
-			System.out.println(String.format("DEPLOYING : %d-th computer deployed", i + 1));
-	
-			dataProvider.storeComputerData(
-					computerURI, 
-					admissibleFrequencies, 
-					processingPower, 
-					1500, 
-					1500, 
-					numberOfProcessors,
-					numberOfCores);
-		}
+		String computerURI 	= COMPUTER_URI;
+		String csipURI 		= "_CSIP";
+		String csdipURI 	= COMPUTER_STATIC_DATA_INBOUND_PORT_SUFFIX;
+		String cddipURI 	= "_CDSDIP";
+		
+		/** COMPUTER 1	*/
+		ComputerAdaptable computer1 = new ComputerAdaptable(	computerURI+"1", admissibleFrequencies, processingPower, 1500, 1500,
+															numberOfProcessors, numberOfCores, computerURI+"1"+csipURI, 
+															computerURI+"1"+csdipURI, computerURI+"1"+cddipURI);
+		this.addDeployedComponent(computer1);
+		dataProvider.storeComputerData(computerURI+"1",admissibleFrequencies,processingPower, 1500,1500, numberOfProcessors,numberOfCores);
+
+		/** COMPUTER 2	*/
+		ComputerAdaptable computer2 = new ComputerAdaptable(	computerURI+"2", admissibleFrequencies, processingPower, 1500, 1500,
+															numberOfProcessors, numberOfCores, computerURI+"2"+csipURI, 
+															computerURI+"2"+csdipURI, computerURI+"2"+cddipURI);
+		this.addDeployedComponent(computer2);
+		dataProvider.storeComputerData(computerURI+"2",admissibleFrequencies,processingPower, 1500,1500, numberOfProcessors,numberOfCores);
+
+//		/** COMPUTER 3	*/
+//		ComputerAdaptable computer3 = new ComputerAdaptable(	computerURI+"3", admissibleFrequencies, processingPower, 1500, 1500,
+//															numberOfProcessors, numberOfCores, computerURI+"3"+csipURI, 
+//															computerURI+"3"+csdipURI, computerURI+"3"+cddipURI);
+//		this.addDeployedComponent(computer3);
+//		dataProvider.storeComputerData(computerURI+"3",admissibleFrequencies,processingPower, 1500,1500, numberOfProcessors,numberOfCores);
+//		
+//		/** COMPUTER 4	*/
+//		ComputerAdaptable computer4 = new ComputerAdaptable(	computerURI+"4", admissibleFrequencies, processingPower, 1500, 1500,
+//															numberOfProcessors, numberOfCores, computerURI+"4"+csipURI, 
+//															computerURI+"4"+csdipURI, computerURI+"4"+cddipURI);
+//		this.addDeployedComponent(computer4);
+//		dataProvider.storeComputerData(computerURI+"4",admissibleFrequencies,processingPower, 1500,1500, numberOfProcessors,numberOfCores);
+
+//		ComputerAdaptable computer5 = new ComputerAdaptable(	computerURI+"5", admissibleFrequencies, processingPower, 1500, 1500,
+//															numberOfProcessors, numberOfCores, computerURI+"5"+csipURI, 
+//															computerURI+"5"+csdipURI, computerURI+"5"+cddipURI);
+//		this.addDeployedComponent(computer5);
 		
 		
 
+//		dataProvider.storeComputerData(computerURI+"5",admissibleFrequencies,processingPower, 1500,1500, numberOfProcessors,numberOfCores);
+		
 		// --------------------------------------------------------------------
 		// Creating the request generators component.
 		// --------------------------------------------------------------------
@@ -116,9 +132,9 @@ public class TestRingNetwork extends fr.upmc.components.cvm.AbstractCVM{
 				"_ANIP1", 
 				"_ACIP1");
 		
-		Admission admission2 = new Admission(
-				"_ANIP2", 
-				"_ACIP2");
+//		Admission admission2 = new Admission(
+//				"_ANIP2", 
+//				"_ACIP2");
 	
 		/**
 		 * CREATE THE APPLICATION
@@ -133,14 +149,14 @@ public class TestRingNetwork extends fr.upmc.components.cvm.AbstractCVM{
 		this.addDeployedComponent(applicationContainer);
 		
 		
-		this.applicationContainer2 =
-				new ApplicationContainer(
-						"APP2-",
-						this,
-						admission2,
-						"ANIP2",
-						"ACOP2");
-		this.addDeployedComponent(applicationContainer2);
+//		this.applicationContainer2 =
+//				new ApplicationContainer(
+//						"APP2-",
+//						this,
+//						admission2,
+//						"ANIP2",
+//						"ACOP2");
+//		this.addDeployedComponent(applicationContainer2);
 		
 		/**
 		 * CREATE THE ADMISSION CONTROLLER AND CONNECT IT TO DATA PROVIDER
@@ -149,6 +165,7 @@ public class TestRingNetwork extends fr.upmc.components.cvm.AbstractCVM{
 		this.admissionController = new AdmissionControllerCoordination("ADM_CONT", this);
 		this.addDeployedComponent(admissionController);
 		this.admissionController.connectWithDataProvider("DATA_PROVIDER");
+		this.admissionController.createAVMsAndDeploy();
 		
 		// Here we have to create the ApplicationVMAdaptable using the 
 		// available resources in Computers
@@ -158,10 +175,11 @@ public class TestRingNetwork extends fr.upmc.components.cvm.AbstractCVM{
 		 * CONNEXION OF THE COMPONENTS
 		 */
 		
-		// ApplicationContainer1 and AdmissionController connections 
+		// ApplicationContainer and AdmissionController connections 
 		this.applicationContainer.connectWithAdmissionController("ADM_CONT_ACIP");
-		this.applicationContainer2.connectWithAdmissionController("ADM_CONT_ACIP");		
+//		this.applicationContainer2.connectWithAdmissionController("ADM_CONT_ACIP");		
 
+		
 		super.deploy();
 
 	}
@@ -176,7 +194,7 @@ public class TestRingNetwork extends fr.upmc.components.cvm.AbstractCVM{
 	{
 	
 		applicationContainer.startAsync();
-		applicationContainer2.startAsync();
+//		applicationContainer2.startAsync();
 
 	}
 	

@@ -12,13 +12,13 @@ import fr.upmc.datacenter.software.applicationcontainer.connectors.AdmissionNoti
 import fr.upmc.datacenter.software.applicationcontainer.interfaces.AdmissionNotificationI;
 import fr.upmc.datacenter.software.applicationcontainer.ports.AdmissionNotificationOutboundPort;
 import fr.upmc.datacenter.software.connectors.RequestNotificationConnector;
-import fr.upmc.datacenter.software.informations.requestdispatcher.RequestDispatcherComponent;
 import fr.upmc.datacenter.software.informations.requestdispatcher.RequestDispatcherInfo;
 import fr.upmc.datacenter.software.step2.adaptableproperty.ApplicationVMAdaptable;
 import fr.upmc.datacenter.software.step2.adapter.AdapterRequestDispatcher;
 import fr.upmc.datacenter.software.step2.requestresourcevm.RequestVM;
 import fr.upmc.datacenter.software.step2.requestresourcevm.connector.RequestResourceVMConnector;
 import fr.upmc.datacenter.software.step2.tools.DelployTools;
+import fr.upmc.datacenter.software.step3.largescalecoordination.implementation.Coordinator;
 
 /**
  * 
@@ -106,7 +106,7 @@ public class AdmissionController 	extends ResourceInspector
 	protected void allowHostingApplication(AdmissionI admissionI, LinkedList<String> computerURIs) throws Exception {
 		
 		// Create the RequestDispatcher
-		RequestDispatcherComponent RD = createRequestDispatcher(admissionI);
+		createRequestDispatcher(admissionI);
 		
 		for(String computerURI : computerURIs) {
 
@@ -136,6 +136,7 @@ public class AdmissionController 	extends ResourceInspector
 		System.out.println("Nb VM created for "+admissionI.getApplicationURI()+" : "+nbCreated);
 	
 		}
+		
 		// set the RD URI on the AdmissionI response to send to the ApplicationContainer
 		admissionI.setRequestSubmissionInboundPortRD(admissionI.getApplicationURI()+"RD_RSIP");
 		
@@ -148,9 +149,45 @@ public class AdmissionController 	extends ResourceInspector
 		// connect to DataProvider to get available resources
 		adapterRequestDispatcher.connectWithDataProvider(providerURI);
 		adapterRequestDispatcher.connectAdapterWithProvider(providerURI);
+		
 		// Create a SensorDispatcherOutboundPort and launch pushing
 		adapterRequestDispatcher.connectWithRequestDispatcher(admissionI.getApplicationURI());
 		adapterRequestDispatcher.launchAdaptionEveryInterval();
+				
+	}
+	
+	/**
+	 * Method which launch cooperation with other controllers
+	 * @param admissionI
+	 * @return serializable information after setting some ports 
+	 * @throws Exception
+	 */
+	protected AdmissionI launchCooperation(AdmissionI admissionI) throws Exception {
+		
+		// set the RD URI on the AdmissionI response to send to the ApplicationContainer
+		admissionI.setRequestSubmissionInboundPortRD(admissionI.getApplicationURI()+"RD_RSIP");
+		
+		// Create the Adapter Component and launch it
+		Coordinator coordinator = new Coordinator(
+												admissionI.getApplicationURI()+"RD",
+												admissionI.getApplicationURI());
+		DelployTools.deployComponent(coordinator);
+
+		// subscribe to Ring network to exchange tokens ( list of AVM URIs )
+		dataProviderOutboundPort.subscribeToRingNetwork(admissionI.getApplicationURI());
+		
+		// connect to DataProvider to get available resources
+		coordinator.connectWithDataProvider(providerURI);
+		coordinator.connectAdapterWithProvider(providerURI);
+		// Create a SensorDispatcherOutboundPort and launch pushing
+		coordinator.connectWithRequestDispatcher(admissionI.getApplicationURI());
+		coordinator.launchAdaptionEveryInterval();
+		
+		// try to send token by checking first if I'm leader of the topology
+		// means the first to initialize the cooperation
+		coordinator.tryToSubmitToken();
+		
+		return admissionI;
 	}
 
 	@Override
@@ -160,5 +197,4 @@ public class AdmissionController 	extends ResourceInspector
 		System.out.println();
 		
 	}
-	
 }

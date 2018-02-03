@@ -256,6 +256,8 @@ implements	ProcessorServicesNotificationConsumerI,
 									this) ;
 		this.addPort(this.requestNotificationOutboundPort) ;
 		this.requestNotificationOutboundPort.publishPort() ;
+		
+		System.out.println("APPLICATION VM CREATED SUCCESSEFULY ..."+vmURI);
 	}
 
 	// ------------------------------------------------------------------------
@@ -666,7 +668,7 @@ implements	ProcessorServicesNotificationConsumerI,
 			}
 		}
 		
-		System.err.println("CORE ADDED ON "+vmURI+" | core : "+allocatedCores[0].processorNo+""+allocatedCores[0].coreNo);
+		System.err.println("CORES RESERVED TO THE AVM "+vmURI+" = "+allocatedCores.length);
 	}
 
 	/**

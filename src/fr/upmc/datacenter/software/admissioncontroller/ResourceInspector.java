@@ -25,6 +25,8 @@ import fr.upmc.datacenter.software.step2.adaptableproperty.ApplicationVMAdaptabl
 import fr.upmc.datacenter.software.step2.requestresourcevm.interfaces.RequestResourceVMI;
 import fr.upmc.datacenter.software.step2.requestresourcevm.ports.RequestResourceVMOutboundPort;
 import fr.upmc.datacenter.software.step2.tools.DelployTools;
+import fr.upmc.datacenter.software.step3.largescalecoordination.implementation.applicationvmadaptable.interfaces.ConnectCoordinateAVMI;
+import fr.upmc.datacenter.software.step3.largescalecoordination.implementation.applicationvmadaptable.ports.ConnectCoordinateAVMOutboundPort;
 
 /**
  * <p><strong>Description</string></p>
@@ -39,6 +41,9 @@ import fr.upmc.datacenter.software.step2.tools.DelployTools;
  */
 public class ResourceInspector extends AbstractComponent {
 
+	/** port used to connect AVM with RequestDispatcherComponent for Notifications */
+	protected ConnectCoordinateAVMOutboundPort connectCoordinateAVMOutboundPort;
+	
 	protected String riURI;
 	protected String providerURI;
 	protected static final int NBCORES = 2;
@@ -78,6 +83,11 @@ public class ResourceInspector extends AbstractComponent {
 		this.computerServicesOutboundPort.publishPort();
 		this.dataDispatcherOutboundPort.publishPort();
 		this.requestResourceVMOutboundPort.publishPort();
+		
+		this.addRequiredInterface(ConnectCoordinateAVMI.class);
+		this.connectCoordinateAVMOutboundPort = new ConnectCoordinateAVMOutboundPort(riURI+"_CCOP",this);
+		this.addPort(connectCoordinateAVMOutboundPort);
+		this.connectCoordinateAVMOutboundPort.publishPort();
 	}
 	
 	/**

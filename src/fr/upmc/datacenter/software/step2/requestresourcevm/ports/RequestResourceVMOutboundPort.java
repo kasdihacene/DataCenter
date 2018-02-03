@@ -44,5 +44,10 @@ public class RequestResourceVMOutboundPort
 	public void requestRemoveVM(RequestVMI requestVMI) throws Exception {
 		((RequestResourceVMI)this.connector).requestRemoveVM(requestVMI);
 	}
+	@Override
+	public void requestRemoveAVMEnded(RequestVMI requestVMI) throws Exception {
+		((RequestResourceVMI)this.connector).requestRemoveAVMEnded(requestVMI);
+		
+	}
 
 }

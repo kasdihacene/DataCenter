@@ -1,5 +1,6 @@
 package fr.upmc.datacenter.dataprovider;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -17,8 +18,10 @@ import fr.upmc.datacenter.hardware.computers.interfaces.ComputerStateDataConsume
 import fr.upmc.datacenter.hardware.computers.interfaces.ComputerStaticStateI;
 import fr.upmc.datacenter.hardware.computers.ports.ComputerDynamicStateDataOutboundPort;
 import fr.upmc.datacenter.interfaces.ControlledDataRequiredI;
+import fr.upmc.datacenter.software.informations.applicationvm.ApplicationVMInfo;
 import fr.upmc.datacenter.software.informations.computers.ComputerInfo;
 import fr.upmc.datacenter.software.informations.requestdispatcher.RequestDispatcherInfo;
+import fr.upmc.datacenter.software.step3.largescalecoordination.implementation.interfaces.TransitTokenI;
 /**
  * 
  * @author Hacene KASDI
@@ -30,22 +33,36 @@ import fr.upmc.datacenter.software.informations.requestdispatcher.RequestDispatc
 public class DataProvider extends 	AbstractComponent 
 						implements 	ComputerStateDataConsumerI,
 									DataProviderI,DataProviderDispatcherI {
-
+	
 	protected String providerURI;
 	protected HashMap<String, ComputerDynamicStateDataOutboundPort> mapComputerDynamicSOP;
 	protected HashMap<String, ComputerInfo> mapComputerInfo;
 	protected HashMap<String, RequestDispatcherInfo> mapApplicationDispatcher;
+	
+	protected HashMap<String, ApplicationVMInfo> mapInformationAVMcoordinate;
+	
+	/** list of ApplicationVM information used in cooperation to store informations about every AVM allocated */
+	protected ArrayList<ApplicationVMInfo> listApplicationVMInfo;
+	/** Number of available AplicationVM */
+	protected static int NBVMAVAILABLE = 0;
+	/** the leader of the network only can change this token */
+	protected static Integer setNetLeader = 0;
+	/** list of nodes of the RingNetwork*/
+	protected LinkedList<String> nodesNetwork;
 	
 	protected DataProviderInboundPort 		dataProviderInboundPort;
 	protected DataDispatcherInboundPort 	dataDispatcherInboundPort;
 	
 	@SuppressWarnings("deprecation")
 	public DataProvider(String providerURI) throws Exception {
-		
+
 		this.providerURI=providerURI;
-		mapComputerInfo			=new HashMap<String,ComputerInfo>();
-		mapComputerDynamicSOP	=new HashMap<String,ComputerDynamicStateDataOutboundPort>();
-		mapApplicationDispatcher=new HashMap<String,RequestDispatcherInfo>();
+		mapComputerInfo						=new HashMap<String,ComputerInfo>();
+		mapComputerDynamicSOP				=new HashMap<String,ComputerDynamicStateDataOutboundPort>();
+		mapApplicationDispatcher			=new HashMap<String,RequestDispatcherInfo>();
+		listApplicationVMInfo				=new ArrayList<>();
+		nodesNetwork						=new LinkedList<>();
+		mapInformationAVMcoordinate			=new HashMap<String,ApplicationVMInfo>();
 		
 		this.addRequiredInterface(ControlledDataRequiredI.ControlledPullI.class) ;
 		this.addOfferedInterface(DataRequiredI.PushI.class) ;
@@ -100,13 +117,20 @@ public class DataProvider extends 	AbstractComponent
 				ControlledDataConnector.class.getCanonicalName()) ;
 		
 		//Start pushing and receiving answers from a Computer #acceptComputerDynamicData
-		cdsPort.startLimitedPushing(2,2);
+		cdsPort.startLimitedPushing(4,4);
 		cdsPort.startUnlimitedPushing(10000);
 		
 		mapComputerDynamicSOP.put(computerURI, cdsPort);
 
 		//Associate new Computer informations with the computer
-		mapComputerInfo.put(computerURI, new ComputerInfo(computerURI, possibleFrequencies, processingPower, defaultFrequency, maxFrequencyGap, numberOfProcessors, numberOfCores));
+		mapComputerInfo.put(computerURI, new ComputerInfo(
+				computerURI, 
+				possibleFrequencies, 
+				processingPower, 
+				defaultFrequency, 
+				maxFrequencyGap, 
+				numberOfProcessors, 
+				numberOfCores));
 	}
 
 	/**
@@ -132,16 +156,17 @@ public class DataProvider extends 	AbstractComponent
 		for (int i = 0; i < currentDynamicState.getCurrentCoreReservations().length; i++) {
 			for (int j = 0; j < currentDynamicState.getCurrentCoreReservations()[i].length; j++) {
 				if(currentDynamicState.getCurrentCoreReservations()[i][j]) {
-					stringBuffer.append("|T");
+					stringBuffer.append("|BUSY");
 				}else {
-					stringBuffer.append("|F");
+					stringBuffer.append("|IDLE");
 				}
 			}
 		}
 		
+		
 		System.out.println("DYNAMIC DATA PUSHED FROM COMPUTER "+computerURI+" RESERVATION CORES : "+stringBuffer+"|");
 
-		// get the state of the bariere
+		// get the state of the barrier
 		Integer sharedResource = mapComputerInfo.get(computerURI).getSharedResource();
 		synchronized (sharedResource) {
 			ComputerInfo computerInfo = mapComputerInfo.get(computerURI);
@@ -187,5 +212,101 @@ public class DataProvider extends 	AbstractComponent
 	public LinkedList<String> getApplicationInfosList() throws Exception {
 		return null;
 	}
+
+	//========================================================================
+	//		 THIS SECTION USED FOR COORDINATION AND COOPERATION IN LARGE SCALE
+	//========================================================================
+	@Override
+	public int getNBAVMcreated() throws Exception {
+		return NBVMAVAILABLE;
+	}
+
+	@Override
+	public void addApplicationVM(ApplicationVMInfo applicationVMInfo) throws Exception {
+		System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>> ADD AVM : "+applicationVMInfo.getVmURI());
+		listApplicationVMInfo.add(applicationVMInfo);
+		mapInformationAVMcoordinate.put(applicationVMInfo.getVmURI(), applicationVMInfo);
+		NBVMAVAILABLE++;
+		
+	}
+
+	@Override
+	public void DeleteDefinitelyAVM(ApplicationVMInfo avmINFO) throws Exception {
+		System.out.println("============================> delete difinifly : "+avmINFO.getVmURI());
+		
+		NBVMAVAILABLE--;
+	listApplicationVMInfo.remove(avmINFO);
+	mapInformationAVMcoordinate.remove(avmINFO.getVmURI());
+	}
+	
+	@Override
+	public ApplicationVMInfo removeApplicationVM() throws Exception {
+		synchronized (listApplicationVMInfo) {
+			if(NBVMAVAILABLE == 0)return null;
+			NBVMAVAILABLE--;
+			String uriAVM=listApplicationVMInfo.get(listApplicationVMInfo.size()-1).getVmURI();
+			mapInformationAVMcoordinate.remove(uriAVM);
+			return listApplicationVMInfo.remove(listApplicationVMInfo.size()-1);
+		}				
+	}
+	@Override
+	public ApplicationVMInfo getApplicationVMCoordinate(String avmURI) throws Exception {
+			return mapInformationAVMcoordinate.get(avmURI);
+	}
+
+	@Override
+	public ArrayList<ApplicationVMInfo> getCoordinateAVMs() throws Exception {
+		return listApplicationVMInfo;
+	}
+
+	@Override
+	public void subscribeToRingNetwork(String user) {
+		synchronized (setNetLeader) {
+			if(setNetLeader==0) {
+				setNetLeader=1;
+			}else {
+				// The second arrival will be the Leader
+				if(setNetLeader==1) {
+					LeaderRingNetwork.setLeaderNetwork(user);
+					setNetLeader=2;
+				}
+			}
+		}
+		nodesNetwork.addLast(user);
+	}
+	
+	@Override
+	public String whoIsNetworkLeader() {
+		return LeaderRingNetwork.whoIsLeader();
+	}
+	
+	@Override
+	public String getNextNode() {
+		String nextNode = nodesNetwork.getFirst();
+		nodesNetwork.addLast(nodesNetwork.removeFirst());
+		return nextNode;
+		
+	}
+	/**
+	 * This inner class represents information related to the 
+	 * leader of the network topology, which initialize the first 
+	 * transaction by sending the token {@link TransitTokenI}
+	 *  
+	 * @author Hacene
+	 *
+	 */
+	private static class LeaderRingNetwork{
+		
+		private static String leaderURI = "NULL";
+		
+		public static void setLeaderNetwork(String leader) {
+			leaderURI = leader;
+		}
+		
+		public static String whoIsLeader() {
+			return leaderURI;
+		}
+	}
+
 
 }

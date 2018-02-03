@@ -61,5 +61,15 @@ public class RequestResourceVMInboundPort
 			}
 		});
 	}
-
+	@Override
+	public void requestRemoveAVMEnded(RequestVMI requestVMI) throws Exception {
+		final RequestResourceVMHandlerI handler = (RequestResourceVMHandlerI) this.owner;
+		this.owner.handleRequestAsync(new ComponentI.ComponentService<Void>() {
+			@Override
+			public Void call() throws Exception {
+				handler.removeAVMWhenEnds(requestVMI);
+				return null;
+			}
+		});		
+	}
 }

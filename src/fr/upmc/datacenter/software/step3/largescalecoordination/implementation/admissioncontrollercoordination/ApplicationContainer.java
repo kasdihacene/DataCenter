@@ -86,7 +86,7 @@ public class ApplicationContainer
 		this.admissionRequestOutboundPort.publishPort();
 
 		this.rg = new RequestGenerator(APP_URI + "RG", // generator component URI
-				200.0, 			// mean time between two requests
+				600.0, 			// mean time between two requests
 				3000000000L, 	// mean number of instructions in requests
 				APP_URI+"RGMIP",
 				APP_URI+"RSOP",
@@ -107,7 +107,6 @@ public class ApplicationContainer
 	public void askForHostingApllication() throws Exception {
 		admission.setApplicationURI(APP_URI);
 		this.admissionRequestOutboundPort.askForHost(this.admission);
-		System.out.println("====================");
 	}
 
 	/**
@@ -135,9 +134,9 @@ public class ApplicationContainer
 			System.out.println("-------********************----");
 			System.out.println("----- HOSTING REFUSED FOR " + admission.getApplicationURI() + "-------");
 		} else {
-			System.out.println("-------------------------------");
-			System.out.println("-------- HOSTING ACCEPTED------");
-			System.out.println("-------------------------------");
+			System.out.println("----------------------------------------");
+			System.out.println("-------- HOSTING ACCEPTED FOR "+admission.getApplicationURI()+"-----");
+			System.out.println("----------------------------------------");
 			this.admission = admission;
 			startApplication();
 		}
@@ -185,7 +184,6 @@ public class ApplicationContainer
 		this.rgmop.doConnection(APP_URI+"RGMIP",
 				RequestGeneratorManagementConnector.class.getCanonicalName());
 
-		System.out.println("STARTING APPLICATION ....\n");
 		rgmop.startGeneration();
 		Thread.sleep(200000L);
 		rgmop.stopGeneration();

@@ -22,5 +22,11 @@ public interface RequestResourceVMHandlerI {
 	 * @throws Exception
 	 */
 	public void removeVMAppication(RequestVMI requestVMI) throws Exception;
+	/**
+	 * 
+	 * @param requestVMI
+	 * @throws Exception
+	 */
+	public void removeAVMWhenEnds(RequestVMI requestVMI) throws Exception;
 
 }

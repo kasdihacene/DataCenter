@@ -1,7 +1,8 @@
 package fr.upmc.datacenter.software.step3.largescalecoordination.implementation;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 
+import fr.upmc.datacenter.software.informations.applicationvm.ApplicationVMInfo;
 import fr.upmc.datacenter.software.step3.largescalecoordination.implementation.interfaces.TransitTokenI;
 
 /**
@@ -19,11 +20,11 @@ public class TransitToken implements TransitTokenI {
 	
 	private String sender;
 	private String receiver;
-	private LinkedList<String> avmURIs;
+	private ArrayList<ApplicationVMInfo> avmURIs;
 	
 	
 
-	public TransitToken(String sender, String receiver, LinkedList<String> avmURIs) {
+	public TransitToken(String sender, String receiver, ArrayList<ApplicationVMInfo> avmURIs) {
 		super();
 		this.sender = sender;
 		this.receiver = receiver;
@@ -41,8 +42,18 @@ public class TransitToken implements TransitTokenI {
 	}
 
 	@Override
-	public LinkedList<String> getListURIs() throws Exception {
+	public ArrayList<ApplicationVMInfo> getListURIs() throws Exception {
 		return avmURIs;
+	}
+
+	@Override
+	public void addAVM(ApplicationVMInfo avm) throws Exception {
+		avmURIs.add(avm);
+	}
+
+	@Override
+	public void removeAVM() throws Exception {
+		avmURIs.remove(0);
 	}
 
 }

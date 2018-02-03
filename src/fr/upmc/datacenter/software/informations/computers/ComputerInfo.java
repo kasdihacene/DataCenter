@@ -129,7 +129,7 @@ public class ComputerInfo {
 		if(state == State_change.ADD) {
 		int nbCoresToAllocate=0;
 		for (int i = 0; i < allocatedCores.length; i++) {
-			for (int j = 0; j < allocatedCores.length; j++) {
+			for (int j = 0; j < allocatedCores[i].length; j++) {
 				// Allocate just NBCORES
 				if(nbCoresToAllocate<NBCORES) {
 					if(!allocatedCores[i][j])
@@ -140,7 +140,7 @@ public class ComputerInfo {
 		}else {
 			int nbCoresToAllocate=0;
 			for (int i = 0; i < allocatedCores.length; i++) {
-				for (int j = 0; j < allocatedCores.length; j++) {
+				for (int j = 0; j < allocatedCores[i].length; j++) {
 					// Release just NBCORES used 
 					if(nbCoresToAllocate<NBCORES) {
 						if(!allocatedCores[i][j])
@@ -158,7 +158,7 @@ public class ComputerInfo {
 	public int getNbCoreAvailable() {
 		int nbCores = 0;
 		for (int i = 0; i < coreState.length; i++) {
-			for (int j = 0; j < coreState.length; j++) {
+			for (int j = 0; j < coreState[i].length; j++) {
 				if(!coreState[i][j])
 					nbCores++;
 			}

@@ -26,4 +26,9 @@ public class RequestResourceVMConnector
 		((RequestResourceVMI)this.offering).requestRemoveVM(requestVMI);
 	}
 
+	@Override
+	public void requestRemoveAVMEnded(RequestVMI requestVMI) throws Exception {
+		((RequestResourceVMI)this.offering).requestRemoveAVMEnded(requestVMI);
+	}
+
 }

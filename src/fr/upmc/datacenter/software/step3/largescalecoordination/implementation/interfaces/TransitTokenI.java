@@ -1,7 +1,9 @@
 package fr.upmc.datacenter.software.step3.largescalecoordination.implementation.interfaces;
 
 import java.io.Serializable;
-import java.util.LinkedList;
+import java.util.ArrayList;
+
+import fr.upmc.datacenter.software.informations.applicationvm.ApplicationVMInfo;
 
 /**
  * @author	<a href="mailto:hacene.kasdi.p6">Hacene KASDI</a>
@@ -29,5 +31,17 @@ public interface TransitTokenI extends Serializable {
 	 * @return the list of available AVM URIs {@code fr.upmc.datacenter.software.step2.adaptableproperty.ApplicationVMAdaptable}
 	 * @throws Exception
 	 */
-	public LinkedList<String> getListURIs() throws Exception;
+	public ArrayList<ApplicationVMInfo> getListURIs() throws Exception;
+	/**
+	 * add an information to transit on the network (AVM uri)
+	 * @param uri
+	 * @throws Exception
+	 */
+	public void addAVM(ApplicationVMInfo applicationVMInfo) throws Exception;
+	/**
+	 * remove the information related to the AVM referenced by this uri 
+	 * @param uri
+	 * @throws Exception
+	 */
+	public void removeAVM() throws Exception;
 }

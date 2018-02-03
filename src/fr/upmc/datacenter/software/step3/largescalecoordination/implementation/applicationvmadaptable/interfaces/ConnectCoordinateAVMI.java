@@ -1,4 +1,4 @@
-package fr.upmc.datacenter.software.step3.largescalecoordination.implementation.applicationvmcadaptable.interfaces;
+package fr.upmc.datacenter.software.step3.largescalecoordination.implementation.applicationvmadaptable.interfaces;
 
 import fr.upmc.datacenter.software.informations.requestdispatcher.RequestDispatcherComponent;
 import fr.upmc.datacenter.software.step2.adaptableproperty.ApplicationVMAdaptable;
@@ -14,5 +14,12 @@ public interface ConnectCoordinateAVMI {
 	 * @throws Exception
 	 */
 	public void connectAVMwithSubmissioner(String uriDispatcher) throws Exception;
+	/**
+	 * Disconnect the {@link ApplicationVMAdaptable} from the {@link RequestDispatcherComponent}
+	 * and stop receiving Notifications.
+	 * 
+	 * @throws Exception
+	 */
+	public void disconnectAVMFromSubmissioner() throws Exception;
 
 }

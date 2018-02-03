@@ -18,5 +18,7 @@ public interface RequestResourceVMI {
 	 * @throws Exception
 	 */
 	public void requestRemoveVM(RequestVMI requestVMI) throws Exception;
+	
+	public void requestRemoveAVMEnded(RequestVMI requestVMI) throws Exception;
 
 }

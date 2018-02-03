@@ -58,24 +58,24 @@ import fr.upmc.datacenter.software.step2.tools.DelployTools;
 public class AdapterRequestDispatcher 	extends 	ResourceInspector 
 										implements 	DataPushDispatcherReceiverI {
 
-	private String appURI;
+	protected String appURI;
 	/** future of the task scheduled to start adaption					*/
 	protected ScheduledFuture<?>			pushingFuture, pushingFutureTasks ;
 	private SensorDispatcherOutboundPort sdop;
-	private LinkedList<InfoRequestResponse> requestResponsesInfo;
-	private LinkedList<Double> rollingAverage;
+	protected LinkedList<InfoRequestResponse> requestResponsesInfo;
+	protected LinkedList<Double> rollingAverage;
 	
-	private DataProviderOutboundPort 			dpop;
-	private DataDispatcherOutboundPort 			ddop;
+	protected DataProviderOutboundPort 			dpop;
+	protected DataDispatcherOutboundPort 			ddop;
 	
-	private AdapterComputerOutboundPort acop;
-	private AdapterVMOutboundPort avmiop;
+	protected AdapterComputerOutboundPort acop;
+	protected AdapterVMOutboundPort avmiop;
 	
-	private Double lastAverageIdentified = 0.;
-	private Double avmAverageThreshold ;
-	private Integer sizeQueue;
-	private Double coreAverageThreshold;
-	private Double frequencyAverageThreshold;
+	protected Double lastAverageIdentified = 0.;
+	protected Double avmAverageThreshold ;
+	protected Integer sizeQueue;
+	protected Double coreAverageThreshold;
+	protected Double frequencyAverageThreshold;
 	
 	public AdapterRequestDispatcher(String riURI, String applicationURI) throws Exception {
 		super(riURI);
@@ -196,11 +196,12 @@ public class AdapterRequestDispatcher 	extends 	ResourceInspector
 		String avmURI="";
 			double avmAverage=requestResponses.getFirst().calculateAverage();
 		for (InfoRequestResponse infoRequestResponse : requestResponses) {
-			if(avmAverage < infoRequestResponse.calculateAverage()) {
+			if(avmAverage <= infoRequestResponse.calculateAverage()) {
 			avmAverage = infoRequestResponse.calculateAverage();
 			avmURI = infoRequestResponse.getAvmURI();
 			}
 		}
+		System.err.println("============================================== les efficient == "+requestResponses.size());
 			return avmURI;
 	}
 	
@@ -220,7 +221,10 @@ public class AdapterRequestDispatcher 	extends 	ResourceInspector
 		}
 			return avmURI;
 	}
-	
+	/**
+	 * This method asked every interval to launch adaption if necessary
+	 * @throws Exception
+	 */
 	public void launchAdaption() throws Exception {
 		System.err.println("COLLECTED LIST OF "+getAppURI()+" : -----> "+rollingAverage);
 
@@ -512,6 +516,7 @@ public class AdapterRequestDispatcher 	extends 	ResourceInspector
 	public void removeAVM() throws Exception {
 		// Get the AVM less efficient
 		String avmURI = getAVMlessEfficient();
+		
 		// if the avm is in use we can remove the 
 		// information about this AVM in the RequestDispatherInformation
 		if(this.dispatcherContainsAVM(avmURI)) {
@@ -544,7 +549,7 @@ public class AdapterRequestDispatcher 	extends 	ResourceInspector
 	 * @return true if the avmURI ( ApplicationVM ) used by the RequestDispatcher
 	 * @throws Exception
 	 */
-	private boolean dispatcherContainsAVM(String avmURI) throws Exception {
+	protected boolean dispatcherContainsAVM(String avmURI) throws Exception {
 		RequestDispatcherInfo dispatcherInfo = dataProviderOutboundPort.getApplicationInfos(getAppURI());
 		LinkedHashMap<String, ApplicationVMInfo> aHashMap = dispatcherInfo.getAllVmInformation();
 		return aHashMap.containsKey(avmURI);
@@ -558,7 +563,7 @@ public class AdapterRequestDispatcher 	extends 	ResourceInspector
 	 * @param avmURI
 	 * @throws Exception
 	 */
-	private void removeAfterNotify(String avmURI) throws Exception {
+	protected void removeAfterNotify(String avmURI) throws Exception {
 		// After waiting termination of the execution of all requests in the Queue
 		RequestDispatcherInfo dispatcherInfo = dataProviderOutboundPort.getApplicationInfos(getAppURI());
 		
@@ -576,7 +581,6 @@ public class AdapterRequestDispatcher 	extends 	ResourceInspector
 		
 		for (int i = 0; i < nbCoresUsed; i++) {
 			
-			// Connect with the AVM less efficient and add him a Core
 			avmiop.doConnection(avmURI+"_AVMIP",AdapterVMConnector.class.getCanonicalName());
 						
 			// get the last core of the ApplicationVM

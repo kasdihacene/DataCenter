@@ -1,9 +1,10 @@
-package fr.upmc.datacenter.software.step3.largescalecoordination.implementation.applicationvmcadaptable;
+package fr.upmc.datacenter.software.step3.largescalecoordination.implementation.applicationvmadaptable;
 
 import fr.upmc.datacenter.software.connectors.RequestNotificationConnector;
 import fr.upmc.datacenter.software.step2.adaptableproperty.ApplicationVMAdaptable;
-import fr.upmc.datacenter.software.step3.largescalecoordination.implementation.applicationvmcadaptable.interfaces.ConnectCoordinateAVMI;
-import fr.upmc.datacenter.software.step3.largescalecoordination.implementation.applicationvmcadaptable.ports.ConnectCoordinateAVMInboundPort;
+import fr.upmc.datacenter.software.step3.largescalecoordination.implementation.Coordinator;
+import fr.upmc.datacenter.software.step3.largescalecoordination.implementation.applicationvmadaptable.interfaces.ConnectCoordinateAVMI;
+import fr.upmc.datacenter.software.step3.largescalecoordination.implementation.applicationvmadaptable.ports.ConnectCoordinateAVMInboundPort;
 
 public class ApplicationVMcoordinate extends ApplicationVMAdaptable implements ConnectCoordinateAVMI{
 
@@ -35,8 +36,19 @@ public class ApplicationVMcoordinate extends ApplicationVMAdaptable implements C
 	@Override
 	public void connectAVMwithSubmissioner(String uriDispatcher) throws Exception {
 		requestNotificationOutboundPort.doConnection(	
-														uriDispatcher, 
+														uriDispatcher+"_RNIP", 
 														RequestNotificationConnector.class.getCanonicalName());
+	}
+	/**
+	 * Disconnect the AVM from RequestDispatcher and stop adaptation
+	 * this method used on cooperation @see {@link Coordinator#removeAVM()}
+	 * 
+	 * @param uriDispatcher
+	 * @throws Exception
+	 */
+	@Override
+	public void disconnectAVMFromSubmissioner() throws Exception {
+		requestNotificationOutboundPort.doDisconnection();
 	}
 	
 	
