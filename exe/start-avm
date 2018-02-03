@@ -1,9 +1,0 @@
-#!/bin/bash
-
-if [ -e ../jars/DataCenter.jar ]; then
-  java -ea -cp '../jars/*' -Djava.security.manager \
-     -Djava.security.policy=dcvm.policy \
-     fr.upmc.examples.avm.DistribuedRG rg config_avm.xml
-else
-  echo 'The project must be exported into a jar named DataCenter.jar in folder ../jars'
-fi

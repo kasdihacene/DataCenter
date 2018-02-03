@@ -1,8 +1,0 @@
-#!/bin/bash
-if [ -e ../jars/BCM.jar ]; then
-  java -ea -Xms2m -cp '../jars/BCM.jar' -Djava.security.manager \
-     -Djava.security.policy=dcvm.policy \
-     fr.upmc.components.registry.GlobalRegistry config.xml
-else
-  echo 'The project BCM must be exported into a jar named BCM.jar in folder ../jars'
- fi

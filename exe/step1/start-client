@@ -1,0 +1,13 @@
+#!/bin/bash
+if [ $# -lt 1 ]; then 
+  echo usage: $0 jvmName
+  exit
+ fi
+
+if [ -e ../../jars/DataCenter.jar ]; then
+  java -ea -cp '../../jars/*' -Djava.security.manager \
+     -Djava.security.policy=dcvm.policy \
+     fr.upmc.examples.admissioncontroller.DistribuedApplicationContainer $1 config.xml
+else
+  echo 'The project must be exported into a jar named DataCenter.jar in folder ../../jars'
+fi

@@ -1,5 +1,8 @@
 package fr.upmc.datacenter.dataprovider.interfaces;
 
+import fr.upmc.components.interfaces.OfferedI;
+import fr.upmc.components.interfaces.RequiredI;
+
 /**
  * 
  * @author Hacene KASDI
@@ -8,7 +11,7 @@ package fr.upmc.datacenter.dataprovider.interfaces;
  * This class allows adding and removing <code>ApplicationContainer</code>
  *
  */
-public interface DataProviderDispatcherI {
+public interface DataProviderDispatcherI extends RequiredI, OfferedI{
 	/**
 	 * Add an ApplicationContainer 
 	 * @param applicationURI
