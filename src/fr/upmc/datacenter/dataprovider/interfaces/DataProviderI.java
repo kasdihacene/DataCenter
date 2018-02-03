@@ -2,6 +2,8 @@ package fr.upmc.datacenter.dataprovider.interfaces;
 
 import java.util.LinkedList;
 
+import fr.upmc.components.interfaces.OfferedI;
+import fr.upmc.components.interfaces.RequiredI;
 import fr.upmc.datacenter.software.informations.computers.ComputerInfo;
 import fr.upmc.datacenter.software.informations.requestdispatcher.RequestDispatcherInfo;
 
@@ -13,7 +15,7 @@ import fr.upmc.datacenter.software.informations.requestdispatcher.RequestDispatc
  * @author Hacene KASDI
  *
  */
-public interface DataProviderI {
+public interface DataProviderI extends RequiredI, OfferedI{
 	/**
 	 * 
 	 * @return a set of Computer URIs

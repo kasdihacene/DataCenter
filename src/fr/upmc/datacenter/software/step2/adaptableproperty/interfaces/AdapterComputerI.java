@@ -1,10 +1,12 @@
 package fr.upmc.datacenter.software.step2.adaptableproperty.interfaces;
 
+import fr.upmc.components.interfaces.OfferedI;
+import fr.upmc.components.interfaces.RequiredI;
 import fr.upmc.datacenter.hardware.computers.Computer.AllocatedCore;
 import fr.upmc.datacenter.hardware.processors.UnacceptableFrequencyException;
 import fr.upmc.datacenter.hardware.processors.UnavailableFrequencyException;
 
-public interface AdapterComputerI {
+public interface AdapterComputerI extends RequiredI, OfferedI{
 	
 	/**
 	 * used on <code>Computer</code> component.

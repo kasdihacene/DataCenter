@@ -12,13 +12,12 @@ import java.util.concurrent.TimeUnit;
 
 import fr.upmc.components.AbstractComponent;
 import fr.upmc.components.ComponentI;
-import fr.upmc.components.interfaces.DataRequiredI;
 import fr.upmc.datacenter.TimeManagement;
 import fr.upmc.datacenter.dataprovider.connectors.DataProviderConnector;
+import fr.upmc.datacenter.dataprovider.interfaces.DataProviderI;
 import fr.upmc.datacenter.dataprovider.ports.DataProviderOutboundPort;
 import fr.upmc.datacenter.hardware.computers.Computer.AllocatedCore;
 import fr.upmc.datacenter.software.informations.computers.ComputerInfo;
-import fr.upmc.datacenter.software.informations.computers.CoreInfo;
 import fr.upmc.datacenter.software.step3.smallscalecoordination.connectors.IntentNotificationConnector;
 import fr.upmc.datacenter.software.step3.smallscalecoordination.interfaces.IntentI;
 import fr.upmc.datacenter.software.step3.smallscalecoordination.interfaces.IntentI.Nature;
@@ -79,7 +78,7 @@ public class ComputerCoordinator extends AbstractComponent implements IntentSubm
 		this.addPort(this.inop);
 		this.inop.publishPort();
 
-		this.addRequiredInterface(DataRequiredI.PullI.class);
+		this.addRequiredInterface(DataProviderI.class);
 		this.dpop = new DataProviderOutboundPort(computerURI + SUFFIX + "-dpop", this);
 		this.addPort(this.dpop);
 		this.dpop.publishPort();

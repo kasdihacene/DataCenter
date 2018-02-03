@@ -36,6 +36,7 @@ public class DataProvider extends 	AbstractComponent
 	protected HashMap<String, ComputerInfo> mapComputerInfo;
 	protected HashMap<String, RequestDispatcherInfo> mapApplicationDispatcher;
 	
+	protected HashMap<String, ComputerDynamicStateDataOutboundPort> computerDynamicStateDataBoutboundPorts;
 	protected DataProviderInboundPort 		dataProviderInboundPort;
 	protected DataDispatcherInboundPort 	dataDispatcherInboundPort;
 	
@@ -46,10 +47,15 @@ public class DataProvider extends 	AbstractComponent
 		mapComputerInfo			=new HashMap<String,ComputerInfo>();
 		mapComputerDynamicSOP	=new HashMap<String,ComputerDynamicStateDataOutboundPort>();
 		mapApplicationDispatcher=new HashMap<String,RequestDispatcherInfo>();
+		computerDynamicStateDataBoutboundPorts = new HashMap<>();
 		
 		this.addRequiredInterface(ControlledDataRequiredI.ControlledPullI.class) ;
+		/*
 		this.addOfferedInterface(DataRequiredI.PushI.class) ;
 		this.addRequiredInterface(DataRequiredI.PullI.class) ;
+		*/
+		this.addRequiredInterface(DataRequiredI.class);
+		
 		this.addOfferedInterface(DataProviderI.class);
 		this.addOfferedInterface(DataProviderDispatcherI.class);
 		
@@ -87,10 +93,9 @@ public class DataProvider extends 	AbstractComponent
 	{
 		//Create a new port for receiving data about the new computer
 		ComputerDynamicStateDataOutboundPort cdsPort = new ComputerDynamicStateDataOutboundPort(
-				providerURI+"_CDSDOP",
+				providerURI + computerURI + "_CDSDOP",
 				this,
 				computerURI);
-		
 		//Connection with the computer to ask him for pushing informations 
 		this.addPort(cdsPort) ;
 		cdsPort.publishPort() ;	
