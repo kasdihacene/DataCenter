@@ -44,7 +44,7 @@ public class RequestDispatcherInfo {
 				ApplicationVMInfo applicationVMInfo = new ApplicationVMInfo(vmURI, computerURI);
 				applicationVMInfo.addManyCores(allocatedCores);
 				vmInformations.put(vmURI, applicationVMInfo);
-				System.out.println("########################################### avm added to dispather");
+				System.out.println("########################################### AVM : [ "+vmURI+" ] ADDED TO DISPATCHER");
 	}
 	/**
 	 * Get the last AVMinformations recently added

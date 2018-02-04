@@ -60,25 +60,25 @@ public class AdmissionControllerCoordination
 
 
 	/** port to receive {@link TransitTokenI} from the network */
-	private CoordinationLargeScaleInboundPort coordinationLargeScaleInboundPort;
+	private 			CoordinationLargeScaleInboundPort coordinationLargeScaleInboundPort;
 	
 	/** port to send to other autonomic controller a {@link TransitTokenI}*/
-	private CoordinationLargeScaleOutboundPort coordinationLargeScaleOutboundPort;
+	private 			CoordinationLargeScaleOutboundPort coordinationLargeScaleOutboundPort;
 	
 	/** Port used to ask {@link ApplicationVMAdaptable} for releasing AVM cores  */
-	protected AdapterVMOutboundPort 			avmiop;
+	protected 			AdapterVMOutboundPort 				avmiop;
 	
 	/** Port used to ask {@link ComputerAdaptable for releasing cores in this context (Large scale)} */
-	protected AdapterComputerOutboundPort 		acop;
+	protected 			AdapterComputerOutboundPort 		acop;
 
 	/** subscribe the controller to the network topology */
-	private static Integer timeToSubscribe = 0;
+	private static 		Integer timeToSubscribe = 0;
 	
-	private static Integer AVMCORES = 2;
-	private String acURI;
-	private HashMap<String, Long> mapAVMfrequencyPassage;
-	LinkedList<ApplicationVMInfo> appVMtoDeleteDefinitely;
-	private ArrayList<ApplicationVMInfo> listAPPvmNetRefreched;
+	private static 		Integer AVMCORES = 2;
+	private 			String acURI;
+	private 			HashMap<String, Long> mapAVMfrequencyPassage;
+	private 			LinkedList<ApplicationVMInfo> appVMtoDeleteDefinitely;
+	private 			ArrayList<ApplicationVMInfo> listAPPvmNetRefreched;
 	
 	
 	public AdmissionControllerCoordination(String acURI, AbstractCVM acvm) throws Exception {
@@ -201,7 +201,7 @@ public class AdmissionControllerCoordination
 	
 	/**
 	 * 
-	 * @return
+	 * @return list of available computers
 	 * @throws Exception
 	 */
 	private LinkedList<String> askForAvailableComputers() throws Exception{
@@ -320,9 +320,11 @@ public class AdmissionControllerCoordination
 					if(acURI.equals(nextNode))return;
 					// we have to connect this outbound port with the next inbound port component 
 					TransitToken token = new TransitToken(acURI, nextNode, listAPPvmNetRefreched);
-					coordinationLargeScaleOutboundPort.doConnection(nextNode+"COOR_CLSIP", CoordinationLargeScaleConnector.class.getCanonicalName());
-					this.coordinationLargeScaleOutboundPort.submitChip(token);
-					this.coordinationLargeScaleOutboundPort.doDisconnection();	
+					coordinationLargeScaleOutboundPort		.doConnection(
+																nextNode+"COOR_CLSIP", 
+																CoordinationLargeScaleConnector.class.getCanonicalName());
+					this.coordinationLargeScaleOutboundPort	.submitChip(token);
+					this.coordinationLargeScaleOutboundPort	.doDisconnection();	
 		}
 	}
 	/**
@@ -330,13 +332,15 @@ public class AdmissionControllerCoordination
 	 * and the controller will decide if necessary to add or deallocate
 	 * {@link ApplicationVMcoordinate}
 	 *  
+	 * As a choice we deallocate 50% of resources not used.
+	 * 
 	 * @param applicationVMInfos
 	 * @throws Exception 
 	 */
 	public void checkPassageFrequency(ArrayList<ApplicationVMInfo> applicationVMInfos) throws Exception {
 		
 		HashMap<String, Long> mapPassageRefreshed=new HashMap<>();
-		
+		int switchOffHalfResources=0;
 		for (ApplicationVMInfo appVM : applicationVMInfos) {
 			if(mapAVMfrequencyPassage.containsKey(appVM.getVmURI())) {
 				
@@ -346,7 +350,10 @@ public class AdmissionControllerCoordination
 				if(mapPassageRefreshed.get(appVM.getVmURI()) ==  6000000) {
 					
 					System.err.println("====================================== INACTIVITY DETECTED [AVM EXPIRED] : "+appVM.getVmURI());
+					if(switchOffHalfResources%2==0) {
 					appVMtoDeleteDefinitely.add(appVM);
+					}
+					switchOffHalfResources++;
 					mapPassageRefreshed.put(appVM.getVmURI(), 0L);
 					
 					}
@@ -363,8 +370,8 @@ public class AdmissionControllerCoordination
 		ApplicationVMInfo applicationVMInfo = dataProviderOutboundPort.getApplicationVMCoordinate(avmURI);
 		
 		System.err.println("-------------- RELEASE AVM FROM DATACENTER ---------");
-		System.err.println("AVM TO RELEASE 			===> "+applicationVMInfo.getVmURI());
-		System.err.println("COMPUTER TO RELEASE 	===> "+applicationVMInfo.getComputerURI());
+		System.err.println("AVM TO RELEASE		===> "+applicationVMInfo.getVmURI());
+		System.err.println("COMPUTER TO RELEASE	===> "+applicationVMInfo.getComputerURI());
 		
 		
 		ComputerInfo computerInfo = dataProviderOutboundPort.getComputerInfos(applicationVMInfo.getComputerURI());
@@ -419,9 +426,9 @@ public class AdmissionControllerCoordination
 	}
 	/**
 	 * Ask for hosting the application and start coordination between controllers
-	 * @param applicationVMInfos
-	 * @param admissionI
-	 * @throws Exception
+	 * @param 	applicationVMInfos
+	 * @param 	admissionI
+	 * @throws 	Exception
 	 */
 	protected void hostApplicationAndLAunchCoordination(ArrayList<ApplicationVMInfo> applicationVMInfos, AdmissionI admissionI) throws Exception {
 		RequestDispatcherComponent requestDispatcherComponent = createRequestDispatcher(admissionI);
@@ -433,7 +440,7 @@ public class AdmissionControllerCoordination
 					ConnectCoordinateAVMConnector.class.getCanonicalName());
 			connectCoordinateAVMOutboundPort.connectAVMwithSubmissioner(requestDispatcherComponent.getApplicationContainerURI());
 		
-		// Add AVM URI on the list of AVMs of the RequestDispatcher
+			// Add AVM URI on the list of AVMs of the RequestDispatcher
 			requestResourceVMOutboundPort.doConnection(
 								admissionI.getApplicationURI()+"RD_RVMIP",
 								RequestResourceVMConnector.class.getCanonicalName());

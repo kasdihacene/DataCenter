@@ -22,16 +22,19 @@ import fr.upmc.datacenter.software.step3.largescalecoordination.implementation.p
 import fr.upmc.datacenter.software.step3.largescalecoordination.implementation.ports.CoordinationLargeScaleOutboundPort;
 
 /**
- * <h2>Coordinator</h2> represents an Adapter
+ * <h2>Coordinator</h2> represents an autonomic controller extends
  * {@link fr.upmc.datacenter.software.step2.adapter.AdapterRequestDispatcher}
- * and coordinator who interact with other coordinators and submit decisions to
- * the <code>AdmissionController</code>
+ * and it's a coordinator who interact with other autonomic controllers and submit decisions to
+ * the <code>AdmissionControllerCoordination</code> he takes resources from the network and put
+ * it back to continue the cooperation with other autonomic controllers. 
  * 
  * @author Hacene KASDI
  * @version 21.01.2018
  *
  */
-public class Coordinator extends AdapterRequestDispatcher implements CoordinationLargeScaleI {
+public class Coordinator 
+							extends AdapterRequestDispatcher 
+							implements CoordinationLargeScaleI {
 
 	/**
 	 * when the coordinator have intention of new adaptation ( adding new
@@ -122,8 +125,7 @@ public class Coordinator extends AdapterRequestDispatcher implements Coordinatio
 				// Here we check if there are resources to put back to the network
 				TransitToken token;
 				if (resourceToPutBack) {
-					System.err.println("######################################################  ====> resourceToPutBack "
-									+ avmToPutBack);
+					System.err.println("######################################### PUT BACK : "+ avmToPutBack.getVmURI());
 					// put back the resource information to the Data Provider
 					dataProviderOutboundPort.addApplicationVM(avmToPutBack);
 					ArrayList<ApplicationVMInfo> newListAVMs = new ArrayList<>(tokenI.getListURIs());
@@ -137,7 +139,6 @@ public class Coordinator extends AdapterRequestDispatcher implements Coordinatio
 				} else {
 					if(canceledCooperation && AVMCooperation == null) {
 						canceledCooperation=false;
-						System.err.println("######################################### NO RESOURCE FOR : "+getAppURI());
 					}
 					token = new TransitToken(getAppURI(), nextNode, tokenI.getListURIs());
 					coordinationLargeScaleOutboundPort.doConnection(nextNode + "COOR_CLSIP",
@@ -186,7 +187,7 @@ public class Coordinator extends AdapterRequestDispatcher implements Coordinatio
 			throws Exception {
 		applicationVMs.add(AVMCooperation);
 		dataProviderOutboundPort.addApplicationVM(AVMCooperation);
-		System.out.println("---------------------- PUT BACK AVM : " +AVMCooperation.getVmURI());
+		System.err.println("---------------------- PUT BACK AVM : " +AVMCooperation.getVmURI());
 		canceledCooperation = false;
 		AVMCooperation = null;
 		return applicationVMs;
@@ -216,9 +217,7 @@ public class Coordinator extends AdapterRequestDispatcher implements Coordinatio
 				+ "AVM ON NETWORK : " 
 				+ nbAvMnetwork);
 
-		for (ApplicationVMInfo app : appInNet) {
-			System.err.println(app.getVmURI());
-		}
+		appInNet.forEach(element -> System.err.println(element.getVmURI()+" |"));
 		final AdapterRequestDispatcher AdapterRequestDispatcher = this;
 		this.pushingFuture = this.scheduleTask(new ComponentI.ComponentTask() {
 			@Override
@@ -260,7 +259,7 @@ public class Coordinator extends AdapterRequestDispatcher implements Coordinatio
 					needCooperation = true;
 					lastAmmountIdentified = CurrentRollingAverage;
 				} else {
-					if (needCooperation && lastAmmountIdentified > CurrentRollingAverage) {
+					if (needCooperation && lastAmmountIdentified >= CurrentRollingAverage) {
 						System.err.println("------------------------------- CANCEL COOPERTION");
 						canceledCooperation = true;
 						lastAmmountIdentified = 0.;
@@ -285,8 +284,14 @@ public class Coordinator extends AdapterRequestDispatcher implements Coordinatio
 								allocateAVM();
 
 							} else {
-								System.out.println("------------------------------- SEND INTENTION OF COOPERATION");
-								needCooperation = true;
+								if(needCooperation) {
+							System.err.println("------------------------------- NO RESOURCES FOUND FOR : "+getAppURI());
+												}else 
+												{
+							System.out.println("------------------------------- SEND INTENTION OF COOPERATION");
+
+												needCooperation = true;
+												}
 							}
 
 						} else {
@@ -357,15 +362,11 @@ public class Coordinator extends AdapterRequestDispatcher implements Coordinatio
 		RequestDispatcherInfo dispatcherInfo = dataProviderOutboundPort.getApplicationInfos(getAppURI());
 		System.err.println("########## " + AVMCooperation.getVmURI());
 		System.err.println("########## " + AVMCooperation.getComputerURI());
-		System.err.println("########## " + AVMCooperation.getAllCoresCoordiantion().length);
-		System.err.println("########## " + dispatcherInfo.getNbVMCreated());
 
 		synchronized (dispatcherInfo) {
 			dispatcherInfo.addApplicationVM(AVMCooperation.getVmURI(), AVMCooperation.getComputerURI(),
 					AVMCooperation.getAllCoresCoordiantion());
 		}
-		System.err.println("########## " + dispatcherInfo.getNbVMCreated());
-
 		needCooperation = false;
 		AVMCooperation = null;
 	}
@@ -382,7 +383,7 @@ public class Coordinator extends AdapterRequestDispatcher implements Coordinatio
 
 		// Get the AVM less efficient
 		String avmURI = getAVMlessEfficient();
-		System.err.println("============== DELETING : [ "+ avmURI+" ] REQUIRED ==============" );
+		System.err.println("============== DELETING REQUIRED ==============" );
 
 		// Remove this URI from List AVM URIs used by the current RequestDispatcher
 		requestResourceVMOutboundPort.doConnection(getAppURI() + "RD_RVMIP",
@@ -435,10 +436,9 @@ public class Coordinator extends AdapterRequestDispatcher implements Coordinatio
 			requestResourceVMOutboundPort.requestRemoveAVMEnded(requestVMI);
 			requestResourceVMOutboundPort.doDisconnection();
 
-			System.err.println("============================================ AVM REMOVED " + avmURI + "    "
-					+ appVM.getVmURI() + "    " + appVM.getComputerURI());
+			System.err.println("######################################### AVM REMOVED " +avmURI+ ":" + appVM.getComputerURI());
 		} else {
-			System.err.println("============================================ RELEASING FAILED");
+			System.err.println("################# RELEASING FAILED #################");
 		}
 	}
 

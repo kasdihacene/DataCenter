@@ -9,7 +9,7 @@ package fr.upmc.datacenter.software.step3.largescalecoordination.implementation.
 public interface CoordinationLargeScaleI {
 	
 	/**
-	 * This method allows the sending of the Available URIs in 
+	 * This method allows sending of the Available URIs through 
 	 * the network topology using simple connected ports.
 	 * 
 	 * @param tokenI

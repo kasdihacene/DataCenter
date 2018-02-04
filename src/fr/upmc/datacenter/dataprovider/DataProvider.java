@@ -20,6 +20,7 @@ import fr.upmc.datacenter.hardware.computers.ports.ComputerDynamicStateDataOutbo
 import fr.upmc.datacenter.interfaces.ControlledDataRequiredI;
 import fr.upmc.datacenter.software.informations.applicationvm.ApplicationVMInfo;
 import fr.upmc.datacenter.software.informations.computers.ComputerInfo;
+import fr.upmc.datacenter.software.informations.requestdispatcher.RequestDispatcherComponent;
 import fr.upmc.datacenter.software.informations.requestdispatcher.RequestDispatcherInfo;
 import fr.upmc.datacenter.software.step3.largescalecoordination.implementation.interfaces.TransitTokenI;
 /**
@@ -149,7 +150,7 @@ public class DataProvider extends 	AbstractComponent
 	}
 	
 	/**
-	 * 
+	 * @see {@link ComputerStateDataConsumerI#acceptComputerDynamicData(String, ComputerDynamicStateI)}
 	 * @param computerURI
 	 * @param currentDynamicState
 	 * @throws Exception
@@ -189,6 +190,9 @@ public class DataProvider extends 	AbstractComponent
 		
 	}
 
+	/**
+	 * Add informations related to the <code>{@link RequestDispatcherComponent}</code>
+	 */
 	@Override
 	public void addApplicationContainer(String applicationURI, String dispatcherURI) throws Exception {
 		if(mapApplicationDispatcher.containsKey(applicationURI)) {
@@ -197,6 +201,9 @@ public class DataProvider extends 	AbstractComponent
 		mapApplicationDispatcher.put(applicationURI, new RequestDispatcherInfo(dispatcherURI));
 	}
 
+	/**
+	 * remove ApplicationContainer
+	 */
 	@Override
 	public void removeApplicationContainer(String applicationURI) throws Exception {
 		if(!mapApplicationDispatcher.containsKey(applicationURI)) {

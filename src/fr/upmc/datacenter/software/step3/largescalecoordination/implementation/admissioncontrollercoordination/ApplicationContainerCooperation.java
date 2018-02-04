@@ -86,7 +86,7 @@ public class ApplicationContainerCooperation
 		this.admissionRequestOutboundPort.publishPort();
 
 		this.rg = new RequestGenerator(APP_URI + "RG", // generator component URI
-				600.0, 			// mean time between two requests
+				570.0, 			// mean time between two requests
 				3000000000L, 	// mean number of instructions in requests
 				APP_URI+"RGMIP",
 				APP_URI+"RSOP",

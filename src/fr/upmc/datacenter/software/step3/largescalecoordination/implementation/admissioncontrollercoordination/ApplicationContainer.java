@@ -86,8 +86,8 @@ public class ApplicationContainer
 		this.admissionRequestOutboundPort.publishPort();
 
 		this.rg = new RequestGenerator(APP_URI + "RG", // generator component URI
-				600.0, 			// mean time between two requests
-				3000000000L, 	// mean number of instructions in requests
+				500.0, 			// mean time between two requests
+				2500000000L, 	// mean number of instructions in requests
 				APP_URI+"RGMIP",
 				APP_URI+"RSOP",
 				APP_URI+"RNIP");
@@ -185,7 +185,7 @@ public class ApplicationContainer
 				RequestGeneratorManagementConnector.class.getCanonicalName());
 
 		rgmop.startGeneration();
-		Thread.sleep(200000L);
+		Thread.sleep(250000L);
 		rgmop.stopGeneration();
 		rgmop.doDisconnection();
 		rg.doPortDisconnection(APP_URI+"RSOP");

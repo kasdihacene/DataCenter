@@ -124,7 +124,6 @@ public class RequestDispatcherComponent 	extends 	AbstractComponent
 		// will be pushed in each time interval
 		
 		infoStatsAVM.put(requestVMI.getURIVM(), new InfoRequestResponse(requestVMI.getURIVM()));
-		System.out.println("+++++++++++++++++++++ NEW AVM CREATED : "+requestVMI.getURIVM());
 		
 		
 		// Connect the current RequestDispatcher with the ApplicationVM (APPx_AMV_x_RSIP)
@@ -136,9 +135,9 @@ public class RequestDispatcherComponent 	extends 	AbstractComponent
 	@Override
 	public void removeVMAppication(RequestVMI requestVMI) throws Exception {
 		synchronized (applicationVMList) {
-			System.err.println("SIZE LIST AVM BEFORE == "+applicationVMList.size()+"  "+applicationVMList);
+			System.err.println("SIZE LIST RD AVM BEFORE == "+applicationVMList);
 			applicationVMList.remove(requestVMI.getURIVM());
-			System.err.println("SIZE LIST AVM AFTER == "+applicationVMList.size()+"  "+applicationVMList);
+			System.err.println("SIZE LIST RD AVM AFTER  == "+applicationVMList);
 		}
 	}
 
@@ -181,7 +180,6 @@ public class RequestDispatcherComponent 	extends 	AbstractComponent
 
 			// Connect the ApplicationVM added to the RequestDispatcher using RoundRobin policy
 			String avmNextURI = roundRobinAVM(applicationVMList);
-//			System.out.println("******************** REQUEST : "+r.getRequestURI()+" SUBMITED TO ******* "+avmNextURI);
 			
 			// Store the arrived request from the Request Generator
 			nbRequests++;
@@ -195,6 +193,10 @@ public class RequestDispatcherComponent 	extends 	AbstractComponent
 	
 	}
 
+	/**
+	 * calculate request average
+	 * @return @see {@link DataPushDispatcher}
+	 */
 	public DataPushDispatcher prepareCollectedData() {
 			LinkedList<InfoRequestResponse> avmStats = new LinkedList<InfoRequestResponse>();
 			for(InfoRequestResponse infoRequestResponse : infoStatsAVM.values()) {
