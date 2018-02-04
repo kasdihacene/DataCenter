@@ -447,7 +447,6 @@ public class ComputerCoordinator extends AbstractComponent implements IntentSubm
 	 */
 	@Override
 	public void submitIntentNotification(IntentI previousIntent, IntentI intent) throws Exception {
-		System.err.println("######################## HERE ########################");
 		System.err.println(String.format("ComputerCoordinator<%s : %s> : SEND A RESPONSE TO %s to %s %d %s",
 				this.computerURI + SUFFIX, intent.getComputerURI(), intent.getAppURI(), intent.getType().toString(),
 				intent.getValue(), intent.getNature().toString()));

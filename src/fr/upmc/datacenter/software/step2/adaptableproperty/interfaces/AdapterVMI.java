@@ -1,5 +1,7 @@
 package fr.upmc.datacenter.software.step2.adaptableproperty.interfaces;
 
+import fr.upmc.components.interfaces.OfferedI;
+import fr.upmc.components.interfaces.RequiredI;
 import fr.upmc.datacenter.hardware.computers.Computer.AllocatedCore;
 
 /**
@@ -10,7 +12,7 @@ import fr.upmc.datacenter.hardware.computers.Computer.AllocatedCore;
  * This interface <code>AdapterVMI</code> allows allocating cores to the AVM
  *
  */
-public interface AdapterVMI {
+public interface AdapterVMI extends RequiredI, OfferedI{
 
 	/**
 	 * Allocate Core for the AVM

@@ -23,7 +23,7 @@ public class RequestResourceVMOutboundPort
 	 * @throws Exception
 	 */
 	public RequestResourceVMOutboundPort(ComponentI owner) throws Exception {
-		super(AdmissionNotificationI.class, owner);
+		super(RequestResourceVMI.class, owner);
 	}
 	/**
 	 * 
@@ -32,7 +32,7 @@ public class RequestResourceVMOutboundPort
 	 * @throws Exception
 	 */
 	public RequestResourceVMOutboundPort(String uri, ComponentI owner) throws Exception {
-		super(uri, AdmissionNotificationI.class, owner);
+		super(uri, RequestResourceVMI.class, owner);
 	}
 
 	@Override

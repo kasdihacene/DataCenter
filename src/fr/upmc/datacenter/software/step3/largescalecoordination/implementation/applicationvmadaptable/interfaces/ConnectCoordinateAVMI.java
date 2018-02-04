@@ -1,9 +1,11 @@
 package fr.upmc.datacenter.software.step3.largescalecoordination.implementation.applicationvmadaptable.interfaces;
 
+import fr.upmc.components.interfaces.OfferedI;
+import fr.upmc.components.interfaces.RequiredI;
 import fr.upmc.datacenter.software.informations.requestdispatcher.RequestDispatcherComponent;
 import fr.upmc.datacenter.software.step2.adaptableproperty.ApplicationVMAdaptable;
 
-public interface ConnectCoordinateAVMI {
+public interface ConnectCoordinateAVMI extends RequiredI, OfferedI{
 	
 	/**
 	 * Connect the {@link ApplicationVMAdaptable} with the {@link RequestDispatcherComponent}

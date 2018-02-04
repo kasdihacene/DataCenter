@@ -16,6 +16,7 @@ import fr.upmc.datacenter.hardware.computers.interfaces.ComputerServicesI;
 import fr.upmc.datacenter.hardware.computers.ports.ComputerServicesOutboundPort;
 import fr.upmc.datacenter.software.admissioncontroller.interfaces.AdmissionI;
 import fr.upmc.datacenter.software.applicationvm.connectors.ApplicationVMManagementConnector;
+import fr.upmc.datacenter.software.applicationvm.interfaces.ApplicationVMManagementI;
 import fr.upmc.datacenter.software.applicationvm.ports.ApplicationVMManagementOutboundPort;
 import fr.upmc.datacenter.software.informations.computers.ComputerInfo;
 import fr.upmc.datacenter.software.informations.computers.ComputerInfo.State_change;
@@ -54,6 +55,7 @@ public class ResourceInspector extends AbstractComponent {
 	protected ComputerServicesOutboundPort 		computerServicesOutboundPort;
 	protected DataDispatcherOutboundPort 		dataDispatcherOutboundPort;
 	protected RequestResourceVMOutboundPort		requestResourceVMOutboundPort;
+	protected ApplicationVMManagementOutboundPort avmMop;
 	
 	public ResourceInspector(String riURI) throws Exception {
 		super(1, 1);
@@ -66,23 +68,27 @@ public class ResourceInspector extends AbstractComponent {
 		this.addRequiredInterface(DataProviderDispatcherI.class);
 		//Used to ask RequestDispatcher for adding or removing AVM
 		this.addRequiredInterface(RequestResourceVMI.class);
-		
+		//Used to allocate cores
+		this.addRequiredInterface(ApplicationVMManagementI.class);
 		
 		// CREATE AND PUBLISH PORT
 		this.dataProviderOutboundPort 		= new DataProviderOutboundPort			(riURI+"_DPOP", this);
 		this.computerServicesOutboundPort	= new ComputerServicesOutboundPort		(riURI+"_CSOP", this);
 		this.dataDispatcherOutboundPort		= new DataDispatcherOutboundPort		(riURI+"_DDOP", this);
 		this.requestResourceVMOutboundPort	= new RequestResourceVMOutboundPort		(riURI+"_RVMOP", this);
+		this.avmMop 						= new ApplicationVMManagementOutboundPort(riURI+"_AVMMOP", this);
 		
 		this.addPort(dataProviderOutboundPort);
 		this.addPort(computerServicesOutboundPort);
 		this.addPort(dataDispatcherOutboundPort);
 		this.addPort(requestResourceVMOutboundPort);
+		this.addPort(avmMop);
 		
 		this.dataProviderOutboundPort.publishPort();
 		this.computerServicesOutboundPort.publishPort();
 		this.dataDispatcherOutboundPort.publishPort();
 		this.requestResourceVMOutboundPort.publishPort();
+		this.avmMop.publishPort();
 		
 		this.addRequiredInterface(ConnectCoordinateAVMI.class);
 		this.connectCoordinateAVMOutboundPort = new ConnectCoordinateAVMOutboundPort(riURI+"_CCOP",this);
@@ -167,7 +173,7 @@ public class ResourceInspector extends AbstractComponent {
 	 * @throws Exception 
 	 */
 	public ApplicationVMAdaptable createApplicationVM(String applicationContainerURI, String computerURI) throws Exception {
-
+		
 		String avmURI=null;
 		// Allocate cores for the ApplicationVM
 		this.computerServicesOutboundPort.doConnection(computerURI+"_CSIP",
@@ -187,22 +193,25 @@ public class ResourceInspector extends AbstractComponent {
 		// Create and deploy the AppplicationVM
 		String RSIP_URI=avmURI+"_RSIP";
 		String RNOP_URI=avmURI+"_RNOP";
+		
+		System.out.println(avmURI + " " + avmURI+"_AVMMIP" + " " + RSIP_URI + " " + RNOP_URI);
 		ApplicationVMAdaptable avm= new ApplicationVMAdaptable(	avmURI, 
 																avmURI+"_AVMMIP", 
 																RSIP_URI, 
 																RNOP_URI);
 
 		// Create an ApplicationVMMangement
+		/*
 		ApplicationVMManagementOutboundPort avmMop= new ApplicationVMManagementOutboundPort(riURI+"_AVMMOP", new AbstractComponent(1,1){});
 		avmMop.publishPort();
+		*/
 		avmMop.doConnection(avmURI+"_AVMMIP", ApplicationVMManagementConnector.class.getCanonicalName());
 
 		// allocate cores for the ApplicationVM
 		avmMop.allocateCores(cores);
-		
+		avmMop.doDisconnection();
 		// deploy the component
 		DelployTools.deployComponent(avm);
-		
 		return avm;
 	}
 	/**
@@ -213,7 +222,6 @@ public class ResourceInspector extends AbstractComponent {
 	 * @throws Exception 
 	 */
 	public RequestDispatcherComponent createRequestDispatcher(AdmissionI admissionI) throws Exception {
-		
 		// Get the URI of the ApplicationContainer
 		String applicationContainerURI = admissionI.getApplicationURI();
 		

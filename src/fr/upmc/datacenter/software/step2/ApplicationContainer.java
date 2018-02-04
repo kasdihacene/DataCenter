@@ -69,12 +69,13 @@ public class ApplicationContainer
 		this.APP_URI = uri;
 		this.admission = admission;
 		this.cvm = cvm;
-		admission.setAdmissionNotificationInboundPortURI(APP_URI + admissionNotificationInboundPortURI);
+		String realAdmissionNotificationInboundPortURI = APP_URI + admissionNotificationInboundPortURI;
+		admission.setAdmissionNotificationInboundPortURI(realAdmissionNotificationInboundPortURI);
 
 		// ADD THE INBOUND PORT O-- Notification
 		this.addOfferedInterface(AdmissionNotificationI.class);
 		this.admissionNotificationInboundPort = new AdmissionNotificationInboundPort(
-				APP_URI + admissionNotificationInboundPortURI, this);
+				realAdmissionNotificationInboundPortURI, this);
 		this.addPort(this.admissionNotificationInboundPort);
 		this.admissionNotificationInboundPort.publishPort();
 

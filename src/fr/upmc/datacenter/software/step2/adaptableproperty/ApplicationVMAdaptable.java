@@ -31,6 +31,8 @@ public class ApplicationVMAdaptable extends ApplicationVM implements AdapterVMI 
 				requestSubmissionInboundPortURI,
 				requestNotificationOutboundPortURI);
 		
+		this.addOfferedInterface(AdapterVMI.class);
+		
 		adapterVMInboundPort = new AdapterVMInboundPort(vmURI+"_AVMIP", this);
 		this.addPort(adapterVMInboundPort);
 		this.adapterVMInboundPort.publishPort();

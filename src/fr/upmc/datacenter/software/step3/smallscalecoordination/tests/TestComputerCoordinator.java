@@ -16,8 +16,6 @@ import fr.upmc.datacenter.software.step2.adaptableproperty.ComputerAdaptable;
 import fr.upmc.datacenter.software.step2.tools.DelployTools;
 import fr.upmc.datacenter.software.step3.smallscalecoordination.coordinable.AdmissionControllerCoordinable;
 import fr.upmc.datacenter.software.step3.smallscalecoordination.coordinator.ComputerCoordinator;
-import fr.upmc.datacenter.software.step3.smallscalecoordination.ports.IntentNotificationOutboundPort;
-import fr.upmc.datacenter.software.step3.smallscalecoordination.ports.IntentSubmissionInboundPort;
 
 public class TestComputerCoordinator extends AbstractCVM {
 
@@ -114,6 +112,7 @@ public class TestComputerCoordinator extends AbstractCVM {
 		this.admissionController = new AdmissionControllerCoordinable("ADM_CONT", this);
 		this.addDeployedComponent(admissionController);
 		this.admissionController.connectWithDataProvider("DATA_PROVIDER");
+		// ((AdmissionControllerCoordinable)this.admissionController).createAVMsAndDeploy();
 
 		/**
 		 * CONNEXION OF THE COMPONENTS
@@ -133,7 +132,7 @@ public class TestComputerCoordinator extends AbstractCVM {
 	}
 
 	public void testScenario() throws Exception {
-
+		Thread.sleep(1000);
 		applicationContainer.startAsync();
 		applicationContainer2.startAsync();
 

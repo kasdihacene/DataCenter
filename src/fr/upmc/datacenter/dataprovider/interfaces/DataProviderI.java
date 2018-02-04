@@ -3,6 +3,8 @@ package fr.upmc.datacenter.dataprovider.interfaces;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
+import fr.upmc.components.interfaces.OfferedI;
+import fr.upmc.components.interfaces.RequiredI;
 import fr.upmc.datacenter.dataprovider.DataProvider;
 import fr.upmc.datacenter.software.informations.applicationvm.ApplicationVMInfo;
 import fr.upmc.datacenter.software.informations.computers.ComputerInfo;
@@ -17,7 +19,7 @@ import fr.upmc.datacenter.software.step3.largescalecoordination.implementation.a
  * @author Hacene KASDI
  *
  */
-public interface DataProviderI {
+public interface DataProviderI extends RequiredI, OfferedI{
 	/**
 	 * 
 	 * @return a set of Computer URIs

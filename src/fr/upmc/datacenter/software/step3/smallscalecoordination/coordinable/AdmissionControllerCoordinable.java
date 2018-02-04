@@ -38,13 +38,14 @@ public class AdmissionControllerCoordinable extends AdmissionController {
 			// Connect the AVM to Request Dispatcher for sending Notifications
 			avm.doPortConnection(avmURIrecentlyAdded + "_RNOP", admissionI.getApplicationURI() + "RD_RNIP",
 					RequestNotificationConnector.class.getCanonicalName());
-
+			
 			// Add AVM URI on the list of AVMs of the RequestDispatcher
 			requestResourceVMOutboundPort.doConnection(admissionI.getApplicationURI() + "RD_RVMIP",
 					RequestResourceVMConnector.class.getCanonicalName());
 			RequestVM requestVMI = new RequestVM(avmURIrecentlyAdded, admissionI.getApplicationURI());
 			requestResourceVMOutboundPort.requestAddVM(requestVMI);
-
+			requestResourceVMOutboundPort.doDisconnection();
+			
 			// Update AdmissionI informations
 			RequestDispatcherInfo rdInfos = dataProviderOutboundPort
 					.getApplicationInfos(admissionI.getApplicationURI());
@@ -62,10 +63,60 @@ public class AdmissionControllerCoordinable extends AdmissionController {
 
 		// connect to DataProvider to get available resources
 		adapterRequestDispatcher.connectWithDataProvider(providerURI);
+		// adapterRequestDispatcher.connectAdapterWithProvider(providerURI);
+		// Create a SensorDispatcherOutboundPort and launch pushing
+		adapterRequestDispatcher.connectWithRequestDispatcher(admissionI.getApplicationURI());
+		adapterRequestDispatcher.launchAdaptionEveryInterval();
+	}
+	
+	/*
+	@Override
+	protected void hostApplicationAndLAunchCoordination(ArrayList<ApplicationVMInfo> applicationVMInfos,
+			AdmissionI admissionI) throws Exception {
+		RequestDispatcherComponent requestDispatcherComponent = createRequestDispatcher(admissionI);
+
+		// Ask for connecting the RequestDispatcher with the AVM for receiving
+		// Notifications
+		for (ApplicationVMInfo applicationVMInfo : applicationVMInfos) {
+			connectCoordinateAVMOutboundPort.doConnection(applicationVMInfo.getVmURI() + "_CCIP",
+					ConnectCoordinateAVMConnector.class.getCanonicalName());
+			connectCoordinateAVMOutboundPort
+					.connectAVMwithSubmissioner(requestDispatcherComponent.getApplicationContainerURI());
+
+			// Add AVM URI on the list of AVMs of the RequestDispatcher
+			requestResourceVMOutboundPort.doConnection(admissionI.getApplicationURI() + "RD_RVMIP",
+					RequestResourceVMConnector.class.getCanonicalName());
+			RequestVM requestVMI = new RequestVM(applicationVMInfo.getVmURI(), admissionI.getApplicationURI());
+			requestResourceVMOutboundPort.requestAddVM(requestVMI);
+			requestResourceVMOutboundPort.doDisconnection();
+
+			// Store informations about the RequestDispatcher
+			RequestDispatcherInfo dispatcherInfo = dataProviderOutboundPort
+					.getApplicationInfos(admissionI.getApplicationURI());
+			// Add the ApplicationVM information to the RequestDispatcherInformation
+			synchronized (dispatcherInfo) {
+
+				dispatcherInfo.addApplicationVM(applicationVMInfo.getVmURI(), applicationVMInfo.getComputerURI(),
+						applicationVMInfo.getAllCoresCoordiantion());
+			}
+			System.err
+					.println("#################################### AVM created == " + dispatcherInfo.getNbVMCreated());
+		}
+
+		// set the RD URI on the AdmissionI response to send to the ApplicationContainer
+		admissionI.setRequestSubmissionInboundPortRD(admissionI.getApplicationURI() + "RD_RSIP");
+
+		// Create the Adapter Component and launch it
+		AdapterRequestDispatcher adapterRequestDispatcher = new AdapterRequestDispatcherCoordinable(
+				admissionI.getApplicationURI() + "RD", admissionI.getApplicationURI());
+		DelployTools.deployComponent(adapterRequestDispatcher);
+
+		// connect to DataProvider to get available resources
+		adapterRequestDispatcher.connectWithDataProvider(providerURI);
 		adapterRequestDispatcher.connectAdapterWithProvider(providerURI);
 		// Create a SensorDispatcherOutboundPort and launch pushing
 		adapterRequestDispatcher.connectWithRequestDispatcher(admissionI.getApplicationURI());
 		adapterRequestDispatcher.launchAdaptionEveryInterval();
 	}
-
+	*/
 }

@@ -71,8 +71,10 @@ public class DataProvider extends 	AbstractComponent
 		mapInformationAVMcoordinate			=new HashMap<String,ApplicationVMInfo>();
 		
 		this.addRequiredInterface(ControlledDataRequiredI.ControlledPullI.class) ;
+		/*
 		this.addOfferedInterface(DataRequiredI.PushI.class) ;
 		this.addRequiredInterface(DataRequiredI.PullI.class) ;
+		*/
 		this.addOfferedInterface(DataProviderI.class);
 		this.addOfferedInterface(DataProviderDispatcherI.class);
 		
@@ -110,7 +112,7 @@ public class DataProvider extends 	AbstractComponent
 	{
 		//Create a new port for receiving data about the new computer
 		ComputerDynamicStateDataOutboundPort cdsPort = new ComputerDynamicStateDataOutboundPort(
-				providerURI+"_CDSDOP",
+				providerURI+computerURI+"_CDSDOP",
 				this,
 				computerURI);
 		

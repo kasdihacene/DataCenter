@@ -3,12 +3,12 @@ package fr.upmc.examples.step3;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Scanner;
 import java.util.Set;
 
 import fr.upmc.components.cvm.AbstractDistributedCVM;
 import fr.upmc.datacenter.dataprovider.DataProvider;
 import fr.upmc.datacenter.software.step2.adaptableproperty.ComputerAdaptable;
+import fr.upmc.datacenter.software.step2.tools.DelployTools;
 import fr.upmc.datacenter.software.step3.smallscalecoordination.coordinable.AdmissionControllerCoordinable;
 import fr.upmc.datacenter.software.step3.smallscalecoordination.coordinator.ComputerCoordinator;
 
@@ -38,6 +38,7 @@ public class DistributedCoordinableServer extends AbstractDistributedCVM{
 	@Override
 	public void initialise() throws Exception {
 		super.initialise();
+		DelployTools.setAcvm(this);
 	}
 	
 	@Override
@@ -105,6 +106,7 @@ public class DistributedCoordinableServer extends AbstractDistributedCVM{
 			System.out.println("Start\n");
 			dcs.start();
 		}catch(Exception e) {
+			System.out.println(e);
 			throw new RuntimeException(e);
 		}
 	}

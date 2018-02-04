@@ -36,7 +36,7 @@ public class AdapterRequestDispatcherCoordinable extends AdapterRequestDispatche
 
 	public AdapterRequestDispatcherCoordinable(String riURI, String applicationURI) throws Exception {
 		super(riURI, applicationURI);
-
+		
 		this.inipURI = riURI + IntentNotificationInboundPort.SUFFIX;
 		this.addOfferedInterface(IntentNotificationI.class);
 		this.inip = new IntentNotificationInboundPort(this.inipURI, this);
@@ -65,12 +65,12 @@ public class AdapterRequestDispatcherCoordinable extends AdapterRequestDispatche
 	@Override
 	public void addCoreToLessEfficientAVM() throws Exception {
 		// Get available resources
-		LinkedList<String> listComputers = this.dpop.getComputerListURIs();
+		LinkedList<String> listComputers = dataProviderOutboundPort.getComputerListURIs();
 		// List of available computers
 		ArrayList<String> availableComputers = new ArrayList<String>();
 
 		for (String uri : listComputers) {
-			ComputerInfo computerInfo = dpop.getComputerInfos(uri);
+			ComputerInfo computerInfo = dataProviderOutboundPort.getComputerInfos(uri);
 
 			boolean[][] allocatedCores;
 			int nbAvailableCores = 0;

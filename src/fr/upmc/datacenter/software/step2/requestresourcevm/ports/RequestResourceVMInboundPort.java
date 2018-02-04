@@ -26,7 +26,7 @@ public class RequestResourceVMInboundPort
 	 * @throws Exception
 	 */
 	public RequestResourceVMInboundPort(ComponentI owner) throws Exception {
-		super(AdmissionNotificationI.class,owner);
+		super(RequestResourceVMI.class,owner);
 	}
 	/**
 	 * 
@@ -35,7 +35,7 @@ public class RequestResourceVMInboundPort
 	 * @throws Exception
 	 */
 	public RequestResourceVMInboundPort(String uri, ComponentI owner) throws Exception {
-		super(uri,AdmissionNotificationI.class,owner);
+		super(uri,RequestResourceVMI.class,owner);
 	}
 	
 	@Override

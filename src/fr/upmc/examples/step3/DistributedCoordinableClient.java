@@ -5,6 +5,7 @@ import java.util.Scanner;
 import fr.upmc.components.cvm.AbstractDistributedCVM;
 import fr.upmc.datacenter.software.admissioncontroller.Admission;
 import fr.upmc.datacenter.software.step2.ApplicationContainer;
+import fr.upmc.datacenter.software.step2.tools.DelployTools;
 
 public class DistributedCoordinableClient extends AbstractDistributedCVM{
 	
@@ -36,16 +37,14 @@ public class DistributedCoordinableClient extends AbstractDistributedCVM{
 	@Override
 	public void initialise() throws Exception {
 		super.initialise();
+		DelployTools.setAcvm(this);
 	}
 	
 	@Override
 	public void instantiateAndPublish() throws Exception {
 		super.instantiateAndPublish();
-		String anip = thisJVMURI + ADMISSION_NOTIFICATION_INBOUND_PORT_SUFFIX;
-		String acip = thisJVMURI + ADMISSION_CONTROLLER_INBOUND_PORT_SUFFIX;
-		String acop = thisJVMURI + ADMISSION_CONTROLLER_OUTBOUND_PORT_SUFFIX;
-		Admission admission = new Admission(anip, acip);
-		applicationContainer = new ApplicationContainer(thisJVMURI, this, admission, anip, acop);
+		Admission admission = new Admission(ADMISSION_NOTIFICATION_INBOUND_PORT_SUFFIX, ADMISSION_CONTROLLER_INBOUND_PORT_SUFFIX);
+		applicationContainer = new ApplicationContainer(thisJVMURI, this, admission, ADMISSION_NOTIFICATION_INBOUND_PORT_SUFFIX, ADMISSION_CONTROLLER_OUTBOUND_PORT_SUFFIX);
 		this.addDeployedComponent(applicationContainer);
 	}
 	
@@ -58,6 +57,7 @@ public class DistributedCoordinableClient extends AbstractDistributedCVM{
 	@Override
 	public void start() throws Exception {
 		super.start();
+		System.out.println("before ask for hosting");
 		applicationContainer.askForHostingApllication();	
 	}
 	
@@ -75,6 +75,7 @@ public class DistributedCoordinableClient extends AbstractDistributedCVM{
 			sc.nextLine();
 			sc.close();
 		}catch(Exception e) {
+			System.out.println(e);
 			throw new RuntimeException(e);
 		}
 		System.out.println(String.format("CLIENT <%s> CLOSED", thisJVMURI));
