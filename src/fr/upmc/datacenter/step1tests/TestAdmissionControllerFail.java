@@ -1,4 +1,4 @@
-package fr.upmc.datacenter.MainTESTS;
+package fr.upmc.datacenter.step1tests;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,30 +19,29 @@ import fr.upmc.datacenter.software.admissioncontroller.AdmissionController;
 import fr.upmc.datacenter.software.applicationcontainer.ApplicationContainer;
 
 /**
- * This class shows a test of one hosting two <code>ApplicationContainer</code>
+ * This class shows a test of one failure example when the Application who asked for hosting got a negative answer
  * 
- * In this case we use 2 <code>Computer</code> in our data center means that we can allocate 4 <code>Processor</code>
+ * In this case we try to put just one <code>Computer</code> in our data center means that we can allocate 2 <code>Processor</code>
  * with 2 <code>Cores</code> or we can say that the ApplicationVM reserve 4 cores to execute the received requests.
- * The test will succeed because there are available resources for 2 <code>ApplicationConatiner</code>
  * 
- *  Test :  2 Computer 
- *  		2 * 2 Processors
- *  		8 Cores ( 4 cores for each ApplicationVM )
+ *  Test :  1 Computer 
+ *  		2 Processors
+ *  		4 Cores ( 4 cores for each ApplicationVM )
  *  		2 ApplicationContainer
  * 
  * @author Hacene & Marc
  *
  */
-public class TestAdmissionControllerSuccess extends fr.upmc.components.cvm.AbstractCVM{
+public class TestAdmissionControllerFail extends fr.upmc.components.cvm.AbstractCVM{
 
-	public TestAdmissionControllerSuccess() throws Exception {
+	public TestAdmissionControllerFail() throws Exception {
 		super();
 	}
 	
 	/**
 	* All URIs and ports for first computer
 	*/
-	protected final static int COMPUTER_NUMBER = 2;
+	protected final static int COMPUTER_NUMBER = 1;
 	protected final static String COMPUTER_URI = "computer";
 	protected final static String COMPUTER_MONITOR_URI = "monitor";
 	protected final static String COMPUTER_SERVICE_INBOUND_PORT_SUFFIX = "csip";
@@ -131,9 +130,10 @@ public class TestAdmissionControllerSuccess extends fr.upmc.components.cvm.Abstr
 			this.addDeployedComponent(cm);
 			cm.doPortConnection(csdopURI, csdipURI, DataConnector.class.getCanonicalName());
 			cm.doPortConnection(cddopURI, cddipURI, ControlledDataConnector.class.getCanonicalName());
+			System.out.println(csdopURI + csdipURI + cddopURI + cddipURI);
 			
 			listComputers.add(computer);
-			System.out.println(String.format("DEPLOYING : %d-th computer deployed", i + 1));
+			System.out.println(String.format("DEPLOYING : Computer %d deployed", i + 1));
 		}
 
 		// --------------------------------------------------------------------
@@ -153,7 +153,7 @@ public class TestAdmissionControllerSuccess extends fr.upmc.components.cvm.Abstr
 		 */
 		this.applicationContainer =
 				new ApplicationContainer(
-						"APP1-",
+						"APP1-", 
 						this,
 						admission,
 						AdmissionNotificationInboundPortURI,
@@ -163,7 +163,7 @@ public class TestAdmissionControllerSuccess extends fr.upmc.components.cvm.Abstr
 		
 		this.applicationContainer2 =
 				new ApplicationContainer(
-						"APP2-",
+						"APP2-", 
 						this,
 						admission2,
 						AdmissionNotificationInboundPortURI2,
@@ -213,7 +213,7 @@ public class TestAdmissionControllerSuccess extends fr.upmc.components.cvm.Abstr
 	
 	public static void main(String[] args) {
 		try {
-			TestAdmissionControllerSuccess testAdmissionControler = new TestAdmissionControllerSuccess();
+			TestAdmissionControllerFail testAdmissionControler = new TestAdmissionControllerFail();
 			// DEPLY THE COMPONENTS
 			System.out.println("DEPLOYING COMPONENTS...");
 			testAdmissionControler.deploy();

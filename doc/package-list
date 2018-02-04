@@ -1,5 +1,4 @@
 fr.upmc.datacenter
-fr.upmc.datacenter.MainTESTS
 fr.upmc.datacenter.connectors
 fr.upmc.datacenter.dataprovider
 fr.upmc.datacenter.dataprovider.connectors
@@ -56,7 +55,9 @@ fr.upmc.datacenter.software.step2.sensor.ports
 fr.upmc.datacenter.software.step2.teststep2
 fr.upmc.datacenter.software.step2.tools
 fr.upmc.datacenter.software.step3.largescalecoordination.implementation
+fr.upmc.datacenter.software.step3.largescalecoordination.implementation.adapterlargescale
 fr.upmc.datacenter.software.step3.largescalecoordination.implementation.admissioncontrollercoordination
+fr.upmc.datacenter.software.step3.largescalecoordination.implementation.admissioncontrollercoordination.admissioncontroller
 fr.upmc.datacenter.software.step3.largescalecoordination.implementation.applicationvmadaptable
 fr.upmc.datacenter.software.step3.largescalecoordination.implementation.applicationvmadaptable.connectors
 fr.upmc.datacenter.software.step3.largescalecoordination.implementation.applicationvmadaptable.interfaces
@@ -72,6 +73,7 @@ fr.upmc.datacenter.software.step3.smallscalecoordination.coordinator
 fr.upmc.datacenter.software.step3.smallscalecoordination.interfaces
 fr.upmc.datacenter.software.step3.smallscalecoordination.ports
 fr.upmc.datacenter.software.step3.smallscalecoordination.tests
+fr.upmc.datacenter.step1tests
 fr.upmc.datacenterclient
 fr.upmc.datacenterclient.requestgenerator
 fr.upmc.datacenterclient.requestgenerator.connectors
