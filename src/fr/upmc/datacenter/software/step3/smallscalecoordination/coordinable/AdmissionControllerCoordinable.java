@@ -107,7 +107,7 @@ public class AdmissionControllerCoordinable extends AdmissionController {
 		admissionI.setRequestSubmissionInboundPortRD(admissionI.getApplicationURI() + "RD_RSIP");
 
 		// Create the Adapter Component and launch it
-		AdapterRequestDispatcher adapterRequestDispatcher = new AdapterRequestDispatcherCoordinable(
+		AdapterComponent adapterRequestDispatcher = new AdapterRequestDispatcherCoordinable(
 				admissionI.getApplicationURI() + "RD", admissionI.getApplicationURI());
 		DelployTools.deployComponent(adapterRequestDispatcher);
 

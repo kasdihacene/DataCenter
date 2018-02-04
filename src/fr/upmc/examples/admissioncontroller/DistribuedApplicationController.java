@@ -19,7 +19,7 @@ import fr.upmc.datacenter.software.admissioncontroller.AdmissionController;
 /**
  * This class create an <code>AbstractDistributedCVM</code> and add on this
  * <code>AbstractDistributedCVM</code> all <code>Computer</code>s and
- * <code>AdmissionController</code> components
+ * <code>AdmissionControllerComponent</code> components
  * 
  * Must launch with more than one argument
  * 1-st argument : jvm name

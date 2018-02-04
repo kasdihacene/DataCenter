@@ -13,7 +13,7 @@ import fr.upmc.datacenter.software.step2.adapter.InfoRequestResponse;
  * 
  * The implementation of this interface <code>DataPushDispatcherI</code> allows to get 
  * the execution average time of the amount of requests received by <code>RequestDispatcherComponent</code>
- * and data will be pushed to the adapter <code>AdapterRequestDispatcher</code> every interval of time.
+ * and data will be pushed to the adapter <code>AdapterComponent</code> every interval of time.
  *
  */
 public interface DataPushDispatcherI 

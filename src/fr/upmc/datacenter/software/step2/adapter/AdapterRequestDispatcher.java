@@ -1,7 +1,6 @@
 package fr.upmc.datacenter.software.step2.adapter;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -10,15 +9,10 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import fr.upmc.components.ComponentI;
-import fr.upmc.components.interfaces.DataRequiredI;
 import fr.upmc.datacenter.TimeManagement;
 import fr.upmc.datacenter.connectors.ControlledDataConnector;
 import fr.upmc.datacenter.dataprovider.connectors.DataProviderConnector;
 import fr.upmc.datacenter.dataprovider.connectors.DataProviderDispatcherConnector;
-import fr.upmc.datacenter.dataprovider.interfaces.DataProviderDispatcherI;
-import fr.upmc.datacenter.dataprovider.interfaces.DataProviderI;
-import fr.upmc.datacenter.dataprovider.ports.DataDispatcherOutboundPort;
-import fr.upmc.datacenter.dataprovider.ports.DataProviderOutboundPort;
 import fr.upmc.datacenter.hardware.computers.Computer.AllocatedCore;
 import fr.upmc.datacenter.interfaces.ControlledDataRequiredI;
 import fr.upmc.datacenter.software.admissioncontroller.ResourceInspector;
@@ -47,7 +41,7 @@ import fr.upmc.datacenter.software.step2.tools.DelployTools;
  * @author Hacene KASDI
  * @version 02.01.2018
  * 
- *          This class <code>AdapterRequestDispatcher</code> represents the
+ *          This class <code>AdapterComponent</code> represents the
  *          Adapter of the current behavior of Application VM and allocated
  *          cores, we can do adaption as Changing the frequency of one or many
  *          cores adding or removing a core, adding an AVM or removing one.

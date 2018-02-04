@@ -9,10 +9,10 @@ import fr.upmc.datacenter.software.informations.applicationvm.ApplicationVMInfo;
 import fr.upmc.datacenter.software.informations.requestdispatcher.RequestDispatcherInfo;
 import fr.upmc.datacenter.software.step2.adaptableproperty.ApplicationVMAdaptable;
 import fr.upmc.datacenter.software.step2.adaptableproperty.connector.AdapterVMConnector;
-import fr.upmc.datacenter.software.step2.adapter.AdapterRequestDispatcher;
 import fr.upmc.datacenter.software.step2.requestresourcevm.RequestVM;
 import fr.upmc.datacenter.software.step2.requestresourcevm.connector.RequestResourceVMConnector;
 import fr.upmc.datacenter.software.step2.sensor.DataPushDispatcherI;
+import fr.upmc.datacenter.software.step3.largescalecoordination.implementation.adapterlargescale.AdapterComponent;
 import fr.upmc.datacenter.software.step3.largescalecoordination.implementation.applicationvmadaptable.ApplicationVMcoordinate;
 import fr.upmc.datacenter.software.step3.largescalecoordination.implementation.applicationvmadaptable.connectors.ConnectCoordinateAVMConnector;
 import fr.upmc.datacenter.software.step3.largescalecoordination.implementation.connectors.CoordinationLargeScaleConnector;
@@ -33,7 +33,7 @@ import fr.upmc.datacenter.software.step3.largescalecoordination.implementation.p
  *
  */
 public class Coordinator 
-							extends AdapterRequestDispatcher 
+							extends AdapterComponent 
 							implements CoordinationLargeScaleI {
 
 	/**
@@ -150,6 +150,7 @@ public class Coordinator
 		}
 	}
 
+	
 	/**
 	 * When the coordinator ask for holding an AVM because of a future intention of
 	 * adaptation.
@@ -194,7 +195,7 @@ public class Coordinator
 	}
 
 	/**
-	 * @see {@link AdapterRequestDispatcher#receivePushedData(DataPushDispatcherI)}
+	 * @see {@link AdapterComponent#receivePushedData(DataPushDispatcherI)}
 	 */
 	public void receivePushedData(DataPushDispatcherI dataPushDispatcherI) throws Exception {
 		requestResponsesInfo = dataPushDispatcherI.getListStatsAVMs();
@@ -207,7 +208,7 @@ public class Coordinator
 	}
 
 	/**
-	 * @see {@link AdapterRequestDispatcher#launchAdaptionEveryInterval()}
+	 * @see {@link AdapterComponent#launchAdaptionEveryInterval()}
 	 */
 	public void launchAdaptionEveryInterval() throws Exception {
 		System.out.println(
@@ -218,7 +219,7 @@ public class Coordinator
 				+ nbAvMnetwork);
 
 		appInNet.forEach(element -> System.err.println(element.getVmURI()+" |"));
-		final AdapterRequestDispatcher AdapterRequestDispatcher = this;
+		final AdapterComponent AdapterRequestDispatcher = this;
 		this.pushingFuture = this.scheduleTask(new ComponentI.ComponentTask() {
 			@Override
 			public void run() {
@@ -233,10 +234,9 @@ public class Coordinator
 	}
 
 	/**
-	 * @see {@link AdapterRequestDispatcher#launchAdaption()}
+	 * @see {@link AdapterComponent#launchAdaption()}
 	 */
 	public void launchAdaption() throws Exception {
-
 		// We start adaption only if we have 10 samples of averages on our rolling average list
 		if (rollingAverage.size() == ControllerSetting.NBCONSECUTIVEAVERAGE) {
 			// Get the current rolling average that is collected

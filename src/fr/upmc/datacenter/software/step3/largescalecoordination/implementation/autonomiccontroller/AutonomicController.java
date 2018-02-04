@@ -7,7 +7,7 @@ import fr.upmc.datacenter.software.step2.adapter.AdapterRequestDispatcher;
  * @author	<a href="mailto:hacene.kasdi.p6">Hacene KASDI</a>
  * @version 25.01.2018
  * <p>Created on : January 25, 2018</p>
- * @see {@link AdapterRequestDispatcher}
+ * @see {@link AdapterComponent}
  *
  */
 public class AutonomicController extends AdapterRequestDispatcher {

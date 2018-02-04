@@ -124,7 +124,7 @@ implements	RequestNotificationHandlerI
 	
 	//#1
 	/**
-	 * the port to send request admission for the <code>AdmissionController</code>
+	 * the port to send request admission for the <code>AdmissionControllerComponent</code>
 	 * THE <code>RequestAdmissionOutboundPort</code>
 	 * to ask if we can start generation or no
 	 */

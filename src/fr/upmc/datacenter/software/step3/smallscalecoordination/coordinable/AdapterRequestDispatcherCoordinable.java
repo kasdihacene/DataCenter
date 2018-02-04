@@ -57,7 +57,7 @@ public class AdapterRequestDispatcherCoordinable extends AdapterRequestDispatche
 	}
 	
 	/**
-	 * @see {@link AdapterRequestDispatcher#addCoreToLessEfficientAVM()} Send to
+	 * @see {@link AdapterComponent#addCoreToLessEfficientAVM()} Send to
 	 *      <code>ComputerCoordinator</code> an intent to add an
 	 *      <code>AllocatedCore</code> to the less efficient
 	 *      <code>ApplicationVM</code>
@@ -148,7 +148,7 @@ public class AdapterRequestDispatcherCoordinable extends AdapterRequestDispatche
 	}
 
 	/**
-	 * @see {@link AdapterRequestDispatcher#removeCoreFromAVM()} Send to
+	 * @see {@link AdapterComponent#removeCoreFromAVM()} Send to
 	 *      <code>ComputerCoordinator</code> an intent to remove an
 	 *      <code>AllocatedCore</code> to the most efficient
 	 *      <code>ApplicationVM</code>

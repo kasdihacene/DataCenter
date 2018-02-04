@@ -4,7 +4,7 @@ import fr.upmc.datacenter.software.admissioncontroller.interfaces.AdmissionI;
 
 /**
  * This class <code>Admission</code> implements the interface <code>AdmissionI</code> witch offers the services that we transit 
- * between the components <code>ApplicationContainer</code> and the <code>AdmissionController</code>, this interface allows us to update the state 
+ * between the components <code>ApplicationContainer</code> and the <code>AdmissionControllerComponent</code>, this interface allows us to update the state 
  * of the components using the information collected in the transaction.  
  * 
  * @author Hacene KASDI & Marc REN

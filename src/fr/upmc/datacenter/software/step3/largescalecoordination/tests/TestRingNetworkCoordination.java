@@ -180,7 +180,7 @@ public class TestRingNetworkCoordination extends fr.upmc.components.cvm.Abstract
 		 * CONNEXION OF THE COMPONENTS
 		 */
 		
-		// ApplicationContainer and AdmissionController connections 
+		// ApplicationContainer and AdmissionControllerComponent connections 
 		this.applicationContainer.connectWithAdmissionController("ADM_CONT_ACIP");
 //		this.applicationContainer2.connectWithAdmissionController("ADM_CONT_ACIP");		
 

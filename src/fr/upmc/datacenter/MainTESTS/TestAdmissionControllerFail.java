@@ -186,7 +186,7 @@ public class TestAdmissionControllerFail extends fr.upmc.components.cvm.Abstract
 		 * CONNEXION OF THE COMPONENTS
 		 */
 		
-		// ApplicationContainer1 and AdmissionController connections 
+		// ApplicationContainer1 and AdmissionControllerComponent connections 
 		this.applicationContainer.connectWithAdmissionController(AdmissionControllerInboundPortURI);
 		
 		this.applicationContainer2.connectWithAdmissionController(AdmissionControllerInboundPortURI);		

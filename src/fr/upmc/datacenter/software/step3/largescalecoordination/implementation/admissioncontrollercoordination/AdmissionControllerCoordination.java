@@ -18,7 +18,6 @@ import fr.upmc.datacenter.software.informations.computers.ComputerInfo;
 import fr.upmc.datacenter.software.informations.computers.ComputerInfo.State_change;
 import fr.upmc.datacenter.software.informations.requestdispatcher.RequestDispatcherComponent;
 import fr.upmc.datacenter.software.informations.requestdispatcher.RequestDispatcherInfo;
-import fr.upmc.datacenter.software.step2.AdmissionController;
 import fr.upmc.datacenter.software.step2.adaptableproperty.ApplicationVMAdaptable;
 import fr.upmc.datacenter.software.step2.adaptableproperty.ComputerAdaptable;
 import fr.upmc.datacenter.software.step2.adaptableproperty.connector.AdapterComputerConnector;
@@ -32,6 +31,7 @@ import fr.upmc.datacenter.software.step2.requestresourcevm.connector.RequestReso
 import fr.upmc.datacenter.software.step2.tools.DelployTools;
 import fr.upmc.datacenter.software.step3.largescalecoordination.implementation.Coordinator;
 import fr.upmc.datacenter.software.step3.largescalecoordination.implementation.TransitToken;
+import fr.upmc.datacenter.software.step3.largescalecoordination.implementation.admissioncontrollercoordination.admissioncontroller.AdmissionControllerComponent;
 import fr.upmc.datacenter.software.step3.largescalecoordination.implementation.applicationvmadaptable.ApplicationVMcoordinate;
 import fr.upmc.datacenter.software.step3.largescalecoordination.implementation.applicationvmadaptable.connectors.ConnectCoordinateAVMConnector;
 import fr.upmc.datacenter.software.step3.largescalecoordination.implementation.connectors.CoordinationLargeScaleConnector;
@@ -55,7 +55,7 @@ import fr.upmc.datacenter.software.step3.largescalecoordination.implementation.p
  *
  */
 public class AdmissionControllerCoordination 
-											extends 		AdmissionController 
+											extends 		AdmissionControllerComponent 
 											implements 		CoordinationLargeScaleI{
 
 
@@ -126,7 +126,7 @@ public class AdmissionControllerCoordination
 		synchronized (timeToSubscribe) {
 			if(timeToSubscribe == 0) {
 				timeToSubscribe = 1;
-				// at the beginning we have to add our AdmissionController 
+				// at the beginning we have to add our AdmissionControllerComponent 
 				// to the network topology
 				dataProviderOutboundPort.subscribeToRingNetwork("AC_");
 			}

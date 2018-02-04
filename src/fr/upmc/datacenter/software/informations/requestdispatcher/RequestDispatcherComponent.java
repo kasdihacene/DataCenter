@@ -39,7 +39,7 @@ import fr.upmc.datacenter.software.step2.sensor.ports.SensorDispatcherInboundPor
  * the request using a round-robin policy to current list of <code>ApplicationVMAdaptable</code>
  * 
  * This component is subscribed to a Push service which allows to send <code>DataI</code>
- * to all clients, in our case the data will be received by <code>AdapterRequestDispatcher</code>
+ * to all clients, in our case the data will be received by <code>AdapterComponent</code>
  * start the pushing of data and force the pushing to be done each <code>interval</code> period of time.
  *
  */

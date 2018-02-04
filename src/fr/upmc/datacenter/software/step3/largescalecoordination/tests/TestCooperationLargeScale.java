@@ -176,7 +176,7 @@ public class TestCooperationLargeScale extends fr.upmc.components.cvm.AbstractCV
 		 * CONNEXION OF THE COMPONENTS
 		 */
 		
-		// ApplicationContainer and AdmissionController connections 
+		// ApplicationContainer and AdmissionControllerComponent connections 
 		this.applicationContainer.connectWithAdmissionController("ADM_CONT_ACIP");
 		this.applicationContainer2.connectWithAdmissionController("ADM_CONT_ACIP");		
 

@@ -17,7 +17,7 @@ import fr.upmc.datacenterclient.requestgenerator.ports.RequestGeneratorManagemen
 /**
  * The class <code>ApplicationContainer</code> contains 1
  * <code>RequestGenerator</code> who generate requests, in this context the
- * <code>ApplicationContainer</code> asks the <code>AdmissionController</code>
+ * <code>ApplicationContainer</code> asks the <code>AdmissionControllerComponent</code>
  * for available resources in the <code>Computer</code> the
  * <code>ApplicationContainer</code> asks for hosting the application.
  * 
@@ -111,7 +111,7 @@ public class ApplicationContainer
 
 	/**
 	 * Make a connection with the InboundPort of the
-	 * <code>AdmissionController</code>
+	 * <code>AdmissionControllerComponent</code>
 	 * 
 	 * @param admissionControllerInboundPortURI
 	 * @throws Exception

@@ -118,7 +118,7 @@ public class TestComputerCoordinator extends AbstractCVM {
 		 * CONNEXION OF THE COMPONENTS
 		 */
 
-		// ApplicationContainer1 and AdmissionController connections
+		// ApplicationContainer1 and AdmissionControllerComponent connections
 		this.applicationContainer.connectWithAdmissionController("ADM_CONT_ACIP");
 		this.applicationContainer2.connectWithAdmissionController("ADM_CONT_ACIP");
 

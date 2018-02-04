@@ -36,7 +36,7 @@ import fr.upmc.datacenter.software.requestdispatcher.ports.RequestDispatcherMana
  * <strong>Description</string>
  * </p>
  * 
- * This component <code>AdmissionController</code> receives the requests from
+ * This component <code>AdmissionControllerComponent</code> receives the requests from
  * the Costumers in this context we can consider Costumers as
  * <code>ApplicationContainer</code> who want to host their applications
  * <code>RequestI</code> of the <code>RequestGenerator</code>. the controller

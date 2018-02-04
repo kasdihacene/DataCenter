@@ -20,7 +20,7 @@ import javassist.CtClass;
 	/**
 	 * <p><strong>Description</string></p>
 	 * 
-	 * This component <code>AdmissionController</code> receives the requests from the Costumers
+	 * This component <code>AdmissionControllerComponent</code> receives the requests from the Costumers
 	 * in this context we can consider Costumers as <code>ApplicationContainer</code> who want to host their
 	 * applications <code>RequestI</code> of the <code>RequestGenerator</code>. the controller can accept if there is some available
 	 * resources or refuse if all computers are busy on handling the requests of other Costumers. 
